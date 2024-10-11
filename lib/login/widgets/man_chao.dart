@@ -11,8 +11,8 @@ class ManChao extends StatefulWidget {
 class _ManChaoState extends State<ManChao> {
   @override
   Widget build(BuildContext context) {
-    Future.delayed(const Duration(seconds: 5), () {
-      Navigator.pushReplacement(
+    Future.delayed(const Duration(seconds: 3), () {
+      Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const Login()),
       );
