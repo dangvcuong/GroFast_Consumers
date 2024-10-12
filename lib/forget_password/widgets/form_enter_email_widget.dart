@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/constants/app_colors.dart';
 import 'package:grofast_consumers/constants/app_sizes.dart';
+import 'package:grofast_consumers/controllers/login_controller.dart';
 import 'package:grofast_consumers/theme/app_style.dart';
+import 'package:grofast_consumers/validates/vlidedate_dN.dart';
 
 class FormEnterEmailWidget extends StatefulWidget {
   const FormEnterEmailWidget({super.key});
@@ -11,6 +13,8 @@ class FormEnterEmailWidget extends StatefulWidget {
 }
 
 class _FormEnterEmailWidgetState extends State<FormEnterEmailWidget> {
+  final validete validateLogin = validete();
+  final Login_Controller loginController = Login_Controller();
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -37,19 +41,25 @@ class _FormEnterEmailWidgetState extends State<FormEnterEmailWidget> {
             gapH12,
             TextField(
               keyboardType: TextInputType.emailAddress,
+              controller: loginController.email_Resst_Controller,
               decoration: InputDecoration(
-                labelText: "Nhập email của bạn", // Chữ ghi chú
+                labelText: "Nhập email của bạn",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10), // Bo tròn góc
                 ),
                 floatingLabelBehavior: FloatingLabelBehavior.auto, // Chế độ nổi
               ),
             ),
+            Text(
+              validateLogin.errorMessageEmail,
+              style: const TextStyle(color: Colors.red, fontSize: 10),
+            ),
             gapH12,
             ElevatedButton(
               onPressed: () {
-                // FocusScope.of(context).requestFocus(FocusNode());
-                // loginController.login();
+                setState(() {
+                  loginController.resetPassword(context);
+                });
               },
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,

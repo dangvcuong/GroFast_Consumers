@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:grofast_consumers/controllers/sign_up_controller.dart';
 import 'package:grofast_consumers/login/loggin.dart';
+import 'package:grofast_consumers/validates/validate_Dk.dart';
 
 class FormSignUpWidget extends StatefulWidget {
   const FormSignUpWidget({super.key});
@@ -9,8 +11,11 @@ class FormSignUpWidget extends StatefulWidget {
 }
 
 class _FormSignUpWidgetState extends State<FormSignUpWidget> {
-  bool _isChecked = false;
-
+  final bool _isChecked = false;
+  bool _isPasswordVisible = false;
+  bool _isPasswordVisibleConfic = false;
+  final SignUp__Controller signupController = SignUp__Controller();
+  final valideteDK validateDK = valideteDK();
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -31,8 +36,12 @@ class _FormSignUpWidgetState extends State<FormSignUpWidget> {
             children: [
               WidgetSpan(
                   child: GestureDetector(
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const Login())),
+                onTap: () => {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => const Login())),
+                  signupController.clear(),
+                  validateDK.clear()
+                },
                 child: const Text(
                   'Đăng nhập',
                   style: TextStyle(
@@ -44,9 +53,10 @@ class _FormSignUpWidgetState extends State<FormSignUpWidget> {
               ))
             ]),
       ),
-      Container(height: 40),
+      Container(height: 30),
       TextField(
         keyboardType: TextInputType.name,
+        controller: signupController.nameController,
         decoration: InputDecoration(
           labelText: "Nhập tên của bạn", // Chữ ghi chú
           border: OutlineInputBorder(
@@ -55,9 +65,14 @@ class _FormSignUpWidgetState extends State<FormSignUpWidget> {
           floatingLabelBehavior: FloatingLabelBehavior.auto, // Chế độ nổi
         ),
       ),
-      Container(height: 40),
+      Text(
+        validateDK.errorMessageName,
+        style: const TextStyle(color: Colors.red, fontSize: 10),
+      ),
+      Container(height: 30),
       TextField(
         keyboardType: TextInputType.emailAddress,
+        controller: signupController.emailController,
         decoration: InputDecoration(
           labelText: "Nhập email của bạn", // Chữ ghi chú
           border: OutlineInputBorder(
@@ -66,9 +81,14 @@ class _FormSignUpWidgetState extends State<FormSignUpWidget> {
           floatingLabelBehavior: FloatingLabelBehavior.auto, // Chế độ nổi
         ),
       ),
-      Container(height: 40),
+      Text(
+        validateDK.errorMessageEmail,
+        style: const TextStyle(color: Colors.red, fontSize: 10),
+      ),
+      Container(height: 30),
       TextField(
         keyboardType: TextInputType.number,
+        controller: signupController.phoneController,
         decoration: InputDecoration(
           labelText: "Nhập số điện thoại", // Chữ ghi chú
           border: OutlineInputBorder(
@@ -77,16 +97,65 @@ class _FormSignUpWidgetState extends State<FormSignUpWidget> {
           floatingLabelBehavior: FloatingLabelBehavior.auto, // Chế độ nổi
         ),
       ),
-      Container(height: 40),
+      Text(
+        validateDK.errorMessagePhone,
+        style: const TextStyle(color: Colors.red, fontSize: 10),
+      ),
+      Container(height: 30),
       TextField(
         keyboardType: TextInputType.visiblePassword,
+        controller: signupController.passwordController,
+        obscureText: !_isPasswordVisible, // Điều khiển hiển thị mật khẩu
         decoration: InputDecoration(
-          labelText: "Nhập mật khẩu", // Chữ ghi chú
+          labelText: "Nhập mật khẩu của bạn",
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10), // Bo tròn góc
+            borderRadius: BorderRadius.circular(10),
           ),
-          floatingLabelBehavior: FloatingLabelBehavior.auto, // Chế độ nổi
+          floatingLabelBehavior: FloatingLabelBehavior.auto,
+          suffixIcon: IconButton(
+            icon: Icon(
+              _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+            ),
+            onPressed: () {
+              setState(() {
+                _isPasswordVisible = !_isPasswordVisible;
+              });
+            },
+          ),
         ),
+      ),
+      Text(
+        validateDK.errorMessagePass,
+        style: const TextStyle(color: Colors.red, fontSize: 10),
+      ),
+      Container(height: 30),
+      TextField(
+        keyboardType: TextInputType.visiblePassword,
+        controller: signupController.conficPasswordController,
+        obscureText: !_isPasswordVisibleConfic, // Điều khiển hiển thị mật khẩu
+        decoration: InputDecoration(
+          labelText: "Nhập lại mật khẩu của bạn",
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          floatingLabelBehavior: FloatingLabelBehavior.auto,
+          suffixIcon: IconButton(
+            icon: Icon(
+              _isPasswordVisibleConfic
+                  ? Icons.visibility
+                  : Icons.visibility_off,
+            ),
+            onPressed: () {
+              setState(() {
+                _isPasswordVisibleConfic = !_isPasswordVisibleConfic;
+              });
+            },
+          ),
+        ),
+      ),
+      Text(
+        validateDK.errorMessagePassConfic,
+        style: const TextStyle(color: Colors.red, fontSize: 10),
       ),
       Container(height: 20),
       Row(
@@ -96,10 +165,10 @@ class _FormSignUpWidgetState extends State<FormSignUpWidget> {
             height: 24,
             width: 24,
             child: Checkbox(
-              value: _isChecked,
+              value: signupController.ischeckBock,
               onChanged: (bool? value) {
                 setState(() {
-                  _isChecked = value ?? false;
+                  signupController.ischeckBock = value ?? false;
                 });
               },
               activeColor: Colors.blue,
@@ -137,8 +206,9 @@ class _FormSignUpWidgetState extends State<FormSignUpWidget> {
       Container(height: 20),
       ElevatedButton(
         onPressed: () {
-          // FocusScope.of(context).requestFocus(FocusNode());
-          // loginController.login();
+          setState(() {
+            signupController.signUp(context);
+          });
         },
         style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,

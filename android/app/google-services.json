@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1053567433900",
+    "project_id": "profast-e9fdf",
+    "storage_bucket": "profast-e9fdf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1053567433900:android:97e3d75f33e964515ef309",
+        "android_client_info": {
+          "package_name": "com.example.grofast_consumers"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDmDA4MiaLgHAXptCDB9PRirXiUg42QL0k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

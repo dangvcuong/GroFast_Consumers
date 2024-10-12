@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:grofast_consumers/forget_password/form_enter_email_widget.dart';
+import 'package:grofast_consumers/controllers/login_controller.dart';
+import 'package:grofast_consumers/forget_password/widgets/form_enter_email_widget.dart';
+import 'package:grofast_consumers/validates/vlidedate_dN.dart';
 
 class ForgetPasswordScreen extends StatefulWidget {
   const ForgetPasswordScreen({super.key});
@@ -11,6 +13,8 @@ class ForgetPasswordScreen extends StatefulWidget {
 class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
+    final validete validateLogin = validete();
+    final Login_Controller loginController = Login_Controller();
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -19,7 +23,11 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             child: GestureDetector(
-              onTap: () => Navigator.pop(context),
+              onTap: () => {
+                Navigator.pop(context),
+                validateLogin.clear(),
+                loginController.clear(),
+              },
               child: const Icon(Icons.close),
             ),
           )

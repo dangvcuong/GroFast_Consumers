@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:grofast_consumers/controllers/sign_up_controller.dart';
 import 'package:grofast_consumers/sigup/widgets/formsignupwidget.dart';
+import 'package:grofast_consumers/validates/validate_Dk.dart';
 
 class Signup extends StatefulWidget {
   const Signup({super.key});
@@ -9,13 +11,19 @@ class Signup extends StatefulWidget {
 }
 
 class _SignupState extends State<Signup> {
+  final SignUp__Controller signupController = SignUp__Controller();
+  final valideteDK validateDK = valideteDK();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         leading: GestureDetector(
-            onTap: () => Navigator.pop(context),
+            onTap: () => {
+                  Navigator.pop(context),
+                  signupController.clear(),
+                  validateDK.clear()
+                },
             child: Container(
               padding: const EdgeInsets.all(20),
               child: const Icon(Icons.arrow_back_ios_new_outlined),
