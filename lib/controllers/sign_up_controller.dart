@@ -1,8 +1,8 @@
-// ignore_for_file: camel_case_types, unused_local_variable, unused_field, use_build_context_synchronously
+// ignore_for_file: camel_case_types, unused_local_variable, unused_field, use_build_context_synchronously, await_only_futures, non_constant_identifier_names, avoid_print, duplicate_ignore
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:grofast_consumers/login/loggin.dart';
+import 'package:grofast_consumers/sigup/widgets/email_verification_widget.dart';
 import 'package:grofast_consumers/validates/validate_Dk.dart';
 
 class SignUp__Controller {
@@ -25,9 +25,9 @@ class SignUp__Controller {
   final TextEditingController conficPasswordController =
       TextEditingController();
   bool ischeckBock = false;
-  String errorMessage = "";
+  String? errorMessage;
 
-  bool checkDK() {
+  bool checkDK(BuildContext context) {
     var check = true;
     String pattern = r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$';
     RegExp regExp = RegExp(pattern);
@@ -65,6 +65,7 @@ class SignUp__Controller {
     if (ischeckBock == false) {
       errorMessage = "Bạn cần đồng ý với các điều khoản và điều kiện";
       check = false;
+      ThongBao(context, errorMessage!);
     }
 
     return check;
@@ -87,20 +88,21 @@ class SignUp__Controller {
         validateSignup.validatePassword(passwordController.value.text);
     bool? passConficError = validateSignup.validatePasswordConfic(
         conficPasswordController.value.text, passwordController.value.text);
-    if (checkDK()) {
+    if (checkDK(context)) {
       try {
         UserCredential userCredential =
             await _auth.createUserWithEmailAndPassword(
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
+        await sendVerificationEmail();
         // Đăng ký thành công
-        errorMessage = 'Đăng ký thành công!';
-        clear();
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => const Login()));
+        errorMessage = 'Vui lòng kiểm tra Emai xác thực để hoàn thành đăng ký';
+        // clear();
+        // validateSignup.clear();
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const VerifyScreen()));
       } on FirebaseAuthException catch (e) {
-        String message;
         if (e.code == 'weak-password') {
           errorMessage = 'Mật khẩu quá yếu.';
         } else if (e.code == 'email-already-in-use') {
@@ -111,7 +113,12 @@ class SignUp__Controller {
       } catch (e) {
         errorMessage = 'Đã có lỗi xảy ra.';
       }
+      ThongBao(context, errorMessage!);
     }
+  }
+
+//Hiển thị thông báo
+  void ThongBao(BuildContext context, String errorMessage) {
     final snackBar = SnackBar(
       duration: const Duration(seconds: 3),
       backgroundColor: Colors.blue,
@@ -138,5 +145,32 @@ class SignUp__Controller {
     );
 
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+//Gửi emali xác thực
+  sendVerificationEmail() async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+      // ignore: avoid_print
+      print('Email xác thực đã được gửi.');
+    }
+  }
+
+// gửi lại
+  resendVerificationEmail() async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null && !user.emailVerified) {
+      try {
+        await user.sendEmailVerification();
+        print('Email xác thực đã được gửi lại.');
+      } catch (e) {
+        print('Error: $e');
+      }
+    } else {
+      print('Không thể gửi email xác thực.');
+    }
   }
 }

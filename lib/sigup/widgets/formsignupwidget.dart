@@ -1,3 +1,5 @@
+// ignore_for_file: unused_field
+
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/controllers/sign_up_controller.dart';
 import 'package:grofast_consumers/login/loggin.dart';

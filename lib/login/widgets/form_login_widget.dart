@@ -167,30 +167,32 @@ class _FormLoginWidgetState extends State<FormLoginWidget> {
               height: 50,
               width: 50,
               decoration: BoxDecoration(
-                color: Colors.blue,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(100),
               ),
               child: GestureDetector(
-                onTap: () => loginController.signInWithGoogle(),
-                child: const Icon(
-                  Icons.login, // Thay bằng logo Google nếu cần
-                  color: Colors.white,
-                  size: 30,
-                ),
-              ),
+                  onTap: () => loginController.signInWithGoogle(context),
+                  child: Image.asset(
+                    "assets/icons/google.png",
+                    width: 20,
+                    height: 20,
+                  )),
             ),
             Container(width: 40),
             Container(
               height: 50,
               width: 50,
               decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 0, 93, 159),
-                  borderRadius: BorderRadius.circular(100)),
-              // child: SocialMediaButton.facebook(
-              //   onTap: () {},
-              //   size: 30,
-              //   color: HAppColor.hWhiteColor,
-              // ),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: GestureDetector(
+                  onTap: () => loginController.signInWithGoogle(context),
+                  child: Image.asset(
+                    "assets/icons/facebook.png",
+                    width: 20,
+                    height: 20,
+                  )),
             ),
           ],
         )

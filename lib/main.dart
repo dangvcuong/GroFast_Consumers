@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:grofast_consumers/login/widgets/man_chao.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:grofast_consumers/login/widgets/man_chao.dart';
+import 'package:grofast_consumers/sigup/signup.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
