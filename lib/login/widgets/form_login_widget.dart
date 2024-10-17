@@ -32,7 +32,7 @@ class _FormLoginWidgetState extends State<FormLoginWidget> {
           TextSpan(
             text: 'Bạn chưa có tài khoản? ',
             style: const TextStyle(
-                color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 12),
+                color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 14),
             children: [
               WidgetSpan(
                 child: GestureDetector(
@@ -49,7 +49,7 @@ class _FormLoginWidgetState extends State<FormLoginWidget> {
                     style: TextStyle(
                         color: Colors.green,
                         fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                        fontSize: 14,
                         decoration: TextDecoration.underline),
                   ),
                 ),
@@ -73,7 +73,7 @@ class _FormLoginWidgetState extends State<FormLoginWidget> {
           validateLogin.errorMessageEmail,
           style: const TextStyle(color: Colors.red, fontSize: 10),
         ),
-        Container(height: 40),
+        Container(height: 20),
         TextField(
           keyboardType: TextInputType.visiblePassword,
           controller: loginController.passController,
@@ -124,7 +124,7 @@ class _FormLoginWidgetState extends State<FormLoginWidget> {
                 )),
           ),
         ),
-        Container(height: 10),
+        Container(height: 20),
         ElevatedButton(
           onPressed: () {
             setState(() {
@@ -136,7 +136,8 @@ class _FormLoginWidgetState extends State<FormLoginWidget> {
               fixedSize: const Size(double.maxFinite, 50),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50))),
-          child: const Text("Đăng nhập", style: TextStyle(color: Colors.white)),
+          child: const Text("Đăng nhập",
+              style: TextStyle(color: Colors.white, fontSize: 18)),
         ),
         Container(height: 20),
         const Row(

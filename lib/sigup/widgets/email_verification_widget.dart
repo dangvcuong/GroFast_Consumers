@@ -30,7 +30,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
   }
 
   void checkEmailVerification() async {
-    Timer.periodic(const Duration(seconds: 5), (timer) async {
+    Timer.periodic(const Duration(seconds: 3), (timer) async {
       user = _auth.currentUser; // Cập nhật lại user từ Firebase
 
       if (user != null) {

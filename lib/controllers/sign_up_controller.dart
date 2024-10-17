@@ -1,9 +1,10 @@
-// ignore_for_file: camel_case_types, unused_local_variable, unused_field, use_build_context_synchronously, await_only_futures, non_constant_identifier_names, avoid_print, duplicate_ignore
-
+// ignore_for_file: camel_case_types, unused_local_variable, unused_field, use_build_context_synchronously, await_only_futures, non_constant_identifier_names, avoid_print, duplicate_ignore, no_leading_underscores_for_local_identifiers
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:grofast_consumers/models/user_Model.dart';
 import 'package:grofast_consumers/sigup/widgets/email_verification_widget.dart';
 import 'package:grofast_consumers/validates/validate_Dk.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class SignUp__Controller {
   static final SignUp__Controller _instance = SignUp__Controller._internal();
@@ -80,6 +81,30 @@ class SignUp__Controller {
     ischeckBock = false;
   }
 
+  Future<void> addUserToFirebase() async {
+    final databaseRef = FirebaseDatabase.instance.ref("users");
+    UserModel newUser = UserModel(
+      id: DateTime.now().microsecondsSinceEpoch.toString(), // Tạo ID duy nhất
+      name: nameController.text.toString(),
+      phoneNumber: phoneController.text.toString(),
+      email: emailController.text.toString(),
+      image: "", // Thay thế bằng URL thực tế nếu có
+      gioiTinh: "",
+      ngayTao: DateTime.now().toString(), // Thời gian hiện tại
+      trangThai: "Hoạt động",
+    );
+    try {
+      // Sử dụng ID của user làm key trong database
+      await databaseRef.child(newUser.id).set(newUser.toJson()).then((_) {
+        print("User added successfully with ID: ${newUser.id}");
+      }).catchError((error) {
+        print("Failed to add user: $error");
+      });
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
   void signUp(BuildContext context) async {
     bool? nameError = validateSignup.validateName(nameController.value.text);
     bool? phoneError = validateSignup.validatePhone(phoneController.value.text);
@@ -88,6 +113,7 @@ class SignUp__Controller {
         validateSignup.validatePassword(passwordController.value.text);
     bool? passConficError = validateSignup.validatePasswordConfic(
         conficPasswordController.value.text, passwordController.value.text);
+    late DatabaseReference _database;
     if (checkDK(context)) {
       try {
         UserCredential userCredential =
@@ -95,7 +121,7 @@ class SignUp__Controller {
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
-        await sendVerificationEmail();
+        await addUserToFirebase();
         // Đăng ký thành công
         errorMessage = 'Vui lòng kiểm tra Emai xác thực để hoàn thành đăng ký';
         // clear();
@@ -108,10 +134,10 @@ class SignUp__Controller {
         } else if (e.code == 'email-already-in-use') {
           errorMessage = 'Email đã được sử dụng.';
         } else {
-          errorMessage = 'Đã có lỗi xảy ra.';
+          errorMessage = 'Đã có lỗi xảy ra 1.';
         }
       } catch (e) {
-        errorMessage = 'Đã có lỗi xảy ra.';
+        errorMessage = 'Đã có lỗi xảy ra 2.';
       }
       ThongBao(context, errorMessage!);
     }

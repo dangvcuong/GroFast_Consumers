@@ -34,7 +34,7 @@ class _FormSignUpWidgetState extends State<FormSignUpWidget> {
         TextSpan(
             text: 'Bạn đã có tài khoản? ',
             style: const TextStyle(
-                color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 12),
+                color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 14),
             children: [
               WidgetSpan(
                   child: GestureDetector(
@@ -49,7 +49,7 @@ class _FormSignUpWidgetState extends State<FormSignUpWidget> {
                   style: TextStyle(
                       color: Colors.blue,
                       fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                      fontSize: 14,
                       decoration: TextDecoration.underline),
                 ),
               ))
@@ -71,7 +71,7 @@ class _FormSignUpWidgetState extends State<FormSignUpWidget> {
         validateDK.errorMessageName,
         style: const TextStyle(color: Colors.red, fontSize: 10),
       ),
-      Container(height: 30),
+      Container(height: 20),
       TextField(
         keyboardType: TextInputType.emailAddress,
         controller: signupController.emailController,
@@ -87,7 +87,7 @@ class _FormSignUpWidgetState extends State<FormSignUpWidget> {
         validateDK.errorMessageEmail,
         style: const TextStyle(color: Colors.red, fontSize: 10),
       ),
-      Container(height: 30),
+      Container(height: 20),
       TextField(
         keyboardType: TextInputType.number,
         controller: signupController.phoneController,
@@ -103,7 +103,7 @@ class _FormSignUpWidgetState extends State<FormSignUpWidget> {
         validateDK.errorMessagePhone,
         style: const TextStyle(color: Colors.red, fontSize: 10),
       ),
-      Container(height: 30),
+      Container(height: 20),
       TextField(
         keyboardType: TextInputType.visiblePassword,
         controller: signupController.passwordController,
@@ -130,7 +130,7 @@ class _FormSignUpWidgetState extends State<FormSignUpWidget> {
         validateDK.errorMessagePass,
         style: const TextStyle(color: Colors.red, fontSize: 10),
       ),
-      Container(height: 30),
+      Container(height: 20),
       TextField(
         keyboardType: TextInputType.visiblePassword,
         controller: signupController.conficPasswordController,
@@ -217,7 +217,8 @@ class _FormSignUpWidgetState extends State<FormSignUpWidget> {
             fixedSize: const Size(double.maxFinite, 50),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(50))),
-        child: const Text("Đăng ký", style: TextStyle(color: Colors.white)),
+        child: const Text("Đăng ký",
+            style: TextStyle(color: Colors.white, fontSize: 18)),
       ),
     ]));
   }
