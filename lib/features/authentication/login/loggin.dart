@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:grofast_consumers/login/widgets/form_login_widget.dart';
+import 'package:grofast_consumers/features/authentication/login/widgets/form_login_widget.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});

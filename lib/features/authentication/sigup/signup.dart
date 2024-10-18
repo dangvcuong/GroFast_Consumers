@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:grofast_consumers/controllers/sign_up_controller.dart';
-import 'package:grofast_consumers/sigup/widgets/formsignupwidget.dart';
+import 'package:grofast_consumers/features/authentication/controllers/sign_up_controller.dart';
+import 'package:grofast_consumers/features/authentication/sigup/widgets/formsignupwidget.dart';
 import 'package:grofast_consumers/validates/validate_Dk.dart';
 
 class Signup extends StatefulWidget {

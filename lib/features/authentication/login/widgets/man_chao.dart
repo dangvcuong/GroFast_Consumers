@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:grofast_consumers/login/loggin.dart';
+import 'package:grofast_consumers/features/authentication/login/loggin.dart';
 
 class ManChao extends StatefulWidget {
   const ManChao({super.key});
@@ -13,7 +13,7 @@ class ManChao extends StatefulWidget {
 class _ManChaoState extends State<ManChao> {
   @override
   Widget build(BuildContext context) {
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 3), () async {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const Login()),

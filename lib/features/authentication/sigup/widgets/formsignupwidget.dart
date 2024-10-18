@@ -1,8 +1,8 @@
 // ignore_for_file: unused_field
 
 import 'package:flutter/material.dart';
-import 'package:grofast_consumers/controllers/sign_up_controller.dart';
-import 'package:grofast_consumers/login/loggin.dart';
+import 'package:grofast_consumers/features/authentication/controllers/sign_up_controller.dart';
+import 'package:grofast_consumers/features/authentication/login/loggin.dart';
 import 'package:grofast_consumers/validates/validate_Dk.dart';
 
 class FormSignUpWidget extends StatefulWidget {

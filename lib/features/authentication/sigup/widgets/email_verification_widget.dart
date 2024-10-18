@@ -5,8 +5,8 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/constants/app_colors.dart';
-import 'package:grofast_consumers/controllers/sign_up_controller.dart';
-import 'package:grofast_consumers/sigup/widgets/complete_create_account_screen.dart';
+import 'package:grofast_consumers/features/authentication/controllers/sign_up_controller.dart';
+import 'package:grofast_consumers/features/authentication/sigup/widgets/complete_create_account_screen.dart';
 
 import 'package:grofast_consumers/theme/app_style.dart';
 
@@ -91,16 +91,16 @@ class _VerifyScreenState extends State<VerifyScreen> {
               Container(height: 30),
               Text(
                 'Một email đã được gửi tới ${signUp_Controller.emailController.text} với 1 đường dẫn để xác thực tài khoản của bạn. Nếu không nhận được email sau vài phút, hãy kiểm tra trong hòm thư spam của bạn.',
-                style: HAppStyle.paragraph3Regular
-                    .copyWith(color: HAppColor.hGreyColorShade600),
+                style: HAppStyle.paragraph3Regular.copyWith(
+                    color: HAppColor.hGreyColorShade600, fontSize: 14),
                 textAlign: TextAlign.center,
               ),
               Container(height: 70),
               Text.rich(
                 TextSpan(
                   text: 'Không nhận được email? ',
-                  style: HAppStyle.paragraph3Regular
-                      .copyWith(color: HAppColor.hGreyColorShade600),
+                  style: HAppStyle.paragraph3Regular.copyWith(
+                      color: HAppColor.hGreyColorShade600, fontSize: 14),
                   children: [
                     WidgetSpan(
                         child: GestureDetector(
@@ -109,8 +109,8 @@ class _VerifyScreenState extends State<VerifyScreen> {
                       }),
                       child: Text(
                         'Gửi lại.',
-                        style: HAppStyle.paragraph3Regular
-                            .copyWith(color: HAppColor.hBluePrimaryColor),
+                        style: HAppStyle.paragraph3Regular.copyWith(
+                            color: HAppColor.hBluePrimaryColor, fontSize: 14),
                       ),
                     ))
                   ],

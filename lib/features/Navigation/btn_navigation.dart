@@ -1,6 +1,7 @@
-// ignore_for_file: camel_case_types, unused_element
+// ignore_for_file: camel_case_types, unused_element, unused_field
 
 import 'package:flutter/material.dart';
+import 'package:grofast_consumers/features/Profile_Management/profile_management.dart';
 
 class Btn_Navigatin extends StatefulWidget {
   const Btn_Navigatin({super.key});
@@ -10,13 +11,13 @@ class Btn_Navigatin extends StatefulWidget {
 }
 
 class _Btn_NavigatinState extends State<Btn_Navigatin> {
-  int _currentIndex = 1;
+  int _currentIndex = 2;
   String _appBarTitle = 'Home';
 
   final List<Widget> _screens = [
     const Center(child: Text('Home Screen')),
     const Center(child: Text('Search Screen')),
-    const Center(child: Text('Profile Screen')),
+    const Center(child: ProFile_Management()),
   ];
 
   void _onItemTapped(int index) {
@@ -38,7 +39,7 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(_appBarTitle),
+        // title: Text(_appBarTitle),
       ),
       body: _screens[_currentIndex], // Hiển thị màn hình tương ứng
       bottomNavigationBar: BottomNavigationBar(

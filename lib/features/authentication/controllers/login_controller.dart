@@ -1,11 +1,14 @@
 // ignore_for_file: camel_case_types, avoid_print, use_build_context_synchronously, unused_import, unused_local_variable, unused_field, non_constant_identifier_names
 
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:grofast_consumers/login/loggin.dart';
-import 'package:grofast_consumers/ulits/btn_navigation.dart';
+import 'package:grofast_consumers/features/authentication/login/loggin.dart';
+import 'package:grofast_consumers/features/Navigation/btn_navigation.dart';
+import 'package:grofast_consumers/features/authentication/models/user_Model.dart';
 import 'package:grofast_consumers/validates/vlidedate_dN.dart';
 
 class Login_Controller {
@@ -36,7 +39,6 @@ class Login_Controller {
     } else if (!regExp.hasMatch(emailController.text)) {
       check = false;
     }
-
     if (passController.text.isEmpty) {
       check = false;
     } else if (passController.text.length < 6) {
@@ -75,12 +77,36 @@ class Login_Controller {
         );
 
         User? user = userCredential.user;
-
         // Kiểm tra xem email đã được xác thực hay chưa
         if (user != null && user.emailVerified) {
           errorMessage = 'Đăng nhập thành công.';
           Navigator.push(context,
               MaterialPageRoute(builder: (context) => const Btn_Navigatin()));
+
+          // Lấy thông tin người dùng từ Realtime Database
+          final databaseRef =
+              FirebaseDatabase.instance.ref("users/${user.uid}");
+          DatabaseEvent event = await databaseRef.once();
+
+          // Kiểm tra nếu dữ liệu tồn tại
+          if (event.snapshot.value != null) {
+            final userData = event.snapshot.value;
+
+            // Chuyển đổi kiểu dữ liệu
+            if (userData is Map<Object?, Object?>) {
+              Map<String, dynamic> userMap = userData.map((key, value) {
+                return MapEntry(key.toString(), value);
+              });
+
+              UserModel currentUser = UserModel.fromJson(userMap);
+              print('Tên người dùng: ${currentUser.name}');
+              print('Số điện thoại: ${currentUser.phoneNumber}');
+              print('Email: ${currentUser.email}');
+            } else {
+              print(
+                  'Dữ liệu người dùng không đúng định dạng Map. Kiểu dữ liệu là: ${userData.runtimeType}');
+            }
+          }
         } else {
           errorMessage = 'Vui lòng xác thực email của bạn trước khi đăng nhập.';
           // Đăng xuất người dùng vì email chưa được xác thực
@@ -188,6 +214,19 @@ class Login_Controller {
       print("Lỗi khi đăng nhập bằng Google: $e");
       errorMessage = "Lỗi khi đăng nhập bằng Google";
       return null;
+    }
+    ThongBao(context, errorMessage);
+  }
+
+//Đăng xuất
+  Future<void> signOut(BuildContext context) async {
+    try {
+      await _auth.signOut();
+      errorMessage = "Đăng xuất thành công!";
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => const Login()));
+    } catch (e) {
+      errorMessage = "Lỗi đăng xuất: $e";
     }
     ThongBao(context, errorMessage);
   }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:grofast_consumers/controllers/login_controller.dart';
-import 'package:grofast_consumers/forget_password/forget_password_screen.dart';
+import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
+import 'package:grofast_consumers/features/authentication/forget_password/forget_password_screen.dart';
 
-import 'package:grofast_consumers/sigup/signup.dart';
+import 'package:grofast_consumers/features/authentication/sigup/signup.dart';
 import 'package:grofast_consumers/validates/vlidedate_dN.dart';
 
 class FormLoginWidget extends StatefulWidget {

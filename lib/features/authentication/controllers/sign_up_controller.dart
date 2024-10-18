@@ -1,8 +1,8 @@
 // ignore_for_file: camel_case_types, unused_local_variable, unused_field, use_build_context_synchronously, await_only_futures, non_constant_identifier_names, avoid_print, duplicate_ignore, no_leading_underscores_for_local_identifiers
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:grofast_consumers/models/user_Model.dart';
-import 'package:grofast_consumers/sigup/widgets/email_verification_widget.dart';
+import 'package:grofast_consumers/features/authentication/models/user_Model.dart';
+import 'package:grofast_consumers/features/authentication/sigup/widgets/email_verification_widget.dart';
 import 'package:grofast_consumers/validates/validate_Dk.dart';
 import 'package:firebase_database/firebase_database.dart';
 
@@ -81,29 +81,31 @@ class SignUp__Controller {
     ischeckBock = false;
   }
 
-  Future<void> addUserToFirebase() async {
-    final databaseRef = FirebaseDatabase.instance.ref("users");
-    UserModel newUser = UserModel(
-      id: DateTime.now().microsecondsSinceEpoch.toString(), // Tạo ID duy nhất
-      name: nameController.text.toString(),
-      phoneNumber: phoneController.text.toString(),
-      email: emailController.text.toString(),
-      image: "", // Thay thế bằng URL thực tế nếu có
-      gioiTinh: "",
-      ngayTao: DateTime.now().toString(), // Thời gian hiện tại
-      trangThai: "Hoạt động",
-    );
-    try {
-      // Sử dụng ID của user làm key trong database
-      await databaseRef.child(newUser.id).set(newUser.toJson()).then((_) {
-        print("User added successfully with ID: ${newUser.id}");
-      }).catchError((error) {
-        print("Failed to add user: $error");
-      });
-    } catch (e) {
-      print("Error: $e");
-    }
-  }
+  // Future<void> addUserToFirebase() async {
+  //   final databaseRef =
+  //       FirebaseDatabase.instance.ref("users/${UserCredential.user!.uid}");
+  //   UserModel newUser = UserModel(
+  //     id: DateTime.now().microsecondsSinceEpoch.toString(), // Tạo ID duy nhất
+  //     name: nameController.text.toString(),
+  //     phoneNumber: phoneController.text.toString(),
+  //     email: emailController.text.toString(),
+  //     diaChi: "",
+  //     image: "", // Thay thế bằng URL thực tế nếu có
+  //     gioiTinh: "",
+  //     ngayTao: DateTime.now().toString(), // Thời gian hiện tại
+  //     trangThai: "Hoạt động",
+  //   );
+  //   try {
+  //     // Sử dụng ID của user làm key trong database
+  //     await databaseRef.child(newUser.id).set(newUser.toJson()).then((_) {
+  //       print("User added successfully with ID: ${newUser.id}");
+  //     }).catchError((error) {
+  //       print("Failed to add user: $error");
+  //     });
+  //   } catch (e) {
+  //     print("Error: $e");
+  //   }
+  // }
 
   void signUp(BuildContext context) async {
     bool? nameError = validateSignup.validateName(nameController.value.text);
@@ -118,16 +120,41 @@ class SignUp__Controller {
       try {
         UserCredential userCredential =
             await _auth.createUserWithEmailAndPassword(
-          email: emailController.text.trim(),
+          email: emailController.value.text.trim(),
           password: passwordController.text.trim(),
         );
-        await addUserToFirebase();
-        // Đăng ký thành công
-        errorMessage = 'Vui lòng kiểm tra Emai xác thực để hoàn thành đăng ký';
-        // clear();
-        // validateSignup.clear();
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const VerifyScreen()));
+
+        // Kiểm tra xem user có tồn tại không
+        if (userCredential.user != null) {
+          final databaseRef = FirebaseDatabase.instance
+              .ref("users/${userCredential.user!.uid}");
+
+          UserModel newUser = UserModel(
+            id: userCredential.user!.uid, // Sử dụng UID của người dùng
+            name: nameController.text.toString(),
+            phoneNumber: phoneController.text.toString(),
+            email: emailController.text.toString(),
+            diaChi: "",
+            image: "",
+            gioiTinh: "",
+            ngayTao: DateTime.now().toString(),
+            trangThai: "Hoạt động",
+          );
+
+          await databaseRef.set(newUser.toJson()).then((_) {
+            print(
+                "User added successfully with ID: ${userCredential.user!.uid}");
+          }).catchError((error) {
+            print("Failed to add user: $error");
+          });
+
+          errorMessage =
+              'Vui lòng kiểm tra Email xác thực để hoàn thành đăng ký';
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const VerifyScreen()));
+        } else {
+          errorMessage = 'Người dùng không tồn tại.';
+        }
       } on FirebaseAuthException catch (e) {
         if (e.code == 'weak-password') {
           errorMessage = 'Mật khẩu quá yếu.';

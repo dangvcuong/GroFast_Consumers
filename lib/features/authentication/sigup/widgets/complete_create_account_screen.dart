@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/constants/app_colors.dart';
 import 'package:grofast_consumers/constants/app_sizes.dart';
-import 'package:grofast_consumers/login/loggin.dart';
+import 'package:grofast_consumers/features/authentication/login/loggin.dart';
 import 'package:grofast_consumers/theme/app_style.dart';
 
 class CompleteCreateAccountScreen extends StatefulWidget {

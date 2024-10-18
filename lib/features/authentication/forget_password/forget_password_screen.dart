@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:grofast_consumers/controllers/login_controller.dart';
-import 'package:grofast_consumers/forget_password/widgets/form_enter_email_widget.dart';
+import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
+import 'package:grofast_consumers/features/authentication/forget_password/widgets/form_enter_email_widget.dart';
 import 'package:grofast_consumers/validates/vlidedate_dN.dart';
 
 class ForgetPasswordScreen extends StatefulWidget {
