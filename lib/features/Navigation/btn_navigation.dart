@@ -1,7 +1,8 @@
-// ignore_for_file: camel_case_types, unused_element, unused_field
+// ignore_for_file: camel_case_types, unused_element, unused_field, unused_import
 
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/features/Profile_Management/profile_management.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class Btn_Navigatin extends StatefulWidget {
   const Btn_Navigatin({super.key});
@@ -32,6 +33,12 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
         _appBarTitle = 'Profile';
       }
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Yêu cầu quyền khi khởi động ứng dụng
   }
 
   @override

@@ -5,22 +5,20 @@ class UserModel {
   String name;
   String phoneNumber;
   String email;
-  String diaChi;
+  List<String> address; // Danh sách địa chỉ
   String image;
-  String gioiTinh;
-  String ngayTao;
-  String trangThai;
+  String dateCreated;
+  String status;
 
   UserModel({
     required this.id,
     required this.name,
     required this.phoneNumber,
     required this.email,
-    required this.diaChi,
+    required this.address,
     required this.image,
-    required this.gioiTinh,
-    required this.ngayTao,
-    required this.trangThai,
+    required this.dateCreated,
+    required this.status,
   });
 
   // Tạo phương thức để chuyển đổi từ Map (dữ liệu từ Firebase) sang UserModel
@@ -30,11 +28,11 @@ class UserModel {
       name: map['name'] ?? '',
       phoneNumber: map['phoneNumber'] ?? '',
       email: map['email'] ?? '',
-      diaChi: map['diaChi'] ?? '',
+      address:
+          List<String>.from(map['address'] ?? []), // Đảm bảo là List<String>
       image: map['image'] ?? '',
-      gioiTinh: map['gioiTinh'] ?? '',
-      ngayTao: map['ngayTao'] ?? '',
-      trangThai: map['trangThai'] ?? '',
+      dateCreated: map['dateCreated'] ?? '',
+      status: map['status'] ?? '',
     );
   }
 
@@ -45,51 +43,37 @@ class UserModel {
       'name': name,
       'phoneNumber': phoneNumber,
       'email': email,
-      'diaChi': diaChi,
+      'address': address, // Sẽ tự động chuyển thành List<String>
       'image': image,
-      'gioiTinh': gioiTinh,
-      'ngayTao': ngayTao,
-      'trangThai': trangThai,
+      'dateCreated': dateCreated,
+      'status': status,
     };
   }
 
   // Tạo phương thức để chuyển đổi từ JSON (đối tượng) sang UserModel
   static UserModel fromJson(Map<String, dynamic> userData) {
     return UserModel(
-      id: userData['id'] ?? '', // Cung cấp giá trị mặc định nếu không có
+      id: userData['id'] ?? '',
       name: userData['name'] ?? '',
       phoneNumber: userData['phoneNumber'] ?? '',
       email: userData['email'] ?? '',
-      diaChi: userData['diaChi'] ?? '',
+      address: List<String>.from(
+          userData['address'] ?? []), // Đảm bảo là List<String>
       image: userData['image'] ?? '',
-      gioiTinh: userData['gioiTinh'] ?? '',
-      ngayTao: userData['ngayTao'] ?? '',
-      trangThai: userData['trangThai'] ?? '',
+      dateCreated: userData['dateCreated'] ?? '',
+      status: userData['status'] ?? '',
     );
   }
 
-  // factory UserModel.empty() {
-  //   return UserModel(
-  //     id: '',
-  //     name: '',
-  //     phoneNumber: '',
-  //     email: '',
-  //     diaChi: '',
-  //     image: '',
-  //     gioiTinh: '',
-  //     ngayTao: '',
-  //     trangThai: '',
-  //   );
-  // }
+  // Phương thức để tạo một đối tượng UserModel rỗng
   static UserModel empty() => UserModel(
         id: '',
         name: '',
         email: '',
         phoneNumber: '',
-        diaChi: '',
+        address: [], // Khởi tạo là danh sách trống
         image: '',
-        gioiTinh: '',
-        ngayTao: '',
-        trangThai: '',
+        dateCreated: '',
+        status: '',
       );
 }

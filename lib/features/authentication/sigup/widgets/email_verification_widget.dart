@@ -105,7 +105,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
                     WidgetSpan(
                         child: GestureDetector(
                       onTap: () => setState(() {
-                        signUp_Controller.resendVerificationEmail();
+                        signUp_Controller.resendVerificationEmail(context);
                       }),
                       child: Text(
                         'Gửi lại.',

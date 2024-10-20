@@ -134,11 +134,10 @@ class SignUp__Controller {
             name: nameController.text.toString(),
             phoneNumber: phoneController.text.toString(),
             email: emailController.text.toString(),
-            diaChi: "",
+            address: [],
             image: "",
-            gioiTinh: "",
-            ngayTao: DateTime.now().toString(),
-            trangThai: "Hoạt động",
+            dateCreated: DateTime.now().toString(),
+            status: "Hoạt động",
           );
 
           await databaseRef.set(newUser.toJson()).then((_) {
@@ -212,18 +211,19 @@ class SignUp__Controller {
   }
 
 // gửi lại
-  resendVerificationEmail() async {
+  resendVerificationEmail(BuildContext context) async {
     User? user = FirebaseAuth.instance.currentUser;
-
+    String? errorMessage;
     if (user != null && !user.emailVerified) {
       try {
         await user.sendEmailVerification();
-        print('Email xác thực đã được gửi lại.');
+        errorMessage = 'Email xác thực đã được gửi lại.';
       } catch (e) {
         print('Error: $e');
       }
     } else {
-      print('Không thể gửi email xác thực.');
+      errorMessage = 'Không thể gửi email xác thực.';
     }
+    ThongBao(context, errorMessage!);
   }
 }

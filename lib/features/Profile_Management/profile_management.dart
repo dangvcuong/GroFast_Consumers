@@ -1,5 +1,7 @@
 // ignore_for_file: camel_case_types, unused_import, duplicate_ignore, avoid_print
 
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +17,9 @@ import 'package:grofast_consumers/features/authentication/models/user_Model.dart
 
 // ignore: unused_import
 import 'package:grofast_consumers/features/authentication/sigup/widgets/complete_create_account_screen.dart';
+import 'package:grofast_consumers/features/profile_Management/widgets/User_Address.dart';
+import 'package:grofast_consumers/features/profile_Management/widgets/profile_detail_screen.dart';
+import 'package:grofast_consumers/features/showdialogs/Show_Dialogs.dart';
 import 'package:grofast_consumers/theme/app_style.dart';
 
 class ProFile_Management extends StatefulWidget {
@@ -27,6 +32,7 @@ class ProFile_Management extends StatefulWidget {
 class _ProFile_ManagementState extends State<ProFile_Management> {
   UserModel? currentUser;
   final UserController userController = UserController();
+  final ShowDialogs showDialog = ShowDialogs();
 
   @override
   void initState() {
@@ -81,19 +87,29 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             GestureDetector(
-              // onTap: () async {
-              //   Get.toNamed(HAppRoutes.profileDetail);
-              //   // await userController.loadingUserRecord();
-              // },
+              onTap: () async {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ProfileDetailScreen()));
+              },
               child: Row(
                 children: [
                   SizedBox(
                     width: 100, // Chiều rộng mong muốn
                     height: 100, // Chiều cao mong muốn
-                    child: Image.asset(
-                      "assets/logos/logo.png",
-                      fit: BoxFit.cover,
-                    ),
+                    child: currentUser != null && currentUser!.image.isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                                100), // Bo góc với bán kính 20
+                            child: Image.file(
+                              File(currentUser!
+                                  .image), // Sử dụng FileImage để hiển thị ảnh từ đường dẫn cục bộ
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                            ))
+                        : const Icon(Icons.account_circle, size: 100),
                   ),
                   gapW10,
                   Column(
@@ -150,14 +166,10 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
             ),
             GestureDetector(
               onTap: () {
-                // Get.toNamed(HAppRoutes.allAddress);
-                // var list = DummyData.getAllProducts(
-                //     DummyData.getAllStore(
-                //         DummyData.getAllCategory()));
-
-                // for (var product in list) {
-                //   print(product.toJson().toString());
-                // }
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const AddressUser()));
               },
               child: const ListTile(
                 contentPadding: EdgeInsets.zero,
@@ -218,28 +230,25 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                 size: 15,
               ),
             ),
-            const ListTile(
-              contentPadding: EdgeInsets.zero,
-              // leading: Icon(EvaIcons.settingsOutline),
-              title: Text('Cài đặt'),
-              trailing: Icon(
-                Icons.arrow_forward_ios,
-                size: 15,
-              ),
-            ),
-            gapH20,
-            gapH6,
+            gapH40,
             Center(
               child: GestureDetector(
                 onTap: () async {
-                  try {
-                    await FirebaseAuth.instance.signOut();
-                    // Thực hiện các hành động khác, như điều hướng về màn hình đăng nhập
-                  } catch (e) {
-                    print("Error signing out: $e");
-                  }
+                  // try {
+                  //   await FirebaseAuth.instance.signOut();
+                  //   // Thực hiện các hành động khác, như điều hướng về màn hình đăng nhập
+                  // } catch (e) {
+                  //   print("Error signing out: $e");
+                  // }
+                  await showDialog.Log_out(context);
                 },
-                child: const Text('Đăng xuất'),
+                child: const Text(
+                  'Đăng xuất',
+                  style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ]),

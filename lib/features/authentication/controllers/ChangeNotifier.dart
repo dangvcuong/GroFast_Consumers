@@ -1,3 +1,5 @@
+// ignore_for_file: file_names, avoid_print, duplicate_ignore
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +21,7 @@ class UserProvider with ChangeNotifier {
 
         if (event.snapshot.value != null) {
           final userData = event.snapshot.value as Map<Object?, Object?>;
+          // ignore: avoid_print
           print("User Data: $userData"); // Kiểm tra dữ liệu trả về
 
           // Chuyển đổi userData sang Map<String, dynamic>
