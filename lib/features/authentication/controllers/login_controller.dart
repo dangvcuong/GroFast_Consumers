@@ -70,6 +70,7 @@ class Login_Controller {
         validateLogin.validatePassword(passController.value.text);
     if (checkDN()) {
       try {
+        // Đăng nhập bằng email và mật khẩu
         UserCredential userCredential =
             await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: emailController.text.trim(),
@@ -77,13 +78,10 @@ class Login_Controller {
         );
 
         User? user = userCredential.user;
-        // Kiểm tra xem email đã được xác thực hay chưa
-        if (user != null && user.emailVerified) {
-          errorMessage = 'Đăng nhập thành công.';
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const Btn_Navigatin()));
 
-          // Lấy thông tin người dùng từ Realtime Database
+        // Kiểm tra xem người dùng có tồn tại hay không
+        if (user != null) {
+          // Lấy thông tin người dùng từ Firebase Realtime Database
           final databaseRef =
               FirebaseDatabase.instance.ref("users/${user.uid}");
           DatabaseEvent event = await databaseRef.once();
@@ -92,29 +90,49 @@ class Login_Controller {
           if (event.snapshot.value != null) {
             final userData = event.snapshot.value;
 
-            // Chuyển đổi kiểu dữ liệu
+            // Chuyển đổi dữ liệu sang Map nếu cần
             if (userData is Map<Object?, Object?>) {
               Map<String, dynamic> userMap = userData.map((key, value) {
                 return MapEntry(key.toString(), value);
               });
 
               UserModel currentUser = UserModel.fromJson(userMap);
-              print('Tên người dùng: ${currentUser.name}');
-              print('Số điện thoại: ${currentUser.phoneNumber}');
-              print('Email: ${currentUser.email}');
+
+              // Kiểm tra trạng thái người dùng
+              if (currentUser.status == "Ngừng hoạt động") {
+                errorMessage =
+                    'Tài khoản của bạn đã bị ngừng hoạt động. Vui lòng liên hệ hỗ trợ.';
+
+                // Đăng xuất người dùng ngay lập tức
+                await FirebaseAuth.instance.signOut();
+              } else if (user.emailVerified) {
+                // Người dùng đã xác thực email và trạng thái hoạt động bình thường
+                errorMessage = 'Đăng nhập thành công.';
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const Btn_Navigatin()),
+                );
+              } else {
+                errorMessage =
+                    'Vui lòng xác thực email của bạn trước khi đăng nhập.';
+                // Đăng xuất người dùng nếu email chưa được xác thực
+                await FirebaseAuth.instance.signOut();
+              }
             } else {
-              print(
-                  'Dữ liệu người dùng không đúng định dạng Map. Kiểu dữ liệu là: ${userData.runtimeType}');
+              print('Dữ liệu người dùng không đúng định dạng Map.');
             }
+          } else {
+            print('Không tìm thấy dữ liệu người dùng trong Realtime Database.');
           }
-        } else {
-          errorMessage = 'Vui lòng xác thực email của bạn trước khi đăng nhập.';
-          // Đăng xuất người dùng vì email chưa được xác thực
-          await FirebaseAuth.instance.signOut();
         }
       } catch (e) {
+        // Bắt lỗi và hiển thị thông báo nếu có lỗi xảy ra
         errorMessage = "Tài khoản hoặc mật khẩu không đúng!";
+        print('Lỗi khi đăng nhập: $e');
       }
+
+      // Hiển thị thông báo lỗi (nếu có)
       ThongBao(context, errorMessage);
     }
   }

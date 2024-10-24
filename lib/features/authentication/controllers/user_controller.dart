@@ -82,7 +82,7 @@ class UserController {
       await FirebaseDatabase.instance
           .ref('users/$userId') // Đường dẫn đến user trong Realtime Database
           .update({'name': newName}); // Cập nhật chỉ field 'name'
-      errorMessage = "User name updated successfully";
+      errorMessage = "Đổi tên thành công";
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -90,9 +90,9 @@ class UserController {
                 const ProfileDetailScreen()), // ProfileScreen là màn hình đích
       );
     } catch (e) {
-      errorMessage = "Error updating user name: $e";
+      print("Error updating user name: $e");
     }
-    signUp__Controller.ThongBao(context, errorMessage);
+    signUp__Controller.ThongBao(context, errorMessage!);
   }
 
   Future<void> updateSDT(
@@ -102,7 +102,7 @@ class UserController {
       await FirebaseDatabase.instance
           .ref('users/$userId') // Đường dẫn đến user trong Realtime Database
           .update({'phoneNumber': newPhoneNumber}); // Cập nhật chỉ field 'name'
-      errorMessage = "User PhoneNumber updated successfully";
+      errorMessage = "Cập nhật số điện thoại thành công";
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -110,9 +110,9 @@ class UserController {
                 const ProfileDetailScreen()), // ProfileScreen là màn hình đích
       );
     } catch (e) {
-      errorMessage = "Error updating user name: $e";
+      print("Error updating user name: $e");
     }
-    signUp__Controller.ThongBao(context, errorMessage);
+    signUp__Controller.ThongBao(context, errorMessage!);
   }
 
   Future<void> updatePassword(String oldPassword, String newPassword,
