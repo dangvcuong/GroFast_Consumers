@@ -17,10 +17,10 @@ import 'package:grofast_consumers/features/authentication/models/user_Model.dart
 
 // ignore: unused_import
 import 'package:grofast_consumers/features/authentication/sigup/widgets/complete_create_account_screen.dart';
-import 'package:grofast_consumers/features/profile_Management/widgets/User_Address.dart';
-import 'package:grofast_consumers/features/profile_Management/widgets/profile_detail_screen.dart';
-import 'package:grofast_consumers/features/showdialogs/Show_Dialogs.dart';
-import 'package:grofast_consumers/theme/app_style.dart';
+import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
+import 'package:grofast_consumers/features/shop/views/profile/widgets/profile_detail_screen.dart';
+import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
+import 'package:grofast_consumers/ulits/theme/app_style.dart';
 
 class ProFile_Management extends StatefulWidget {
   const ProFile_Management({super.key});

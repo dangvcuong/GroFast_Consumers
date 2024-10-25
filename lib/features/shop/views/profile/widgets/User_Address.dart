@@ -6,7 +6,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:grofast_consumers/constants/app_sizes.dart';
 import 'package:grofast_consumers/features/authentication/controllers/addres_Controller.dart';
 import 'package:grofast_consumers/features/authentication/models/addressModel.dart';
-import 'package:grofast_consumers/features/showdialogs/Show_Dialogs.dart';
+import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
 
 class AddressUser extends StatefulWidget {
   const AddressUser({super.key});

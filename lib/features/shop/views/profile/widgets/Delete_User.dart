@@ -6,8 +6,8 @@ import 'package:flutter/widgets.dart';
 import 'package:grofast_consumers/constants/app_colors.dart';
 import 'package:grofast_consumers/constants/app_sizes.dart';
 import 'package:grofast_consumers/features/authentication/controllers/user_controller.dart';
-import 'package:grofast_consumers/features/showdialogs/Show_Dialogs.dart';
-import 'package:grofast_consumers/theme/app_style.dart';
+import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
+import 'package:grofast_consumers/ulits/theme/app_style.dart';
 
 class Delete_User extends StatefulWidget {
   const Delete_User({super.key});

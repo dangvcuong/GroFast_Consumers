@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:grofast_consumers/features/authentication/controllers/sign_up_controller.dart';
 import 'package:grofast_consumers/features/authentication/models/user_Model.dart';
-import 'package:grofast_consumers/features/profile_Management/widgets/profile_detail_screen.dart';
+import 'package:grofast_consumers/features/shop/views/profile/widgets/profile_detail_screen.dart';
 import 'package:grofast_consumers/validates/validate_Dk.dart';
 import 'package:image_picker/image_picker.dart';
 

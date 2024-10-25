@@ -1,7 +1,7 @@
 // ignore_for_file: camel_case_types, unused_element, unused_field, unused_import
 
 import 'package:flutter/material.dart';
-import 'package:grofast_consumers/features/Profile_Management/profile_management.dart';
+import 'package:grofast_consumers/features/shop/views/profile/profile_management.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class Btn_Navigatin extends StatefulWidget {

@@ -1,4 +1,4 @@
-// ignore_for_file: unused_import, unnecessary_import, camel_case_types, non_constant_identifier_names, file_names, avoid_print
+// ignore_for_file: camel_case_types, unused_import, unnecessary_import, non_constant_identifier_names, file_names, avoid_print
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,21 +7,21 @@ import 'package:grofast_consumers/constants/app_colors.dart';
 import 'package:grofast_consumers/constants/app_sizes.dart';
 import 'package:grofast_consumers/features/authentication/controllers/user_controller.dart';
 import 'package:grofast_consumers/features/authentication/models/user_Model.dart';
-import 'package:grofast_consumers/features/profile_Management/profile_management.dart';
-import 'package:grofast_consumers/features/profile_Management/widgets/profile_detail_screen.dart';
-import 'package:grofast_consumers/theme/app_style.dart';
+import 'package:grofast_consumers/features/shop/views/profile/profile_management.dart';
+import 'package:grofast_consumers/features/shop/views/profile/widgets/profile_detail_screen.dart';
+import 'package:grofast_consumers/ulits/theme/app_style.dart';
 
-class Updata_Sdt extends StatefulWidget {
-  const Updata_Sdt({super.key});
+class Updata_Name extends StatefulWidget {
+  const Updata_Name({super.key});
 
   @override
-  State<Updata_Sdt> createState() => _Updata_SdtState();
+  State<Updata_Name> createState() => _Updata_NameState();
 }
 
-class _Updata_SdtState extends State<Updata_Sdt> {
+class _Updata_NameState extends State<Updata_Name> {
   UserModel? currentUser;
   final UserController userController = UserController();
-  final TextEditingController update_sdtController = TextEditingController();
+  final TextEditingController update_nameController = TextEditingController();
 
   @override
   void initState() {
@@ -56,23 +56,23 @@ class _Updata_SdtState extends State<Updata_Sdt> {
                 )),
           ),
         ),
-        title: const Text("Đổi số điện thoại"),
+        title: const Text("Đổi tên"),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Text("Hãy nhập số điện thoại bạn muốn đôi.",
+            Text("Hãy nhập đầy đủ các thông tin dưới đây để tiến hành đổi tên.",
                 style: HAppStyle.paragraph2Bold
                     .copyWith(color: HAppColor.hGreyColorShade600)),
             gapH16,
             TextField(
-              keyboardType: TextInputType.phone,
-              controller: update_sdtController,
+              keyboardType: TextInputType.name,
+              controller: update_nameController,
               decoration: InputDecoration(
-                labelText: "Nhập số điện thoại",
-                hintText: currentUser?.phoneNumber ?? "",
+                labelText: "Nhập tên của bạn", // Chữ ghi chú
+                hintText: currentUser?.name ?? "",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10), // Bo tròn góc
                 ),
@@ -83,9 +83,9 @@ class _Updata_SdtState extends State<Updata_Sdt> {
             ElevatedButton(
               onPressed: () {
                 setState(() {
-                  userController.updateSDT(currentUser!.id,
-                      update_sdtController.value.text, context);
-                  print(update_sdtController.text);
+                  userController.updateUserName(currentUser!.id,
+                      update_nameController.value.text, context);
+                  print(update_nameController.text);
                 });
               },
               style: ElevatedButton.styleFrom(
