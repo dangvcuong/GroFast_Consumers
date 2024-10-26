@@ -94,12 +94,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             padding: const EdgeInsets.only(left: 20),
             child: GestureDetector(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            const ProFile_Management()), // ProfileScreen là màn hình đích
-                  );
+                  Navigator.pop(context);
                 },
                 child: const Icon(
                   Icons.arrow_back_ios,
