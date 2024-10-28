@@ -146,7 +146,7 @@ class SignUp__Controller {
           }).catchError((error) {
             print("Failed to add user: $error");
           });
-
+          sendVerificationEmail();
           errorMessage =
               'Vui lòng kiểm tra Email xác thực để hoàn thành đăng ký';
           Navigator.push(context,
