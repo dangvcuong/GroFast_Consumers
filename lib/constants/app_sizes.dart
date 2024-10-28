@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:get/get.dart';
 class HAppSize {
   static const p2 = 2.0;
   static const p4 = 4.0;
@@ -13,6 +13,9 @@ class HAppSize {
   static const p40 = 40.0;
   static const p100 = 100.0;
   static const p200 = 200.0;
+
+  static final deviceWidth=Get.width;
+  static final deviceHeight=Get.height;
 }
 
 const hAppDefaultPadding = HAppSize.p16;
