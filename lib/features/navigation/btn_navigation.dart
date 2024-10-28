@@ -12,7 +12,7 @@ class Btn_Navigatin extends StatefulWidget {
 }
 
 class _Btn_NavigatinState extends State<Btn_Navigatin> {
-  int _currentIndex = 2;
+  int _currentIndex = 0;
   String _appBarTitle = 'Home';
 
   final List<Widget> _screens = [
