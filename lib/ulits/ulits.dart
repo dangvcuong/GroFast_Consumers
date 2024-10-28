@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_import
+
 import 'package:get/get_common/get_reset.dart';
 import 'package:get/state_manager.dart';
 import 'package:enefty_icons/enefty_icons.dart';
@@ -79,8 +81,7 @@ class HAppUtils {
 
   // Định dạng tiền VND
   static String vietnamCurrencyFormatting(int amount) {
-    return '${amount.toString().replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]}.')}₫';
+    return '${amount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]}.')}₫';
   }
 
   // Đổi từ m sang km
@@ -176,12 +177,12 @@ class HAppUtils {
 
   // Hiển thị Toast thông báo thành công
   static void showToastSuccess(
-      Widget title,
-      Widget description,
-      int seconds,
-      BuildContext context,
-      ToastificationCallbacks callbacks,
-      ) {
+    Widget title,
+    Widget description,
+    int seconds,
+    BuildContext context,
+    ToastificationCallbacks callbacks,
+  ) {
     toastification.show(
       context: context,
       callbacks: callbacks,
@@ -206,12 +207,12 @@ class HAppUtils {
 
   // Hiển thị Toast thông báo lỗi
   static void showToastError(
-      Widget title,
-      Widget description,
-      int seconds,
-      BuildContext context,
-      ToastificationCallbacks callbacks,
-      ) {
+    Widget title,
+    Widget description,
+    int seconds,
+    BuildContext context,
+    ToastificationCallbacks callbacks,
+  ) {
     toastification.show(
       context: context,
       callbacks: callbacks,
