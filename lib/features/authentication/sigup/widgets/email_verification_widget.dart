@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/constants/app_colors.dart';
 import 'package:grofast_consumers/features/authentication/controllers/sign_up_controller.dart';
+import 'package:grofast_consumers/features/authentication/controllers/user_controller.dart';
 import 'package:grofast_consumers/features/authentication/sigup/widgets/complete_create_account_screen.dart';
 
 import 'package:grofast_consumers/ulits/theme/app_style.dart';
@@ -20,6 +21,7 @@ class VerifyScreen extends StatefulWidget {
 class _VerifyScreenState extends State<VerifyScreen> {
   final SignUp__Controller signUp_Controller = SignUp__Controller();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final UserController userContrller = UserController();
   User? user;
 
   @override
@@ -68,7 +70,16 @@ class _VerifyScreenState extends State<VerifyScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             child: GestureDetector(
-              onTap: () => {Navigator.pop(context)},
+              onTap: () async {
+                try {
+                  await userContrller.XoaUsser(signUp_Controller
+                      .passwordController
+                      .text); // Sau khi xác thực, xóa tài khoản
+                  Navigator.pop(context);
+                } catch (e) {
+                  print("Lỗi khi xóa tài khoản: $e");
+                }
+              },
               child: const Icon(Icons.close),
             ),
           )

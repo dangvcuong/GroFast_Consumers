@@ -199,4 +199,38 @@ class UserController {
     }
     signUp__Controller.ThongBao(context, errorMessage);
   }
+
+  Future<void> XoaUsser(String password) async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      try {
+        // Xác thực lại người dùng với mật khẩu
+        await user.reauthenticateWithCredential(
+          EmailAuthProvider.credential(
+            email: user.email!,
+            password: password, // Mật khẩu người dùng nhập vào
+          ),
+        );
+
+        // Xóa thông tin người dùng từ Firestore
+        await FirebaseDatabase.instance.ref('users/${user.uid}').remove();
+
+        // Xóa tài khoản người dùng
+        await user.delete();
+        print("Tài khoản đã được hủy thành công!");
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'wrong-password') {
+          print("Mật khẩu không đúng.");
+        } else if (e.code == 'requires-recent-login') {
+          print("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        } else {
+          print("Lỗi xác thực lại: ");
+        }
+      } catch (e) {
+        print("Lỗi khi hủy tài khoản: ");
+      }
+    } else {
+      print("Người dùng chưa đăng nhập.");
+    }
+  }
 }
