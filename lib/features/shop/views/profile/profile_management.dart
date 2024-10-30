@@ -17,8 +17,10 @@ import 'package:grofast_consumers/features/authentication/models/user_Model.dart
 
 // ignore: unused_import
 import 'package:grofast_consumers/features/authentication/sigup/widgets/complete_create_account_screen.dart';
+import 'package:grofast_consumers/features/shop/views/cart/Product_cart_item.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/profile_detail_screen.dart';
+import 'package:grofast_consumers/features/shop/views/voucher/voucher_screen.dart';
 import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
 import 'package:grofast_consumers/ulits/theme/app_style.dart';
 
@@ -153,7 +155,12 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
               ),
             ),
             GestureDetector(
-              // onTap: () => Get.toNamed(HAppRoutes.cart),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const CartScreen()));
+              },
               child: const ListTile(
                 contentPadding: EdgeInsets.zero,
                 // leading: Icon(EvaIcons.shoppingCartOutline),
@@ -195,7 +202,10 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
             ),
             GestureDetector(
               onTap: () {
-                // Get.to(const AllVoucherScreen());
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const VoucherScreen()));
               },
               child: const ListTile(
                 contentPadding: EdgeInsets.zero,

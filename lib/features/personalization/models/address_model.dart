@@ -1,3 +1,5 @@
+// ignore_for_file: hash_and_equals
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AddressModel {
@@ -20,21 +22,20 @@ class AddressModel {
     required this.district,
     required this.ward,
     required this.street,
-    this.selectedAddress =true,
+    this.selectedAddress = true,
     required this.latitude,
     required this.longitude,
   });
 
-  static AddressModel empty() =>
-      AddressModel(
-          id: '',
-          name: '',
-          phoneNumber: '',
-          district: '',
-          ward: '',
-          street: '',
-          latitude: 0,
-          longitude: 0);
+  static AddressModel empty() => AddressModel(
+      id: '',
+      name: '',
+      phoneNumber: '',
+      district: '',
+      ward: '',
+      street: '',
+      latitude: 0,
+      longitude: 0);
 
   Map<String, dynamic> toJson() {
     return {
@@ -72,11 +73,10 @@ class AddressModel {
 
   @override
   String toString() {
-    // TODO: implement toString
     return [street, ward, district, city].join(',');
   }
 
-  factory AddressModel.fromJson(Map<String, dynamic> json){
+  factory AddressModel.fromJson(Map<String, dynamic> json) {
     return AddressModel(
         id: json['Id'] ?? '',
         name: json['Name'] ?? '',
@@ -87,12 +87,11 @@ class AddressModel {
         street: json['Street'] ?? '',
         selectedAddress: json['SelectedAddress'] ?? false,
         latitude: json['Latitude']?.toDouble() ?? 0.0,
-        longitude: json['Longitude']?.toDouble() ?? 0.0
-    );
+        longitude: json['Longitude']?.toDouble() ?? 0.0);
   }
 
-  String fullAddressString(){
-    return[
+  String fullAddressString() {
+    return [
       name,
       phoneNumber,
       street,
@@ -106,9 +105,8 @@ class AddressModel {
 
   @override
   bool operator ==(Object other) {
-
-    if(other is AddressModel){
-      return fullAddressString()==other.fullAddressString();
+    if (other is AddressModel) {
+      return fullAddressString() == other.fullAddressString();
     }
 
     return false;

@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors, use_super_parameters, file_names, prefer_const_literals_to_create_immutables, sort_child_properties_last
+
 import 'package:flutter/material.dart';
 
 class CartScreen extends StatelessWidget {

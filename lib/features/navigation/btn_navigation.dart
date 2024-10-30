@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/features/shop/views/profile/profile_management.dart';
+import 'package:grofast_consumers/features/shop/views/search/search_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class Btn_Navigatin extends StatefulWidget {
@@ -13,27 +14,13 @@ class Btn_Navigatin extends StatefulWidget {
 
 class _Btn_NavigatinState extends State<Btn_Navigatin> {
   int _currentIndex = 0;
-  String _appBarTitle = 'Home';
 
   final List<Widget> _screens = [
     const Center(child: Text('Home Screen')),
-    const Center(child: Text('Search Screen')),
+    const Center(child: SearchScreen()),
+    const Center(child: Text('Heart Screen')),
     const Center(child: ProFile_Management()),
   ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _currentIndex = index; // Cập nhật chỉ số tab hiện tại
-      // Cập nhật tiêu đề dựa trên chỉ số
-      if (index == 0) {
-        _appBarTitle = 'Home';
-      } else if (index == 1) {
-        _appBarTitle = 'Search';
-      } else if (index == 2) {
-        _appBarTitle = 'Profile';
-      }
-    });
-  }
 
   @override
   void initState() {
@@ -46,7 +33,7 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        // title: Text(_appBarTitle),
+        // Hiển thị tiêu đề
       ),
       body: _screens[_currentIndex], // Hiển thị màn hình tương ứng
       bottomNavigationBar: BottomNavigationBar(
@@ -54,21 +41,26 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
         onTap: (int index) {
           setState(() {
             _currentIndex = index; // Cập nhật chỉ số khi tab được chọn
-            _onItemTapped(index);
           });
         },
+        selectedItemColor: Colors.blue, // Màu sắc khi icon được chọn
+        unselectedItemColor: Colors.black, // Màu sắc khi icon không được chọn
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'Home',
+            label: '',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.search),
-            label: 'Search',
+            label: '',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: '',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'Profile',
+            label: '',
           ),
         ],
       ),
