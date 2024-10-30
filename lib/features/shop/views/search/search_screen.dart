@@ -1,5 +1,6 @@
 // ignore_for_file: library_private_types_in_public_api, avoid_print
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
@@ -16,11 +17,11 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final DatabaseReference _databaseRef =
       FirebaseDatabase.instance.ref('products');
+
   final TextEditingController _searchController = TextEditingController();
   List<Product> _products = [];
   List<Product> _filteredProducts = [];
   bool _isLoading = true;
-  final String _selectedBrand = "Tất cả"; // Biến để lưu trữ hãng được chọn
   String? _selectedBrandId;
   @override
   void initState() {
@@ -91,21 +92,25 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Tìm kiếm"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.shopping_cart),
-            onPressed: () {
-              // Logic chuyển đến màn hình giỏ hàng
-            },
-          ),
-        ],
-      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Tìm kiếm",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      Icon(Icons.shopping_cart),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
@@ -189,15 +194,27 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
                 Expanded(
                   child: _filteredProducts.isNotEmpty
-                      ? ListView.builder(
+                      ? GridView.builder(
+                          padding: const EdgeInsets.all(8.0),
                           itemCount: _filteredProducts.length,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2, // Số cột (2 cột)
+                            crossAxisSpacing: 8.0,
+                            mainAxisSpacing: 8.0,
+                            childAspectRatio:
+                                0.7, // Điều chỉnh tỷ lệ theo ý muốn
+                          ),
                           itemBuilder: (context, index) {
                             return ProductCard(
-                                product: _filteredProducts[index]);
+                              product: _filteredProducts[index],
+                              userId: FirebaseAuth.instance.currentUser!.uid,
+                            );
                           },
                         )
                       : const Center(
-                          child: Text("Không tìm thấy sản phẩm nào")),
+                          child: Text("Không tìm thấy sản phẩm nào"),
+                        ),
                 ),
               ],
             ),

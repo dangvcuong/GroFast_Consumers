@@ -1,4 +1,4 @@
-// ignore_for_file: unused_import, non_constant_identifier_names, use_build_context_synchronously
+// ignore_for_file: unused_import, non_constant_identifier_names, use_build_context_synchronously, override_on_non_overriding_member
 
 import 'dart:io';
 
@@ -39,8 +39,6 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   void initState() {
     super.initState();
     getUserInfo();
-
-    // Gọi hàm để lấy thông tin người dùng
   }
 
   Future<void> getUserInfo() async {
@@ -93,7 +91,8 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
           child: Padding(
             padding: const EdgeInsets.only(left: 20),
             child: GestureDetector(
-                onTap: () {
+                onTap: () async {
+                  await getUserInfo();
                   Navigator.pop(context);
                 },
                 child: const Icon(
@@ -164,9 +163,12 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                       GestureDetector(
                         onTap: () async => {
                           Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const Updata_Name())),
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const Updata_Name()),
+                          ).then((_) {
+                            getUserInfo(); // Tải lại thông tin khi quay về
+                          })
                         },
                         child: Row(
                           children: [
@@ -236,9 +238,12 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                   GestureDetector(
                     onTap: () => {
                       Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const Updata_Sdt())),
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const Updata_Sdt()),
+                      ).then((_) {
+                        getUserInfo(); // Tải lại thông tin khi quay về
+                      })
                     },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -8,6 +8,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:grofast_consumers/features/authentication/controllers/sign_up_controller.dart';
 import 'package:grofast_consumers/features/authentication/models/user_Model.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/profile_detail_screen.dart';
@@ -20,7 +21,6 @@ class UserController {
   final SignUp__Controller signUp__Controller = SignUp__Controller();
   final valideteDK validateSignup = valideteDK();
   final ProfileDetailScreen profile = const ProfileDetailScreen();
-
   Future<UserModel?> getUserInfo() async {
     User? user = _auth.currentUser; // Lấy người dùng hiện tại
 
@@ -83,12 +83,6 @@ class UserController {
           .ref('users/$userId') // Đường dẫn đến user trong Realtime Database
           .update({'name': newName}); // Cập nhật chỉ field 'name'
       errorMessage = "Đổi tên thành công";
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) =>
-                const ProfileDetailScreen()), // ProfileScreen là màn hình đích
-      );
     } catch (e) {
       print("Error updating user name: $e");
     }

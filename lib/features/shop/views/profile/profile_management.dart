@@ -44,7 +44,9 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
 
   Future<void> _getUserInfo() async {
     currentUser = await userController.getUserInfo();
-    setState(() {}); // Cập nhật lại giao diện sau khi có dữ liệu
+    if (currentUser != null) {
+      setState(() {}); // Cập nhật lại giao diện sau khi có dữ liệu
+    }
   }
 
   @override
@@ -59,26 +61,12 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
               'GroFast',
               style: HAppStyle.heading3Style,
             ),
-            Container(
-              width: 50, // Chiều rộng mong muốn của khung tròn
-              height: 50, // Chiều cao mong muốn của khung tròn
-              padding: const EdgeInsets.all(
-                  5), // Điều chỉnh khoảng cách giữa ảnh và viền
-              decoration: BoxDecoration(
-                // Nền trắng
-                shape: BoxShape.circle, // Bo tròn hoàn toàn
-                border: Border.all(
-                  color: Colors.black, // Viền đen
-                  width: 1, // Độ dày của viền
-                ),
-              ),
-              child: ClipOval(
-                child: Image.asset(
-                  "assets/icons/ShoppingCart.png",
-                  fit: BoxFit.contain, // Đảm bảo ảnh nhỏ hơn và nằm giữa
-                ),
-              ),
-            )
+            IconButton(
+              icon: const Icon(Icons.shopping_cart),
+              onPressed: () {
+                // Logic chuyển đến màn hình giỏ hàng
+              },
+            ),
           ],
         ),
         centerTitle: false,
@@ -91,9 +79,12 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
             GestureDetector(
               onTap: () async {
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const ProfileDetailScreen()));
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ProfileDetailScreen()),
+                ).then((_) {
+                  _getUserInfo(); // Tải lại thông tin khi quay về
+                });
               },
               child: Row(
                 children: [

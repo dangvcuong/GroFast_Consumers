@@ -1,4 +1,4 @@
-// ignore_for_file: camel_case_types, unused_import, unnecessary_import, non_constant_identifier_names, file_names, avoid_print
+// ignore_for_file: camel_case_types, unused_import, unnecessary_import, non_constant_identifier_names, file_names, avoid_print, use_build_context_synchronously
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -31,10 +31,7 @@ class _Updata_NameState extends State<Updata_Name> {
 
   Future<void> _getUserInfo() async {
     currentUser = await userController.getUserInfo();
-    setState(() {
-      const ProfileDetailScreen();
-      const ProFile_Management();
-    }); // Cập nhật lại giao diện sau khi có dữ liệu
+    setState(() {}); // Cập nhật lại giao diện sau khi có dữ liệu
   }
 
   @override
@@ -47,7 +44,8 @@ class _Updata_NameState extends State<Updata_Name> {
           child: Padding(
             padding: const EdgeInsets.only(left: 20),
             child: GestureDetector(
-                onTap: () {
+                onTap: () async {
+                  await _getUserInfo();
                   Navigator.pop(context);
                 },
                 child: const Icon(
@@ -81,12 +79,11 @@ class _Updata_NameState extends State<Updata_Name> {
             ),
             gapH20,
             ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  userController.updateUserName(currentUser!.id,
-                      update_nameController.value.text, context);
-                  print(update_nameController.text);
-                });
+              onPressed: () async {
+                await userController.updateUserName(
+                    currentUser!.id, update_nameController.value.text, context);
+                await _getUserInfo();
+                print(update_nameController.text);
               },
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
