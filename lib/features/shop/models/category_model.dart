@@ -22,15 +22,28 @@ class CategoryModel {
   }
 
   factory CategoryModel.fromDocumentSnapshot(
-      DocumentSnapshot<Map<String, dynamic>> document){
+      DocumentSnapshot<Map<String, dynamic>> document) {
     if (document.data() != null) {
       final data = document.data()!;
       return CategoryModel(
-          id: document.id,
-          image: data['Name']??'',
-          name: data['Image']??'',
+        id: document.id,
+        image: data['Name'] ?? '',
+        name: data['Image'] ?? '',
       );
     }
     return CategoryModel.empty();
+  }
+}
+
+String displayUnit(String idHang) {
+  switch (idHang) {
+    case "-OAILvF-j4bmiGDvVuid":
+      return "kg";
+    case "-OAW4dwvRnrhTQHPwXrr":
+      return "chai";
+    case "-OAILiSWs97veFGxZRR0":
+      return "chai/hộp";
+    default:
+      return "cái";
   }
 }

@@ -96,21 +96,26 @@ class _SearchScreenState extends State<SearchScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "Tìm kiếm",
+                      SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: Image.asset("assets/logos/logo.png"),
+                      ),
+                      const Text(
+                        "Khám phá",
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                      Icon(Icons.shopping_cart),
+                      const Icon(Icons.shopping_cart),
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(height: 10),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
@@ -119,7 +124,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       hintText: "Tìm kiếm...",
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
                   ),
@@ -149,6 +154,18 @@ class _SearchScreenState extends State<SearchScreen> {
                             setState(() {
                               _selectedBrandId =
                                   isSelected ? "-OAILvF-j4bmiGDvVuid" : null;
+                              _filterProducts();
+                            });
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        ChoiceChip(
+                          label: const Text("Dầu ăn & gia vị"),
+                          selected: _selectedBrandId == "-OAW4dwvRnrhTQHPwXrr",
+                          onSelected: (isSelected) {
+                            setState(() {
+                              _selectedBrandId =
+                                  isSelected ? "-OAW4dwvRnrhTQHPwXrr" : null;
                               _filterProducts();
                             });
                           },
