@@ -78,7 +78,7 @@ class _ProductCardState extends State<ProductCard> {
       child: Card(
         margin: const EdgeInsets.all(8.0),
         child: Padding(
-          padding: const EdgeInsets.all(10.0),
+          padding: const EdgeInsets.all(8.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -94,7 +94,7 @@ class _ProductCardState extends State<ProductCard> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(companyName), // Hiển thị tên hãng
-                  const SizedBox(width: 4),
+
                   Text(displayUnit(widget.product.idHang)),
                 ],
               ),
