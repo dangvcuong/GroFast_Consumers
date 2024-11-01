@@ -1,11 +1,16 @@
+// ignore_for_file: file_names, unnecessary_import, use_build_context_synchronously, non_constant_identifier_names
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/productdetailscreen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../../../showdialogs/show_dialogs.dart';
 import '../../../models/category_model.dart';
 import '../providers/favorites_provider.dart';
+
 
 class ProductFavoriteCard extends StatefulWidget {
   final Product product;
@@ -27,7 +32,7 @@ class _ProductFavoriteCardState extends State<ProductFavoriteCard> {
   @override
   void initState() {
     super.initState();
-    _fetchCompanyName(widget.product.idHang); // Gọi hàm để lấy tên hãng
+    _fetchCompanyName(widget.product.idHang);
   }
 
   void _fetchCompanyName(String idHang) async {
@@ -57,7 +62,7 @@ class _ProductFavoriteCardState extends State<ProductFavoriteCard> {
   @override
   Widget build(BuildContext context) {
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
-    num priceValue = num.tryParse(widget.product.price) ?? 0; // Chuyển đổi bằng num
+    num priceValue = num.tryParse(widget.product.price) ?? 0;
     final favoritesProvider = Provider.of<FavoritesProvider>(context);
 
     return InkWell(
@@ -96,17 +101,15 @@ class _ProductFavoriteCardState extends State<ProductFavoriteCard> {
                         icon: Icon(
                           Icons.favorite,
                           color: favoritesProvider.isFavorite(widget.product)
-                              ? Colors.grey.shade300
-                              : Colors.red,
+                              ? Colors.red
+                              : Colors.grey.shade300,
                         ),
                         onPressed: () {
-                          setState(() {
-                            if (favoritesProvider.isFavorite(widget.product)) {
-                              favoritesProvider.removeFavorite(widget.product);
-                            } else {
-                              favoritesProvider.addFavorite(widget.product);
-                            }
-                          });
+                          if (favoritesProvider.isFavorite(widget.product)) {
+                            ShowDialogs().showDeleteFavoriteDialog(context, widget.product);
+                          } else {
+                            favoritesProvider.addFavorite(widget.product);
+                          }
                         },
                       ),
                     ),
@@ -116,8 +119,8 @@ class _ProductFavoriteCardState extends State<ProductFavoriteCard> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(companyName), // Hiển thị tên hãng
-                    Text(displayUnit(widget.product.idHang)), // Hiển thị đơn vị
+                    Text(companyName),
+                    Text(displayUnit(widget.product.idHang)),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -146,9 +149,8 @@ class _ProductFavoriteCardState extends State<ProductFavoriteCard> {
                   children: [
                     Text(
                       formatter.format(priceValue),
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold,color: Colors.blue),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blue),
                     ),
-                    // Nút cộng thêm vào giỏ hàng
                     IconButton(
                       icon: const Icon(Icons.add_circle, color: Colors.blue),
                       onPressed: () {
