@@ -11,7 +11,6 @@ import '../../../../showdialogs/show_dialogs.dart';
 import '../../../models/category_model.dart';
 import '../providers/favorites_provider.dart';
 
-
 class ProductFavoriteCard extends StatefulWidget {
   final Product product;
 
@@ -75,6 +74,11 @@ class _ProductFavoriteCardState extends State<ProductFavoriteCard> {
         );
       },
       child: Card(
+        color: Colors.white,
+        elevation: 5,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
         margin: const EdgeInsets.all(8.0),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -97,20 +101,30 @@ class _ProductFavoriteCardState extends State<ProductFavoriteCard> {
                     Positioned(
                       top: 4,
                       right: 4,
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.favorite,
-                          color: favoritesProvider.isFavorite(widget.product)
-                              ? Colors.red
-                              : Colors.grey.shade300,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.blueGrey[50],
+                          shape: BoxShape.circle,
                         ),
-                        onPressed: () {
-                          if (favoritesProvider.isFavorite(widget.product)) {
-                            ShowDialogs().showDeleteFavoriteDialog(context, widget.product);
-                          } else {
-                            favoritesProvider.addFavorite(widget.product);
-                          }
-                        },
+                        width: 25,
+                        height: 25,
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          icon: Icon(
+                            Icons.favorite,
+                            size: 18,
+                            color: favoritesProvider.isFavorite(widget.product)
+                                ? Colors.red
+                                : Colors.grey.shade300,
+                          ),
+                          onPressed: () {
+                            if (favoritesProvider.isFavorite(widget.product)) {
+                              ShowDialogs().showDeleteFavoriteDialog(context, widget.product);
+                            } else {
+                              favoritesProvider.addFavorite(widget.product);
+                            }
+                          },
+                        ),
                       ),
                     ),
                   ],
@@ -119,8 +133,14 @@ class _ProductFavoriteCardState extends State<ProductFavoriteCard> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(companyName),
-                    Text(displayUnit(widget.product.idHang)),
+                    Text(
+                      companyName,
+                      style: TextStyle(color: Colors.black.withOpacity(0.6), fontWeight: FontWeight.bold, fontSize: 10),
+                    ),
+                    Text(
+                      displayUnit(widget.product.idHang),
+                      style: TextStyle(color: Colors.black.withOpacity(0.6), fontWeight: FontWeight.bold, fontSize: 10),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -128,19 +148,43 @@ class _ProductFavoriteCardState extends State<ProductFavoriteCard> {
                   widget.product.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 2),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.star, color: Colors.orange, size: 16),
-                        Text("${widget.product.evaluate}/5"),
-                      ],
+                    const Icon(Icons.star, color: Colors.orange, size: 16),
+                    const SizedBox(width: 1),
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "${widget.product.evaluate} ",
+                            style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12), // Kích thước nhỏ hơn
+                          ),
+                          TextSpan(
+                            text: "/5",
+                            style: TextStyle(color: Colors.black.withOpacity(0.6), fontWeight: FontWeight.bold, fontSize: 12), // Kích thước nhỏ hơn
+                          ),
+                        ],
+                      ),
                     ),
-                    Text("${widget.product.quantity} Đã bán"),
+                    const SizedBox(width: 19),
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "${widget.product.quantity} ",
+                            style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12), // Kích thước nhỏ hơn
+                          ),
+                          TextSpan(
+                            text: "Đã bán",
+                            style: TextStyle(color: Colors.black.withOpacity(0.6), fontWeight: FontWeight.bold, fontSize: 12), // Kích thước nhỏ hơn
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 1),
@@ -151,11 +195,16 @@ class _ProductFavoriteCardState extends State<ProductFavoriteCard> {
                       formatter.format(priceValue),
                       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blue),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.add_circle, color: Colors.blue),
-                      onPressed: () {
-                        print("Sản phẩm đã được thêm vào giỏ hàng!");
-                      },
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.add_circle, size: 35, color: Colors.blue),
+                        onPressed: () {
+                          print("Sản phẩm đã được thêm vào giỏ hàng!");
+                        },
+                      ),
                     ),
                   ],
                 ),
