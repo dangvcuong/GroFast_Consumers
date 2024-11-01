@@ -31,4 +31,17 @@ class Product {
       idHang: map['id_Hang'] ?? '', // Lấy id_Hang từ Firebase
     );
   }
+
+  // Thêm phương thức toMap
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'describe': description,
+      'imageUrl': imageUrl,
+      'price': price,
+      'evaluate': evaluate,
+      'quantity': quantity,
+      'id_Hang': idHang,
+    };
+  }
 }

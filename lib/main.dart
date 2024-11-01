@@ -1,17 +1,23 @@
-// ignore_for_file: unused_import, library_private_types_in_public_api
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart'; // Đảm bảo bạn có dòng này cho MultiProvider
 import 'package:grofast_consumers/features/authentication/login/widgets/man_chao.dart';
 import 'package:grofast_consumers/features/Navigation/btn_navigation.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'features/shop/views/favorites/providers/favorites_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(); // Khởi tạo Firebase
 
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FavoritesProvider()), // Cung cấp FavoritesProvider
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -26,17 +32,22 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.blue, // Ví dụ về theme
+      ),
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.active) {
             if (snapshot.hasData) {
-              return const Btn_Navigatin(); // Nếu người dùng đã đăng nhập
+              return const Btn_Navigatin(); // Người dùng đã đăng nhập
             } else {
-              return const ManChao(); // Nếu người dùng chưa đăng nhập
+              return const ManChao(); // Người dùng chưa đăng nhập
             }
+          } else if (snapshot.hasError) {
+            return Center(child: Text("Lỗi: ${snapshot.error}")); // Xử lý lỗi
           } else {
-            return const Center(child: CircularProgressIndicator()); // Đợi tải
+            return const Center(child: CircularProgressIndicator()); // Đang tải
           }
         },
       ),

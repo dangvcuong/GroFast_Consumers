@@ -1,6 +1,7 @@
 // ignore_for_file: camel_case_types, unused_element, unused_field, unused_import
 
 import 'package:flutter/material.dart';
+import 'package:grofast_consumers/features/shop/views/favorites/favorite_products_screen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/profile_management.dart';
 import 'package:grofast_consumers/features/shop/views/search/search_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -18,7 +19,7 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
   final List<Widget> _screens = [
     const Center(child: Text('Home Screen')),
     const Center(child: SearchScreen()),
-    const Center(child: Text('Heart Screen')),
+    const Center(child: FavoriteProductsScreen()),
     const Center(child: ProFile_Management()),
   ];
 
