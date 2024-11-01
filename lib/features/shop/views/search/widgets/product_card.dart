@@ -1,13 +1,15 @@
-// ignore_for_file: avoid_print
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:grofast_consumers/features/shop/models/category_model.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/productdetailscreen.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:grofast_consumers/features/shop/providers/cart_provider.dart';
+
+import '../../../models/category_model.dart';
+import '../../cart/providers/cart_provider.dart';
 
 class ProductCard extends StatefulWidget {
   final Product product;
@@ -35,8 +37,7 @@ class _ProductCardState extends State<ProductCard> {
 
   void _fetchCompanyName(String idHang) async {
     try {
-      final DatabaseEvent event =
-          await _database.child('companys/$idHang').once();
+      final DatabaseEvent event = await _database.child('companys/$idHang').once();
       final DataSnapshot snapshot = event.snapshot;
 
       if (snapshot.value != null) {
@@ -62,8 +63,7 @@ class _ProductCardState extends State<ProductCard> {
   Widget build(BuildContext context) {
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
 
-    num priceValue =
-        num.tryParse(widget.product.price) ?? 0; // Chuyển đổi bằng num
+    num priceValue = num.tryParse(widget.product.price) ?? 0; // Chuyển đổi bằng num
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -94,7 +94,6 @@ class _ProductCardState extends State<ProductCard> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(companyName), // Hiển thị tên hãng
-
                   Text(displayUnit(widget.product.idHang)),
                 ],
               ),
@@ -103,8 +102,7 @@ class _ProductCardState extends State<ProductCard> {
                 widget.product.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 2),
               Row(
@@ -125,21 +123,34 @@ class _ProductCardState extends State<ProductCard> {
                 children: [
                   Text(
                     formatter.format(priceValue),
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                   IconButton(
                     icon: const Icon(Icons.add_circle, color: Colors.blue),
                     onPressed: () {
-                      String userId = FirebaseAuth.instance.currentUser!.uid;
-                      addProductToUserCart(userId, widget.product, context)
-                          .then((_) {
-                        print("Sản phẩm đã được thêm vào giỏ hàng!");
-                      }).catchError((error) {
-                        print("Lỗi khi thêm sản phẩm vào giỏ hàng: $error");
-                      });
+                      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+                      cartProvider.addToCart(CartItem(
+                        productId: widget.product.id,
+                        name: widget.product.name,
+                        description: widget.product.description,
+                        imageUrl: widget.product.imageUrl,
+                        price: double.tryParse(widget.product.price) ?? 0.0,
+                        evaluate: double.tryParse(widget.product.evaluate) ?? 0.0,
+                        idHang: widget.product.idHang,
+                      ));
+
+                      // Hiển thị thông báo khi thêm sản phẩm vào giỏ hàng
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${widget.product.name} đã được thêm vào giỏ hàng!'),
+                          duration: Duration(seconds: 2), // Thời gian hiển thị của thông báo
+                        ),
+                      );
+
+                      print("Sản phẩm đã được thêm vào giỏ hàng!");
                     },
                   ),
+
                 ],
               ),
             ],

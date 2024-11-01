@@ -7,6 +7,8 @@ import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
 import 'package:diacritic/diacritic.dart';
 
+import '../cart/Product_cart_item.dart';
+
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
 
@@ -111,7 +113,17 @@ class _SearchScreenState extends State<SearchScreen> {
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                      const Icon(Icons.shopping_cart),
+                      IconButton(
+                        icon: const Icon(Icons.shopping_cart),
+                        onPressed: () {
+                          // Thực hiện hành động khi nhấn vào biểu tượng giỏ hàng
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => CartScreen()), // Điều hướng đến màn hình giỏ hàng
+                          );
+                        },
+                      ),
+
                     ],
                   ),
                 ),

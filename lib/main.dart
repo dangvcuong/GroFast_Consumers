@@ -4,6 +4,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart'; // Đảm bảo bạn có dòng này cho MultiProvider
 import 'package:grofast_consumers/features/authentication/login/widgets/man_chao.dart';
 import 'package:grofast_consumers/features/Navigation/btn_navigation.dart';
+import 'package:grofast_consumers/features/shop/providers/cart_provider.dart'; // Thêm import cho CartProvider
+import 'features/shop/views/cart/providers/cart_provider.dart';
 import 'features/shop/views/favorites/providers/favorites_provider.dart';
 
 void main() async {
@@ -13,7 +15,9 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => FavoritesProvider()), // Cung cấp FavoritesProvider
+         // Cung cấp CartProvider
       ],
       child: const MyApp(),
     ),

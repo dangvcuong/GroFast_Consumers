@@ -16,8 +16,9 @@ class CartItem {
   final String imageUrl;
   final double price;
   final double evaluate;
-  final int quantity;
+  int quantity; // Sử dụng biến int thay vì final để có thể thay đổi
   final String idHang; // ID của hãng
+  bool isChecked;
 
   CartItem({
     required this.productId,
@@ -26,9 +27,11 @@ class CartItem {
     required this.imageUrl,
     required this.price,
     required this.evaluate,
-    required this.quantity,
+    this.quantity = 1, // Khởi tạo số lượng mặc định là 1
     required this.idHang,
+    this.isChecked = false,
   });
+
   // Hàm chuyển đổi từ Map (dữ liệu Firebase) sang CartItem object
   factory CartItem.fromMap(Map<String, dynamic> map, String productId) {
     return CartItem(
