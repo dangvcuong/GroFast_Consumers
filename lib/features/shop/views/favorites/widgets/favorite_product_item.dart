@@ -170,7 +170,7 @@ class _ProductFavoriteCardState extends State<ProductFavoriteCard> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 19),
+                    const SizedBox(width: 33),
                     RichText(
                       text: TextSpan(
                         children: [
