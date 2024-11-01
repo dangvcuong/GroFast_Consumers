@@ -1,104 +1,166 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:grofast_consumers/features/shop/models/product_model.dart';
+import 'package:grofast_consumers/features/shop/views/search/widgets/productdetailscreen.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
-import '../../../models/product_model.dart';
+import '../../../models/category_model.dart';
 import '../providers/favorites_provider.dart';
 
-class ProductFavoriteCard extends StatelessWidget {
+class ProductFavoriteCard extends StatefulWidget {
   final Product product;
 
   const ProductFavoriteCard({
-    Key? key,
-    required this.product, required String userId,
-  }) : super(key: key);
+    super.key,
+    required this.product,
+    required String userId,
+  });
+
+  @override
+  _ProductFavoriteCardState createState() => _ProductFavoriteCardState();
+}
+
+class _ProductFavoriteCardState extends State<ProductFavoriteCard> {
+  final DatabaseReference _database = FirebaseDatabase.instance.ref();
+  String companyName = "Đang tải...";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCompanyName(widget.product.idHang); // Gọi hàm để lấy tên hãng
+  }
+
+  void _fetchCompanyName(String idHang) async {
+    try {
+      final DatabaseEvent event = await _database.child('companys/$idHang').once();
+      final DataSnapshot snapshot = event.snapshot;
+
+      if (snapshot.value != null) {
+        final data = snapshot.value as Map<dynamic, dynamic>;
+        setState(() {
+          companyName = data['name'] ?? "Không xác định";
+        });
+      } else {
+        setState(() {
+          companyName = "Không tìm thấy hãng";
+        });
+        print("Không tìm thấy hãng với ID: $idHang");
+      }
+    } catch (error) {
+      setState(() {
+        companyName = "Lỗi tải hãng";
+      });
+      print("Lỗi khi tải tên hãng: $error");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
+    num priceValue = num.tryParse(widget.product.price) ?? 0; // Chuyển đổi bằng num
     final favoritesProvider = Provider.of<FavoritesProvider>(context);
 
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15.0),
-      ),
-      elevation: 4, // Thêm độ cao cho card
-      child: Column(
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(15.0)),
-                child: Image.network(
-                  product.imageUrl,
-                  height: 120, // Tăng chiều cao cho hình ảnh
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: IconButton(
-                  icon: Icon(
-                    favoritesProvider.isFavorite(product)
-                        ? Icons.favorite_border
-                        : Icons.favorite,
-                    color: favoritesProvider.isFavorite(product)
-                        ? Colors.white // Nếu là sản phẩm yêu thích, màu đỏ
-                        : Colors.red, // Nếu không phải, màu trắng
-                  ),
-                  onPressed: () {
-                    if (favoritesProvider.isFavorite(product)) {
-                      favoritesProvider.removeFavorite(product);
-                    } else {
-                      favoritesProvider.addFavorite(product);
-                    }
-                  },
-                ),
-              ),
-            ],
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailScreen(product: widget.product),
           ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
+        );
+      },
+      child: Card(
+        margin: const EdgeInsets.all(8.0),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  product.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                  maxLines: 2, // Giới hạn số dòng để đẹp hơn
-                  overflow: TextOverflow.ellipsis,
+                Stack(
+                  children: [
+                    Center(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12.0),
+                        child: Image.network(
+                          widget.product.imageUrl,
+                          height: 110,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.favorite,
+                          color: favoritesProvider.isFavorite(widget.product)
+                              ? Colors.grey.shade300
+                              : Colors.red,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            if (favoritesProvider.isFavorite(widget.product)) {
+                              favoritesProvider.removeFavorite(widget.product);
+                            } else {
+                              favoritesProvider.addFavorite(widget.product);
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  "Giá: ${product.price}đ",
-                  style: const TextStyle(
-                    color: Colors.green,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 7),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(companyName), // Hiển thị tên hãng
+                    Text(displayUnit(widget.product.idHang)), // Hiển thị đơn vị
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  widget.product.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.star, color: Colors.orange, size: 16),
+                        Text("${widget.product.evaluate}/5"),
+                      ],
+                    ),
+                    Text("${widget.product.quantity} Đã bán"),
+                  ],
+                ),
+                const SizedBox(height: 1),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Đánh giá: ${product.evaluate}",
-                      style: const TextStyle(fontSize: 14),
+                      formatter.format(priceValue),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold,color: Colors.blue),
                     ),
-                    const SizedBox(width: 4), // Thêm khoảng cách giữa đánh giá và biểu tượng sao
-                    Icon(
-                      Icons.star,
-                      color: Colors.orange,
-                      size: 16,
+                    // Nút cộng thêm vào giỏ hàng
+                    IconButton(
+                      icon: const Icon(Icons.add_circle, color: Colors.blue),
+                      onPressed: () {
+                        print("Sản phẩm đã được thêm vào giỏ hàng!");
+                      },
                     ),
                   ],
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
