@@ -1,6 +1,7 @@
-// ignore_for_file: prefer_const_constructors, use_super_parameters, file_names, prefer_const_literals_to_create_immutables, sort_child_properties_last
-
 import 'package:flutter/material.dart';
+import 'package:grofast_consumers/features/shop/views/cart/providers/cart_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({Key? key}) : super(key: key);
@@ -13,7 +14,9 @@ class CartScreen extends StatelessWidget {
         elevation: 1,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
         actions: [
           IconButton(
@@ -23,247 +26,199 @@ class CartScreen extends StatelessWidget {
         ],
         flexibleSpace: Center(
           child: Padding(
-            padding: const EdgeInsets.only(
-                right: 50.0), // Để tránh chồng lên nút 3 chấm
+            padding: const EdgeInsets.only(right: 21.0),
             child: Text(
               'Giỏ Hàng',
               style: TextStyle(
                 color: Colors.black,
-                fontSize: 20.0,
+                fontSize: 24.0,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
         ),
       ),
-      body: Column(
-        children: [
-          // Box chứa thông tin shop và ghi chú
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              padding: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 1,
-                    blurRadius: 5,
-                    offset: Offset(0, 3), // Di chuyển bóng xuống dưới
-                  ),
-                ],
+      body: Consumer<CartProvider>(
+        builder: (context, cartProvider, child) {
+          // Tính toán tổng giá tiền cho các sản phẩm đã chọn
+          double totalPrice = cartProvider.cartItems
+              .where((item) => item.isChecked) // Lọc các sản phẩm đã được chọn
+              .fold(0, (total, item) => total + (item.price * item.quantity)); // Tính tổng giá
+
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: cartProvider.cartItems.length,
+                  itemBuilder: (context, index) {
+                    final cartItem = cartProvider.cartItems[index];
+                    return _buildCartItem(cartItem, cartProvider);
+                  },
+                ),
               ),
-              child: Row(
-                children: [
-                  // Icon shop
-                  Icon(Icons.store, color: Colors.blue, size: 40),
-                  const SizedBox(width: 8),
-                  // Tên shop và ghi chú
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              Divider(),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Tổng cộng:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Row(
                       children: [
-                        Text(
-                          'Coop Mart',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Ghi chú: Giao hàng trước 12h',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
+                        // Hiển thị tổng giá tiền đã tính toán
+                        Text('$totalPrice ₫',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.red)),
+                        SizedBox(width: 10),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Thêm chức năng mua hàng ở đây
+                          },
+                          child: Text('Mua Hàng'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            textStyle: TextStyle(fontSize: 16),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  // Checkbox và nút mũi tên
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: true,
-                        onChanged: (bool? value) {},
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.keyboard_arrow_down),
-                        onPressed: () {
-                          // Xử lý khi nhấn nút mũi tên
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Phần lựa chọn khi hết hàng và checkbox
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Text(
-                  'Lựa chọn khi hết hàng',
-                  style: TextStyle(fontSize: 16),
-                ),
-                Icon(Icons.help_outline),
-                SizedBox(width: 8),
-              ],
-            ),
-          ),
-
-          // Checkbox "Tôi muốn chọn sản phẩm thay thế"
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Row(
-              children: [
-                Checkbox(
-                  value: true,
-                  onChanged: (bool? value) {},
-                ),
-                Expanded(
-                    child: Text('Tôi muốn chọn sản phẩm thay thế (tự chọn)')),
-              ],
-            ),
-          ),
-
-          // Danh sách sản phẩm
-          Expanded(
-            child: ListView(
-              children: [
-                _buildCartItem(
-                    'Bơ', 'quả', 32000, 'assets/images/category/bo.png'),
-                _buildCartItem(
-                    'Chanh', 'quả', 32000, 'assets/images/category/chanh.png'),
-                _buildCartItem('Nước Cam', 'lon', 32000,
-                    'assets/images/category/lonuoc.png'),
-              ],
-            ),
-          ),
-
-          Divider(),
-
-          // Tổng cộng và nút Thanh toán
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Tổng cộng:', style: TextStyle(fontSize: 16)),
-                Row(
-                  children: [
-                    Text('110.000đ',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16)),
-                    SizedBox(width: 16),
-                    ElevatedButton(
-                      onPressed: () {},
-                      child: Text('Thanh toán'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                      ),
-                    ),
                   ],
                 ),
-              ],
-            ),
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
+
     );
   }
 
-  Widget _buildCartItem(String name, String unit, int price, String imagePath) {
+  Widget _buildCartItem(CartItem cartItem, CartProvider cartProvider) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.8), // Lớp nền mờ
-          borderRadius: BorderRadius.circular(10), // Bo góc là 10
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.5), // Bóng mờ nhẹ
+              color: Colors.grey.withOpacity(0.3),
               spreadRadius: 1,
               blurRadius: 5,
-              offset: Offset(0, 3), // Di chuyển bóng xuống dưới
+              offset: Offset(0, 3),
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0), // Tạo khoảng cách bên trong
-          child: Row(
-            children: [
-              // Hình ảnh sản phẩm
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(10),
-                  image: DecorationImage(
-                    image: AssetImage(imagePath),
-                    fit: BoxFit.cover,
-                  ),
-                ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 40,
+              child: Checkbox(
+                value: cartItem.isChecked, // Trạng thái checkbox
+                onChanged: (bool? value) {
+                  cartItem.isChecked = value ?? false; // Cập nhật trạng thái
+                  cartProvider.notifyListeners(); // Thông báo cho UI cập nhật
+                },
               ),
-              const SizedBox(width: 16),
-
-              // Tên và đơn vị sản phẩm
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Row(
                   children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        image: DecorationImage(
+                          image: NetworkImage(cartItem.imageUrl), // Sử dụng NetworkImage
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
-                    Text(
-                      unit,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            cartItem.name,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          // Text(
+                          //   cartItem.unit, // Hiển thị đơn vị
+                          //   style: const TextStyle(
+                          //     fontSize: 14,
+                          //     color: Colors.grey,
+                          //   ),
+                          // ),
+                        ],
                       ),
+                    ),
+                    Column(
+                      children: [
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.remove, color: Colors.blue),
+                              onPressed: () {
+                                if (cartItem.quantity > 1) {
+                                  cartItem.quantity--;
+                                  cartProvider.notifyListeners();
+                                } else {
+                                  cartProvider.removeFromCart(cartItem);
+                                }
+                              },
+                            ),
+                            Text(
+                              cartItem.quantity.toString(),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.add, color: Colors.blue),
+                              onPressed: () {
+                                cartItem.quantity++;
+                                cartProvider.notifyListeners();
+                              },
+                            ),
+                          ],
+                        ),
+                        Text(
+                          '${cartItem.price} ₫',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        GestureDetector(
+                          onTap: () {
+                            cartProvider.removeFromCart(cartItem);
+                          },
+                          child: Row(
+                            children: const [
+                              Icon(Icons.delete, size: 16),
+                              SizedBox(width: 4),
+                              Text('Xóa', style: TextStyle(color: Colors.red)),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-
-              // Giá sản phẩm và nút "Thay thế"
-              Column(
-                children: [
-                  Text(
-                    '$price đ',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  GestureDetector(
-                    onTap: () {
-                      // Hành động thay thế sản phẩm
-                    },
-                    child: Row(
-                      children: const [
-                        Icon(Icons.autorenew, size: 16),
-                        SizedBox(width: 4),
-                        Text('Thay thế', style: TextStyle(color: Colors.blue)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

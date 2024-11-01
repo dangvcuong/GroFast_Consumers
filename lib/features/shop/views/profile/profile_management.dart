@@ -68,7 +68,10 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
             IconButton(
               icon: const Icon(Icons.shopping_cart),
               onPressed: () {
-                // Logic chuyển đến màn hình giỏ hàng
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => CartScreen()),
+                );
               },
             ),
           ],
