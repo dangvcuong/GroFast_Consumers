@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:grofast_consumers/constants/app_sizes.dart';
 import 'package:grofast_consumers/features/authentication/controllers/addres_Controller.dart';
 import 'package:grofast_consumers/features/authentication/models/addressModel.dart';
@@ -83,10 +84,8 @@ class _AddressUserState extends State<AddressUser> {
                   decoration: InputDecoration(
                     labelText: "Tên",
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10), // Bo tròn góc
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    floatingLabelBehavior:
-                        FloatingLabelBehavior.auto, // Chế độ nổi
                   ),
                   controller: TextEditingController(text: newName),
                   onChanged: (value) {
@@ -98,10 +97,8 @@ class _AddressUserState extends State<AddressUser> {
                   decoration: InputDecoration(
                     labelText: "Số điện thoại",
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10), // Bo tròn góc
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    floatingLabelBehavior:
-                        FloatingLabelBehavior.auto, // Chế độ nổi
                   ),
                   keyboardType: TextInputType.phone,
                   controller: TextEditingController(text: newPhoneNumber),
@@ -110,19 +107,34 @@ class _AddressUserState extends State<AddressUser> {
                   },
                 ),
                 gapH16,
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: "Địa chỉ",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10), // Bo tròn góc
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          labelText: "Địa chỉ",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        controller: TextEditingController(text: newAddress),
+                        onChanged: (value) {
+                          newAddress = value;
+                        },
+                      ),
                     ),
-                    floatingLabelBehavior:
-                        FloatingLabelBehavior.auto, // Chế độ nổi
-                  ),
-                  controller: TextEditingController(text: newAddress),
-                  onChanged: (value) {
-                    newAddress = value;
-                  },
+                    IconButton(
+                      icon: const Icon(Icons.location_on, color: Colors.blue),
+                      onPressed: () async {
+                        Position position = await Geolocator.getCurrentPosition(
+                            desiredAccuracy: LocationAccuracy.high);
+                        setState(() {
+                          newAddress =
+                              "${position.latitude}, ${position.longitude}";
+                        });
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -130,7 +142,7 @@ class _AddressUserState extends State<AddressUser> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Đóng dialog
+                Navigator.of(context).pop();
               },
               child: const Text('Hủy'),
             ),
@@ -141,16 +153,12 @@ class _AddressUserState extends State<AddressUser> {
                     newAddress.isNotEmpty &&
                     currentUser != null) {
                   if (key == null) {
-                    // Thêm mới
                     addRessController.addAddressToFirebase(
                         currentUser!.uid, newName, newPhoneNumber, newAddress);
-                    print("Add");
                   } else {
-                    // Sửa
                     addRessController.editAddressInFirebase(currentUser!.uid,
                         key, newName, newPhoneNumber, newAddress);
                   }
-                  // Đóng dialog sau khi thao tác Firebase hoàn thành
                   Navigator.of(context).pop();
                 }
               },

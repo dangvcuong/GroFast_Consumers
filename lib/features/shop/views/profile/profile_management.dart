@@ -144,7 +144,105 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                       'Tài khoản',
                       style: HAppStyle.heading4Style,
                     ),
-                    // Thêm các mục khác tương tự như mã gốc...
+                    GestureDetector(
+                      // onTap: () => Get.toNamed(HAppRoutes.listOrder),
+                      child: const ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        // leading: Icon(EvaIcons.shoppingBagOutline),
+                        title: Text('Đơn hàng'),
+                        trailing: Icon(
+                          Icons.arrow_forward_ios,
+                          size: 15,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const CartScreen()));
+                      },
+                      child: const ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        // leading: Icon(EvaIcons.shoppingCartOutline),
+                        title: Text('Giỏ hàng'),
+                        trailing: Icon(
+                          Icons.arrow_forward_ios,
+                          size: 15,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const AddressUser()));
+                      },
+                      child: const ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        // leading: Icon(EneftyIcons.location_outline),
+                        title: Text('Địa chỉ'),
+                        trailing: Icon(
+                          Icons.arrow_forward_ios,
+                          size: 15,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      // onTap: () => Get.to(AllChatScreen()),
+                      child: const ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        // leading: Icon(EvaIcons.messageSquareOutline),
+                        title: Text('Tin nhắn'),
+                        trailing: Icon(
+                          Icons.arrow_forward_ios,
+                          size: 15,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const VoucherScreen()));
+                      },
+                      child: const ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        // leading: Icon(EvaIcons.pricetagsOutline),
+                        title: Text('Mã ưu đãi'),
+                        trailing: Icon(
+                          Icons.arrow_forward_ios,
+                          size: 15,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        // Get.to(const NotificationScreen());
+                      },
+                      child: const ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        // leading: Icon(EvaIcons.bellOutline),
+                        title: Text('Thông báo'),
+                        trailing: Icon(
+                          Icons.arrow_forward_ios,
+                          size: 15,
+                        ),
+                      ),
+                    ),
+                    const ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      // leading: Icon(EvaIcons.externalLinkOutline),
+                      title: Text('Giới thiệu với bạn bè'),
+                      trailing: Icon(
+                        Icons.arrow_forward_ios,
+                        size: 15,
+                      ),
+                    ),
+                    gapH40,
                     Center(
                       child: GestureDetector(
                         onTap: () async {
