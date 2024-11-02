@@ -1,19 +1,22 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+
+import '../../../models/category_model.dart';
 import '../../../models/shopping_cart_model.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../favorites/providers/favorites_provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
+
   const ProductDetailScreen({
-    super.key,
+    Key? key,
     required this.product,
-  });
+  }) : super(key: key);
 
   @override
   _ProductDetailScreenState createState() => _ProductDetailScreenState();
@@ -55,13 +58,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
-
     num priceValue = num.tryParse(widget.product.price) ?? 0;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.product.name),
-      ),
+      appBar: AppBar(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -120,7 +120,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              // Danh sách sản phẩm khác sẽ được thêm vào sau
+              // Danh sách sản phẩm khác
+              // Bạn có thể thêm ListView.builder ở đây để hiển thị danh sách sản phẩm khác
               const SizedBox(height: 10),
             ],
           ),
@@ -144,10 +145,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       SnackBar(content: Text("Đã xóa sản phẩm khỏi danh sách yêu thích!")),
                     );
                   } else {
-                    favoritesProvider.addFavorite(widget.product);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Sản phẩm đã được thêm vào danh sách yêu thích!")),
-                    );
+                    favoritesProvider.addFavorite(widget.product).then((_) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Sản phẩm đã được thêm vào danh sách yêu thích!")),
+                      );
+                    }).catchError((error) {
+                      print("Lỗi khi thêm sản phẩm yêu thích: $error");
+                    });
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -184,23 +188,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('${widget.product.name} đã được thêm vào giỏ hàng!'),
-                      duration: Duration(seconds: 2), // Thời gian hiển thị của thông báo
+                      duration: const Duration(seconds: 2),
                     ),
                   );
-                  print("Sản phẩm đã được thêm vào giỏ hàng!");
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.orange[300],
+                  backgroundColor: Colors.green[300],
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Row(
+                child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.shopping_cart, color: Colors.white),
-                    SizedBox(width: 8),
                   ],
                 ),
               ),
@@ -214,18 +216,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.green[400],
+                  backgroundColor: Colors.blue[300],
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Row(
+                child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      'Thanh Toán',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+                    Icon(Icons.payment, color: Colors.white),
                   ],
                 ),
               ),
@@ -236,9 +235,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
+  // Hàm hiển thị đơn vị sản phẩm (có thể thay đổi theo yêu cầu của bạn)
   String displayUnit(String idHang) {
-    // Hàm này sẽ trả về đơn vị sản phẩm dựa trên idHang
-    // Thay đổi logic này theo nhu cầu của bạn
-    return 'đơn vị';
+    // Logic để hiển thị đơn vị dựa trên idHang
+    return "Đơn vị"; // Thay thế với logic phù hợp
   }
 }
