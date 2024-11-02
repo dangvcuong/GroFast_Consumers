@@ -1,10 +1,17 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
+import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../../models/category_model.dart';
+import '../../cart/providers/cart_provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
@@ -20,8 +27,9 @@ class ProductDetailScreen extends StatefulWidget {
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   List<Product> otherProducts = [];
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
+  final Login_Controller loginController = Login_Controller();
   String userId = FirebaseAuth.instance.currentUser!.uid;
-
+  String errorMessage = "";
   @override
   void initState() {
     super.initState();
@@ -39,7 +47,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         otherProducts = data.entries
             .where((entry) => entry.key != widget.product.id)
             .map((entry) => Product.fromMap(
-            Map<String, dynamic>.from(entry.value), entry.key))
+                Map<String, dynamic>.from(entry.value), entry.key))
             .toList();
 
         setState(() {});
@@ -51,9 +59,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
-  Future<void> addProductToUserHeart(String userId, Product product, BuildContext context) async {
-    final DatabaseReference userFavoritesRef = FirebaseDatabase.instance
-        .ref('users/$userId/favorites');
+  Future<void> addProductToUserHeart(String userId, Product product) async {
+    final DatabaseReference userFavoritesRef =
+        FirebaseDatabase.instance.ref('users/$userId/favorites');
 
     try {
       Map<String, dynamic> productData = product.toMap();
@@ -61,27 +69,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       // Thêm sản phẩm vào Firebase
       await userFavoritesRef.child(product.id).set(productData);
 
-      print("Sản phẩm đã được thêm vào danh sách yêu thích!");
+      errorMessage = "Sản phẩm đã được thêm vào danh sách yêu thích!";
     } catch (error) {
-      print("Lỗi khi thêm sản phẩm vào yêu thích: $error");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi: $error")),
-      );
+      errorMessage = "Lỗi khi thêm sản phẩm vào yêu thích: $error";
     }
+    loginController.ThongBao(context, errorMessage);
   }
-
-
 
   @override
   Widget build(BuildContext context) {
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
-
     num priceValue = num.tryParse(widget.product.price) ?? 0;
 
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,7 +99,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               const SizedBox(height: 16),
               Text(
                 widget.product.name,
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               Row(
@@ -120,7 +124,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               const SizedBox(height: 8),
               Text(
                 '${formatter.format(priceValue)}/${displayUnit(widget.product.idHang)}',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.red),
+                style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red),
               ),
               const SizedBox(height: 16),
               const Text(
@@ -138,8 +145,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              // Danh sách sản phẩm khác...
-              // (Phần này giống như trong mã của bạn)
+              GridView(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 8.0,
+                  mainAxisSpacing: 8.0,
+                  childAspectRatio: 0.7,
+                ),
+                shrinkWrap: true, // Thu nhỏ GridView vừa với nội dung
+                physics:
+                    const NeverScrollableScrollPhysics(), // Không cuộn được
+                children: otherProducts.map((product) {
+                  return ProductCard(
+                    product: product,
+                    userId: FirebaseAuth.instance.currentUser!.uid,
+                  );
+                }).toList(),
+              ),
               const SizedBox(height: 10),
             ],
           ),
@@ -155,17 +177,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             // Nút Thêm vào yêu thích
             Expanded(
               child: ElevatedButton(
-                onPressed: () {
-                  addProductToUserHeart(userId, widget.product, context)
-                      .then((_) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Sản phẩm đã được thêm vào yêu thích!")),
-                    );
-                  }).catchError((error) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Lỗi khi thêm sản phẩm vào yêu thích: $error")),
-                    );
-                  });
+                onPressed: () async {
+                  await addProductToUserHeart(userId, widget.product);
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -187,7 +200,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
-                  // Logic thêm vào giỏ hàng...
+                  final cartProvider =
+                      Provider.of<CartProvider>(context, listen: false);
+                  cartProvider.addToCart(CartItem(
+                    productId: widget.product.id,
+                    name: widget.product.name,
+                    description: widget.product.description,
+                    imageUrl: widget.product.imageUrl,
+                    price: double.tryParse(widget.product.price) ?? 0.0,
+                    evaluate: double.tryParse(widget.product.evaluate) ?? 0.0,
+                    idHang: widget.product.idHang,
+                  ));
+
+                  // Hiển thị thông báo khi thêm sản phẩm vào giỏ hàng
+                  loginController.ThongBao(
+                      context, "Sản phẩm đã được thêm vào giỏ hàng!");
+
+                  print("Sản phẩm đã được thêm vào giỏ hàng!");
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -224,7 +253,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   children: [
                     Text(
                       'Thanh Toán',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),

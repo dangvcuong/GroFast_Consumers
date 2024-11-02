@@ -90,7 +90,7 @@ class HAppStyle {
   );
   static const label1Regular = TextStyle(
     fontStyle: FontStyle.normal,
-    color: HAppColor.hDarkColor,
+    color: Color.fromARGB(255, 56, 144, 245),
     fontFamily: HAppFont.nunitoFontFamily,
     fontSize: 20,
     fontWeight: HAppFont.nunitoRegular,

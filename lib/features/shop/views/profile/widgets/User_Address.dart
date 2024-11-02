@@ -8,6 +8,7 @@ import 'package:grofast_consumers/constants/app_sizes.dart';
 import 'package:grofast_consumers/features/authentication/controllers/addres_Controller.dart';
 import 'package:grofast_consumers/features/authentication/models/addressModel.dart';
 import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
+import 'package:geocoding/geocoding.dart';
 
 class AddressUser extends StatefulWidget {
   const AddressUser({super.key});
@@ -28,6 +29,17 @@ class _AddressUserState extends State<AddressUser> {
   void initState() {
     super.initState();
     _getCurrentUser(); // Lấy thông tin người dùng
+    _requestLocationPermission();
+  }
+
+  Future<void> _requestLocationPermission() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        print('Location permissions are denied');
+      }
+    }
   }
 
   // Lấy thông tin userId hiện tại
@@ -69,6 +81,7 @@ class _AddressUserState extends State<AddressUser> {
     String newName = name ?? '';
     String newPhoneNumber = phoneNumber ?? '';
     String newAddress = address ?? '';
+    final addressController = TextEditingController(text: newAddress);
 
     showDialog(
       context: context,
@@ -117,7 +130,7 @@ class _AddressUserState extends State<AddressUser> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        controller: TextEditingController(text: newAddress),
+                        controller: addressController,
                         onChanged: (value) {
                           newAddress = value;
                         },
@@ -126,14 +139,36 @@ class _AddressUserState extends State<AddressUser> {
                     IconButton(
                       icon: const Icon(Icons.location_on, color: Colors.blue),
                       onPressed: () async {
-                        Position position = await Geolocator.getCurrentPosition(
-                            desiredAccuracy: LocationAccuracy.high);
-                        setState(() {
-                          newAddress =
-                              "${position.latitude}, ${position.longitude}";
-                        });
+                        try {
+                          Position position =
+                              await Geolocator.getCurrentPosition(
+                            desiredAccuracy: LocationAccuracy.high,
+                          );
+
+                          // Chuyển tọa độ thành địa chỉ
+                          List<Placemark> placemarks =
+                              await placemarkFromCoordinates(
+                            position.latitude,
+                            position.longitude,
+                          );
+
+                          if (placemarks.isNotEmpty) {
+                            Placemark place = placemarks[0];
+
+                            // Tạo địa chỉ chi tiết
+                            String fullAddress =
+                                '${place.street}, ${place.subLocality}, ${place.locality}, ${place.administrativeArea}, ${place.country}';
+                            setState(() {
+                              newAddress = fullAddress; // Cập nhật địa chỉ
+                              addressController.text =
+                                  newAddress; // Hiển thị địa chỉ vào TextField
+                            });
+                          }
+                        } catch (e) {
+                          print("Error: $e");
+                        }
                       },
-                    ),
+                    )
                   ],
                 ),
               ],
@@ -169,6 +204,7 @@ class _AddressUserState extends State<AddressUser> {
       },
     );
   }
+
   // Hàm thêm địa chỉ vào Firebase theo userId
 
   @override

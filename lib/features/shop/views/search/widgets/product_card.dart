@@ -1,9 +1,13 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/productdetailscreen.dart';
+import 'package:grofast_consumers/ulits/theme/app_style.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:grofast_consumers/features/shop/providers/cart_provider.dart';
@@ -27,6 +31,8 @@ class ProductCard extends StatefulWidget {
 
 class _ProductCardState extends State<ProductCard> {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
+  final Login_Controller loginController = Login_Controller();
+  final HAppStyle hAppStyle = HAppStyle();
   String companyName = "Đang tải...";
 
   @override
@@ -37,7 +43,8 @@ class _ProductCardState extends State<ProductCard> {
 
   void _fetchCompanyName(String idHang) async {
     try {
-      final DatabaseEvent event = await _database.child('companys/$idHang').once();
+      final DatabaseEvent event =
+          await _database.child('companys/$idHang').once();
       final DataSnapshot snapshot = event.snapshot;
 
       if (snapshot.value != null) {
@@ -52,9 +59,7 @@ class _ProductCardState extends State<ProductCard> {
         print("Không tìm thấy hãng với ID: $idHang");
       }
     } catch (error) {
-      setState(() {
-        companyName = "Lỗi tải hãng";
-      });
+      setState(() {});
       print("Lỗi khi tải tên hãng: $error");
     }
   }
@@ -62,8 +67,8 @@ class _ProductCardState extends State<ProductCard> {
   @override
   Widget build(BuildContext context) {
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
+    num priceValue = num.tryParse(widget.product.price) ?? 0;
 
-    num priceValue = num.tryParse(widget.product.price) ?? 0; // Chuyển đổi bằng num
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -93,8 +98,17 @@ class _ProductCardState extends State<ProductCard> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(companyName), // Hiển thị tên hãng
-                  Text(displayUnit(widget.product.idHang)),
+                  Expanded(
+                      child: Text(
+                    companyName,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.grey),
+                  )),
+                  Text(
+                    displayUnit(widget.product.idHang),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.grey),
+                  ),
                 ],
               ),
               const SizedBox(height: 4),
@@ -102,9 +116,10 @@ class _ProductCardState extends State<ProductCard> {
                 widget.product.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -117,40 +132,40 @@ class _ProductCardState extends State<ProductCard> {
                   Text("${widget.product.quantity} Đã bán"),
                 ],
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    formatter.format(priceValue),
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
+                  Text(formatter.format(priceValue),
+                      style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue)),
                   IconButton(
-                    icon: const Icon(Icons.add_circle, color: Colors.blue),
+                    icon: const Icon(
+                      Icons.add_circle,
+                      color: Colors.blue,
+                      size: 30,
+                    ),
                     onPressed: () {
-                      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+                      final cartProvider =
+                          Provider.of<CartProvider>(context, listen: false);
                       cartProvider.addToCart(CartItem(
                         productId: widget.product.id,
                         name: widget.product.name,
                         description: widget.product.description,
                         imageUrl: widget.product.imageUrl,
                         price: double.tryParse(widget.product.price) ?? 0.0,
-                        evaluate: double.tryParse(widget.product.evaluate) ?? 0.0,
+                        evaluate:
+                            double.tryParse(widget.product.evaluate) ?? 0.0,
                         idHang: widget.product.idHang,
                       ));
-
-                      // Hiển thị thông báo khi thêm sản phẩm vào giỏ hàng
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${widget.product.name} đã được thêm vào giỏ hàng!'),
-                          duration: Duration(seconds: 2), // Thời gian hiển thị của thông báo
-                        ),
+                      loginController.ThongBao(
+                        context,
+                        "Sản phẩm đã được thêm vào giỏ hàng!",
                       );
-
-                      print("Sản phẩm đã được thêm vào giỏ hàng!");
                     },
                   ),
-
                 ],
               ),
             ],
