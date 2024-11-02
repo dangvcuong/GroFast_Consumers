@@ -9,6 +9,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../../showdialogs/show_dialogs.dart';
 import '../../../models/category_model.dart';
+import '../../../models/shopping_cart_model.dart';
+import '../../cart/providers/cart_provider.dart';
 import '../providers/favorites_provider.dart';
 
 class ProductFavoriteCard extends StatefulWidget {
@@ -200,8 +202,27 @@ class _ProductFavoriteCardState extends State<ProductFavoriteCard> {
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.add_circle, size: 35, color: Colors.blue),
+                        icon: const Icon(Icons.add_circle, color: Colors.blue),
                         onPressed: () {
+                          final cartProvider = Provider.of<CartProvider>(context, listen: false);
+                          cartProvider.addToCart(CartItem(
+                            productId: widget.product.id,
+                            name: widget.product.name,
+                            description: widget.product.description,
+                            imageUrl: widget.product.imageUrl,
+                            price: double.tryParse(widget.product.price) ?? 0.0,
+                            evaluate: double.tryParse(widget.product.evaluate) ?? 0.0,
+                            idHang: widget.product.idHang,
+                          ));
+
+                          // Hiển thị thông báo khi thêm sản phẩm vào giỏ hàng
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${widget.product.name} đã được thêm vào giỏ hàng!'),
+                              duration: Duration(seconds: 2), // Thời gian hiển thị của thông báo
+                            ),
+                          );
+
                           print("Sản phẩm đã được thêm vào giỏ hàng!");
                         },
                       ),

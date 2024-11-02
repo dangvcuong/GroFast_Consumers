@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../../models/category_model.dart';
+import '../../../models/shopping_cart_model.dart';
+import '../../cart/providers/cart_provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
@@ -186,9 +189,27 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             // Nút Thêm vào giỏ hàng
             Expanded(
               child: ElevatedButton(
-                onPressed: () {
-                  // Logic thêm vào giỏ hàng...
-                },
+                  onPressed: () {
+                    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+                    cartProvider.addToCart(CartItem(
+                      productId: widget.product.id,
+                      name: widget.product.name,
+                      description: widget.product.description,
+                      imageUrl: widget.product.imageUrl,
+                      price: double.tryParse(widget.product.price) ?? 0.0,
+                      evaluate: double.tryParse(widget.product.evaluate) ?? 0.0,
+                      idHang: widget.product.idHang,
+                    ));
+                    // Hiển thị thông báo khi thêm sản phẩm vào giỏ hàng
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('${widget.product.name} đã được thêm vào giỏ hàng!'),
+                        duration: Duration(seconds: 2), // Thời gian hiển thị của thông báo
+                      ),
+                    );
+                    print("Sản phẩm đã được thêm vào giỏ hàng!");
+                  },
+
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: Colors.orange[300],
