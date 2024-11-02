@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/features/shop/views/favorites/favorite_products_screen.dart';
+import 'package:grofast_consumers/features/shop/views/home/home_screen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/profile_management.dart';
 import 'package:grofast_consumers/features/shop/views/search/search_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -17,7 +18,7 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const Center(child: Text('Home Screen')),
+    const Center(child: HomeScreen()),
     const Center(child: SearchScreen()),
     const Center(child: FavoriteProductsScreen()),
     const Center(child: ProFile_Management()),
@@ -32,11 +33,10 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        // Hiển thị tiêu đề
+      body: Padding(
+        padding: const EdgeInsets.only(top: 30.0), // Thêm khoảng cách ở trên cùng
+        child: _screens[_currentIndex], // Hiển thị màn hình tương ứng
       ),
-      body: _screens[_currentIndex], // Hiển thị màn hình tương ứng
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex, // Chỉ số của tab đang được chọn
         onTap: (int index) {
@@ -49,19 +49,19 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: '',
+            label: '', // Có thể để trống nếu không muốn hiển thị
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.search),
-            label: '',
+            label: '', // Có thể để trống nếu không muốn hiển thị
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite),
-            label: '',
+            label: '', // Có thể để trống nếu không muốn hiển thị
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: '',
+            label: '', // Có thể để trống nếu không muốn hiển thị
           ),
         ],
       ),
