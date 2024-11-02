@@ -4,14 +4,15 @@ import 'package:grofast_consumers/features/shop/views/profile/widgets/profile_de
 import '../cart/Product_cart_item.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final PageController _pageController = PageController(); // Điều khiển PageView
+  final PageController _pageController =
+      PageController(); // Điều khiển PageView
   int _currentPage = 0; // Biến lưu trang hiện tại
   final List<String> _banners = [
     'https://img.pikbest.com/templates/20240902/food-sale-promotion-banner-for-supermarket-restaurants_10785489.jpg!w700wp',
@@ -19,6 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
     'https://img.freepik.com/free-vector/hand-drawn-fast-food-sale-banner_23-2150970571.jpg',
     'https://channel.mediacdn.vn/2021/4/27/photo-1-1619536488295922378403.jpg',
   ]; // Danh sách URL của banner
+  Timer? _timer; // Khai báo Timer
 
   @override
   void initState() {
@@ -31,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     // Tạo Timer để tự động chuyển trang
-    Timer.periodic(const Duration(seconds: 4), (Timer timer) {
+    _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
       if (_currentPage < _banners.length - 1) {
         _currentPage++;
       } else {
@@ -46,21 +48,31 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void dispose() {
+    _timer?.cancel(); // Hủy Timer
+    _pageController
+        .dispose(); // Giải phóng PageController khi không còn sử dụng
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(30.0),
+        preferredSize: const Size.fromHeight(30.0),
         child: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
           leading: const Icon(Icons.location_on, color: Colors.blue),
-          title: Column(
+          title: const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
-            children: const [
-              Text("Giao tới", style: TextStyle(color: Colors.grey, fontSize: 10)),
-              Text("07.BT8, Foresa 6B, Nam từ Liêm, Hà Nội", style: TextStyle(color: Colors.black, fontSize: 14)),
+            children: [
+              Text("Giao tới",
+                  style: TextStyle(color: Colors.grey, fontSize: 10)),
+              Text("07.BT8, Foresa 6B, Nam từ Liêm, Hà Nội",
+                  style: TextStyle(color: Colors.black, fontSize: 14)),
             ],
           ),
           actions: [
@@ -69,16 +81,21 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ProfileDetailScreen()), // Điều hướng đến ProfileDetail
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          const ProfileDetailScreen()), // Điều hướng đến ProfileDetail
                 );
               },
             ),
             IconButton(
-              icon: const Icon(Icons.shopping_cart_outlined, color: Colors.black),
+              icon:
+                  const Icon(Icons.shopping_cart_outlined, color: Colors.black),
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const CartScreen()), // Điều hướng đến CartScreen
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          const CartScreen()), // Điều hướng đến CartScreen
                 );
               },
             ),
@@ -108,32 +125,41 @@ class _HomeScreenState extends State<HomeScreen> {
 
               // Danh mục sản phẩm với 2 hàng ngang
               SizedBox(
-                height: 150,
+                height: MediaQuery.of(context).size.height *
+                    0.20, // 10% chiều cao màn hình
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Column(
                     children: [
                       Row(
                         children: [
-                          _buildCategoryItem("Trái cây", "assets/images/category/vegetable.png"),
+                          _buildCategoryItem("Trái cây",
+                              "assets/images/category/vegetable.png"),
                           const SizedBox(width: 16),
-                          _buildCategoryItem("Hoa quả", "assets/images/category/fruit.png"),
+                          _buildCategoryItem(
+                              "Hoa quả", "assets/images/category/fruit.png"),
                           const SizedBox(width: 16),
-                          _buildCategoryItem("Thực phẩm", "assets/images/category/basket.png"),
+                          _buildCategoryItem(
+                              "Thực phẩm", "assets/images/category/basket.png"),
                           const SizedBox(width: 16),
-                          _buildCategoryItem("Bánh", "assets/images/category/milk.png"),
+                          _buildCategoryItem(
+                              "Bánh", "assets/images/category/milk.png"),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          _buildCategoryItem("Đồ uống", "assets/images/category/milk.png"),
+                          _buildCategoryItem(
+                              "Đồ uống", "assets/images/category/milk.png"),
                           const SizedBox(width: 16),
-                          _buildCategoryItem("Rau củ", "assets/images/category/vegetable.png"),
+                          _buildCategoryItem(
+                              "Rau củ", "assets/images/category/vegetable.png"),
                           const SizedBox(width: 16),
-                          _buildCategoryItem("Đồ dùng", "assets/images/category/fruit.png"),
+                          _buildCategoryItem(
+                              "Đồ dùng", "assets/images/category/fruit.png"),
                           const SizedBox(width: 16),
-                          _buildCategoryItem("Thịt", "assets/images/category/basket.png"),
+                          _buildCategoryItem(
+                              "Thịt", "assets/images/category/basket.png"),
                         ],
                       ),
                     ],
@@ -170,7 +196,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   return Container(
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     height: 4, // Thay đổi chiều cao thanh trượt
-                    width: _currentPage == index ? 10 : 4, // Thay đổi chiều rộng của thanh trượt
+                    width: _currentPage == index
+                        ? 10
+                        : 4, // Thay đổi chiều rộng của thanh trượt
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
                       color: _currentPage == index ? Colors.blue : Colors.grey,
@@ -184,7 +212,9 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text("Sản phẩm gần đây", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text("Sản phẩm gần đây",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   TextButton(
                     onPressed: () {},
                     child: const Text("Xem tất cả"),
@@ -197,8 +227,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
-                    _buildProductItem("Hoa quả", "Táo", "assets/images/apple.png"),
-                    _buildProductItem("Đồ uống", "Sữa tươi", "assets/images/milk.png"),
+                    _buildProductItem(
+                        "Hoa quả", "Táo", "assets/images/category/apple.png"),
+                    _buildProductItem("Đồ uống", "Sữa tươi",
+                        "assets/images/category/milk.png"),
                     // Thêm sản phẩm khác nếu cần
                   ],
                 ),
@@ -210,15 +242,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    _pageController.dispose(); // Giải phóng PageController khi không còn sử dụng
-    super.dispose();
-  }
-
   // Hàm xây dựng một mục danh mục
   Widget _buildCategoryItem(String title, String imagePath) {
-    return Container(
+    return SizedBox(
       width: 80,
       child: Column(
         children: [
@@ -226,41 +252,45 @@ class _HomeScreenState extends State<HomeScreen> {
             width: 48, // Đặt chiều rộng cho hình ảnh
             height: 48, // Đặt chiều cao cho hình ảnh
             decoration: BoxDecoration(
-              // Bỏ borderRadius để không có bo tròn
               image: DecorationImage(
-                image: AssetImage(imagePath), // Sử dụng hình ảnh từ assets
+                image: AssetImage(imagePath),
                 fit: BoxFit.cover,
               ),
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.grey[200],
             ),
           ),
-          const SizedBox(height: 4),
-          Text(title, style: const TextStyle(fontSize: 12)),
+          const SizedBox(height: 8),
+          Text(title, style: const TextStyle(fontSize: 14)),
         ],
       ),
     );
   }
 
   // Hàm xây dựng một mục sản phẩm
-  Widget _buildProductItem(String category, String name, String imageUrl) {
+  Widget _buildProductItem(String category, String name, String imagePath) {
     return Container(
-      width: 120,
-      margin: const EdgeInsets.only(right: 8),
+      width: 100,
+      margin: const EdgeInsets.only(right: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 80,
+            width: 100,
+            height: 100,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
               image: DecorationImage(
-                image: AssetImage(imageUrl),
+                image: AssetImage(imagePath),
                 fit: BoxFit.cover,
               ),
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.grey[200],
             ),
           ),
           const SizedBox(height: 8),
-          Text(category, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-          Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          Text(name, style: const TextStyle(fontSize: 14)),
+          Text(category,
+              style: const TextStyle(fontSize: 12, color: Colors.grey)),
         ],
       ),
     );

@@ -8,7 +8,6 @@ import 'package:grofast_consumers/features/authentication/controllers/user_contr
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:provider/provider.dart';
 
-
 import '../shop/views/favorites/providers/favorites_provider.dart';
 
 class ShowDialogs {
@@ -26,7 +25,7 @@ class ShowDialogs {
         return AlertDialog(
           title: const Text('Xác nhận xóa tài khoản'),
           content:
-          const Text('Bạn có chắc chắn muốn xóa tài khoản của mình không?'),
+              const Text('Bạn có chắc chắn muốn xóa tài khoản của mình không?'),
           actions: <Widget>[
             TextButton(
               child: const Text('Hủy'),
@@ -93,21 +92,22 @@ class ShowDialogs {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Xóa sản phẩm yêu thích'),
-          content: const Text('Bạn có chắc chắn muốn xóa sản phẩm này khỏi danh sách yêu thích không?'),
+          title: const Text('Hủy yêu thích sản phẩm'),
+          content: const Text(
+              'Bạn có chắc chắn muốn hủy bỏ sản phẩm này khỏi danh sách yêu thích không?'),
           actions: <Widget>[
             TextButton(
-              child: const Text('Hủy'),
+              child: const Text('Thoát'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: const Text('Xóa'),
+              child: const Text('Xác nhận'),
               onPressed: () async {
                 try {
                   final favoritesProvider =
-                  Provider.of<FavoritesProvider>(context, listen: false);
+                      Provider.of<FavoritesProvider>(context, listen: false);
                   await favoritesProvider.removeFavorite(product);
                   Navigator.of(context).pop();
                 } catch (e) {

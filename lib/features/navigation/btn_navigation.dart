@@ -18,7 +18,7 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const Center(child: SearchScreen()),
+    const Center(child: HomeScreen()),
     const Center(child: SearchScreen()),
     const Center(child: FavoriteProductsScreen()),
     const Center(child: ProFile_Management()),
