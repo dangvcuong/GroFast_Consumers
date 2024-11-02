@@ -1,13 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
-import '../../../models/category_model.dart';
 import '../../../models/shopping_cart_model.dart';
 import '../../cart/providers/cart_provider.dart';
+import '../../favorites/providers/favorites_provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
@@ -23,7 +22,6 @@ class ProductDetailScreen extends StatefulWidget {
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   List<Product> otherProducts = [];
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
-  String userId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   void initState() {
@@ -54,27 +52,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
-  Future<void> addProductToUserHeart(String userId, Product product, BuildContext context) async {
-    final DatabaseReference userFavoritesRef = FirebaseDatabase.instance
-        .ref('users/$userId/favorites');
-
-    try {
-      Map<String, dynamic> productData = product.toMap();
-
-      // Thêm sản phẩm vào Firebase
-      await userFavoritesRef.child(product.id).set(productData);
-
-      print("Sản phẩm đã được thêm vào danh sách yêu thích!");
-    } catch (error) {
-      print("Lỗi khi thêm sản phẩm vào yêu thích: $error");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi: $error")),
-      );
-    }
-  }
-
-
-
   @override
   Widget build(BuildContext context) {
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
@@ -82,7 +59,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     num priceValue = num.tryParse(widget.product.price) ?? 0;
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: Text(widget.product.name),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -141,8 +120,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              // Danh sách sản phẩm khác...
-              // (Phần này giống như trong mã của bạn)
+              // Danh sách sản phẩm khác sẽ được thêm vào sau
               const SizedBox(height: 10),
             ],
           ),
@@ -159,16 +137,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
-                  addProductToUserHeart(userId, widget.product, context)
-                      .then((_) {
+                  final favoritesProvider = Provider.of<FavoritesProvider>(context, listen: false);
+                  if (favoritesProvider.isFavorite(widget.product)) {
+                    favoritesProvider.removeFavorite(widget.product);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Sản phẩm đã được thêm vào yêu thích!")),
+                      SnackBar(content: Text("Đã xóa sản phẩm khỏi danh sách yêu thích!")),
                     );
-                  }).catchError((error) {
+                  } else {
+                    favoritesProvider.addFavorite(widget.product);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Lỗi khi thêm sản phẩm vào yêu thích: $error")),
+                      SnackBar(content: Text("Sản phẩm đã được thêm vào danh sách yêu thích!")),
                     );
-                  });
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -189,27 +169,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             // Nút Thêm vào giỏ hàng
             Expanded(
               child: ElevatedButton(
-                  onPressed: () {
-                    final cartProvider = Provider.of<CartProvider>(context, listen: false);
-                    cartProvider.addToCart(CartItem(
-                      productId: widget.product.id,
-                      name: widget.product.name,
-                      description: widget.product.description,
-                      imageUrl: widget.product.imageUrl,
-                      price: double.tryParse(widget.product.price) ?? 0.0,
-                      evaluate: double.tryParse(widget.product.evaluate) ?? 0.0,
-                      idHang: widget.product.idHang,
-                    ));
-                    // Hiển thị thông báo khi thêm sản phẩm vào giỏ hàng
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${widget.product.name} đã được thêm vào giỏ hàng!'),
-                        duration: Duration(seconds: 2), // Thời gian hiển thị của thông báo
-                      ),
-                    );
-                    print("Sản phẩm đã được thêm vào giỏ hàng!");
-                  },
-
+                onPressed: () {
+                  final cartProvider = Provider.of<CartProvider>(context, listen: false);
+                  cartProvider.addToCart(CartItem(
+                    productId: widget.product.id,
+                    name: widget.product.name,
+                    description: widget.product.description,
+                    imageUrl: widget.product.imageUrl,
+                    price: double.tryParse(widget.product.price) ?? 0.0,
+                    evaluate: double.tryParse(widget.product.evaluate) ?? 0.0,
+                    idHang: widget.product.idHang,
+                  ));
+                  // Hiển thị thông báo khi thêm sản phẩm vào giỏ hàng
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${widget.product.name} đã được thêm vào giỏ hàng!'),
+                      duration: Duration(seconds: 2), // Thời gian hiển thị của thông báo
+                    ),
+                  );
+                  print("Sản phẩm đã được thêm vào giỏ hàng!");
+                },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: Colors.orange[300],
@@ -255,5 +234,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
       ),
     );
+  }
+
+  String displayUnit(String idHang) {
+    // Hàm này sẽ trả về đơn vị sản phẩm dựa trên idHang
+    // Thay đổi logic này theo nhu cầu của bạn
+    return 'đơn vị';
   }
 }
