@@ -18,7 +18,7 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const Center(child: HomeScreen()),
+    const Center(child: SearchScreen()),
     const Center(child: SearchScreen()),
     const Center(child: FavoriteProductsScreen()),
     const Center(child: ProFile_Management()),
@@ -34,7 +34,8 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.only(top: 30.0), // Thêm khoảng cách ở trên cùng
+        padding:
+            const EdgeInsets.only(top: 30.0), // Thêm khoảng cách ở trên cùng
         child: _screens[_currentIndex], // Hiển thị màn hình tương ứng
       ),
       bottomNavigationBar: BottomNavigationBar(

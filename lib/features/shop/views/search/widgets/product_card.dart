@@ -6,7 +6,9 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
+import 'package:grofast_consumers/features/shop/views/favorites/providers/favorites_provider.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/productdetailscreen.dart';
+import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
 import 'package:grofast_consumers/ulits/theme/app_style.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +35,7 @@ class _ProductCardState extends State<ProductCard> {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
   final Login_Controller loginController = Login_Controller();
   final HAppStyle hAppStyle = HAppStyle();
+  String userId = FirebaseAuth.instance.currentUser!.uid;
   String companyName = "Đang tải...";
 
   @override
@@ -68,7 +71,7 @@ class _ProductCardState extends State<ProductCard> {
   Widget build(BuildContext context) {
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
     num priceValue = num.tryParse(widget.product.price) ?? 0;
-
+    final favoritesProvider = Provider.of<FavoritesProvider>(context);
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -81,37 +84,83 @@ class _ProductCardState extends State<ProductCard> {
         );
       },
       child: Card(
+        color: Colors.white,
+        elevation: 5,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
         margin: const EdgeInsets.all(8.0),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Image.network(
-                  widget.product.imageUrl,
-                  height: 89,
-                  fit: BoxFit.cover,
-                ),
+              Stack(
+                children: [
+                  Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12.0),
+                      child: Image.network(
+                        widget.product.imageUrl,
+                        height: 110,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blueGrey[50],
+                        shape: BoxShape.circle,
+                      ),
+                      width: 25,
+                      height: 25,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: Icon(
+                          Icons.favorite,
+                          size: 18,
+                          color: favoritesProvider.isFavorite(widget.product)
+                              ? Colors.red
+                              : Colors.grey.shade300,
+                        ),
+                        onPressed: () async {
+                          if (favoritesProvider.isFavorite(widget.product)) {
+                            ShowDialogs().showDeleteFavoriteDialog(
+                                context, widget.product);
+                          } else {
+                            favoritesProvider.addProductToUserHeart(
+                                userId, widget.product, context);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 7),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                      child: Text(
+                  Text(
                     companyName,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.grey),
-                  )),
+                    style: TextStyle(
+                        color: Colors.black.withOpacity(0.6),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10),
+                  ),
                   Text(
                     displayUnit(widget.product.idHang),
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.grey),
+                    style: TextStyle(
+                        color: Colors.black.withOpacity(0.6),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10),
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 widget.product.name,
                 maxLines: 1,
@@ -119,7 +168,7 @@ class _ProductCardState extends State<ProductCard> {
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 2),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -132,39 +181,44 @@ class _ProductCardState extends State<ProductCard> {
                   Text("${widget.product.quantity} Đã bán"),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 1),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(formatter.format(priceValue),
                       style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: Colors.blue)),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.add_circle,
-                      color: Colors.blue,
-                      size: 30,
+                  Container(
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
                     ),
-                    onPressed: () {
-                      final cartProvider =
-                          Provider.of<CartProvider>(context, listen: false);
-                      cartProvider.addToCart(CartItem(
-                        productId: widget.product.id,
-                        name: widget.product.name,
-                        description: widget.product.description,
-                        imageUrl: widget.product.imageUrl,
-                        price: double.tryParse(widget.product.price) ?? 0.0,
-                        evaluate:
-                            double.tryParse(widget.product.evaluate) ?? 0.0,
-                        idHang: widget.product.idHang,
-                      ));
-                      loginController.ThongBao(
-                        context,
-                        "Sản phẩm đã được thêm vào giỏ hàng!",
-                      );
-                    },
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.add_circle,
+                        color: Colors.blue,
+                        size: 35,
+                      ),
+                      onPressed: () {
+                        final cartProvider =
+                            Provider.of<CartProvider>(context, listen: false);
+                        cartProvider.addToCart(CartItem(
+                          productId: widget.product.id,
+                          name: widget.product.name,
+                          description: widget.product.description,
+                          imageUrl: widget.product.imageUrl,
+                          price: double.tryParse(widget.product.price) ?? 0.0,
+                          evaluate:
+                              double.tryParse(widget.product.evaluate) ?? 0.0,
+                          idHang: widget.product.idHang,
+                        ));
+                        loginController.ThongBao(
+                          context,
+                          "Sản phẩm đã được thêm vào giỏ hàng!",
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),

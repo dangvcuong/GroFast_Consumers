@@ -6,6 +6,7 @@ import 'package:grofast_consumers/features/authentication/controllers/login_cont
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
+import 'package:grofast_consumers/features/shop/views/favorites/providers/favorites_provider.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -59,30 +60,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
-  Future<void> addProductToUserHeart(String userId, Product product) async {
-    final DatabaseReference userFavoritesRef =
-        FirebaseDatabase.instance.ref('users/$userId/favorites');
-
-    try {
-      Map<String, dynamic> productData = product.toMap();
-
-      // Thêm sản phẩm vào Firebase
-      await userFavoritesRef.child(product.id).set(productData);
-
-      errorMessage = "Sản phẩm đã được thêm vào danh sách yêu thích!";
-    } catch (error) {
-      errorMessage = "Lỗi khi thêm sản phẩm vào yêu thích: $error";
-    }
-    loginController.ThongBao(context, errorMessage);
-  }
-
   @override
   Widget build(BuildContext context) {
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
     num priceValue = num.tryParse(widget.product.price) ?? 0;
-
+    final favoritesProvider = Provider.of<FavoritesProvider>(context);
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+      ),
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: SingleChildScrollView(
@@ -178,7 +165,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
-                  await addProductToUserHeart(userId, widget.product);
+                  favoritesProvider.addProductToUserHeart(
+                      userId, widget.product, context);
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),

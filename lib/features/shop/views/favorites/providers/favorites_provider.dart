@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
 import '../../../models/product_model.dart';
 
 class FavoritesProvider with ChangeNotifier {
   final List<Product> _favorites = []; // Danh sách sản phẩm yêu thích
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
   bool _isLoading = true;
-
+  String errorMessage = "";
+  final Login_Controller loginController = Login_Controller();
   List<Product> get favorites => _favorites;
   bool get isLoading => _isLoading;
 
@@ -19,7 +21,8 @@ class FavoritesProvider with ChangeNotifier {
   Future<void> _fetchFavorites() async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId != null) {
-      final DatabaseReference favoritesRef = _database.child('users/$userId/favorites');
+      final DatabaseReference favoritesRef =
+          _database.child('users/$userId/favorites');
       _setLoading(true);
 
       // Lắng nghe sự thay đổi dữ liệu từ Firebase theo thời gian thực
@@ -29,7 +32,8 @@ class FavoritesProvider with ChangeNotifier {
         _favorites.clear();
         if (data != null) {
           data.forEach((key, value) {
-            _favorites.add(Product.fromMap(Map<String, dynamic>.from(value), key));
+            _favorites
+                .add(Product.fromMap(Map<String, dynamic>.from(value), key));
           });
         }
 
@@ -50,17 +54,30 @@ class FavoritesProvider with ChangeNotifier {
   }
 
   // Thêm sản phẩm vào danh sách yêu thích trong Firebase
-  Future<void> addFavorite(Product product) async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId != null && !isFavorite(product)) { // Kiểm tra xem sản phẩm đã tồn tại trong danh sách chưa
-      try {
-        await _database.child('users/$userId/favorites/${product.id}').set(product.toMap());
-        _favorites.add(product); // Thêm sản phẩm vào danh sách yêu thích
-        notifyListeners();
-      } catch (error) {
-        print("Lỗi khi thêm sản phẩm yêu thích: $error");
+
+  Future<void> addProductToUserHeart(
+      String userId, Product product, BuildContext context) async {
+    final DatabaseReference userFavoritesRef =
+        FirebaseDatabase.instance.ref('users/$userId/favorites');
+
+    try {
+      // Kiểm tra xem sản phẩm đã tồn tại trong danh sách yêu thích chưa
+      final snapshot = await userFavoritesRef.child(product.id).once();
+      if (snapshot.snapshot.exists) {
+        errorMessage = "Sản phẩm đã có trong danh sách yêu thích!";
+      } else {
+        // Nếu chưa tồn tại, thêm sản phẩm vào Firebase
+        Map<String, dynamic> productData = product.toMap();
+        await userFavoritesRef.child(product.id).set(productData);
+
+        errorMessage = "Sản phẩm đã được thêm vào danh sách yêu thích!";
       }
+    } catch (error) {
+      errorMessage = "Lỗi khi thêm sản phẩm vào yêu thích: $error";
     }
+
+    // Hiển thị thông báo cho người dùng
+    loginController.ThongBao(context, errorMessage);
   }
 
   // Xóa sản phẩm khỏi danh sách yêu thích trong Firebase
@@ -69,7 +86,8 @@ class FavoritesProvider with ChangeNotifier {
     if (userId != null) {
       try {
         await _database.child('users/$userId/favorites/${product.id}').remove();
-        _favorites.removeWhere((favProduct) => favProduct.id == product.id); // Xóa sản phẩm trong danh sách
+        _favorites.removeWhere((favProduct) =>
+            favProduct.id == product.id); // Xóa sản phẩm trong danh sách
         notifyListeners();
       } catch (error) {
         print("Lỗi khi xóa sản phẩm yêu thích: $error");
