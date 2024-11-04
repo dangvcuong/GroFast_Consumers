@@ -1,0 +1,51 @@
+import 'package:firebase_database/firebase_database.dart';
+import 'package:grofast_consumers/features/authentication/models/addressModel.dart';
+import 'package:grofast_consumers/features/shop/models/product_model.dart';
+
+class Order {
+  final String id; // ID đơn hàng
+  final String userId; // ID người dùng
+  final List<Product> products; // Danh sách sản phẩm trong đơn hàng
+  final String totalAmount; // Tổng tiền của đơn hàng
+  final String orderStatus; // Trạng thái đơn hàng
+  final DateTime orderDate; // Ngày đặt hàng
+  final AddressModel shippingAddress; // Địa chỉ giao hàng
+
+  Order({
+    required this.id,
+    required this.userId,
+    required this.products,
+    required this.totalAmount,
+    required this.orderStatus,
+    required this.orderDate,
+    required this.shippingAddress,
+  });
+
+  // Tạo Order từ Map
+  factory Order.fromMap(Map<String, dynamic> map, String id) {
+    return Order(
+      id: id,
+      userId: map['userId'] ?? '',
+      products: (map['products'] as List<dynamic>)
+          .map((productMap) =>
+              Product.fromMap(productMap as Map<String, dynamic>, ''))
+          .toList(),
+      totalAmount: map['totalAmount'] ?? '0',
+      orderStatus: map['orderStatus'] ?? 'pending',
+      orderDate: DateTime.parse(map['orderDate']),
+      shippingAddress: AddressModel.fromMap(map['shippingAddress']),
+    );
+  }
+
+  // Chuyển Order thành Map để lưu vào Firebase
+  Map<String, dynamic> toMap() {
+    return {
+      'userId': userId,
+      'products': products.map((product) => product.toMap()).toList(),
+      'totalAmount': totalAmount,
+      'orderStatus': orderStatus,
+      'orderDate': orderDate.toIso8601String(),
+      'shippingAddress': shippingAddress.toMap(),
+    };
+  }
+}

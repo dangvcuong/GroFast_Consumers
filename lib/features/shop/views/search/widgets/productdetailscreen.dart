@@ -7,6 +7,7 @@ import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
 import 'package:grofast_consumers/features/shop/views/favorites/providers/favorites_provider.dart';
+import 'package:grofast_consumers/features/shop/views/pay/pay_screen.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -58,6 +59,30 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     } catch (error) {
       print("Lỗi khi tải sản phẩm khác: $error");
     }
+  }
+
+  Future<void> addProductToUserCart(
+      String userId, Product product, BuildContext context) async {
+    String errorMessage;
+    final DatabaseReference cartRef =
+        FirebaseDatabase.instance.ref('users/$userId/carts');
+    try {
+      // Thêm sản phẩm vào giỏ hàng của người dùng
+      await cartRef.child(product.id).set({
+        "id": product.id,
+        "name": product.name,
+        "description": product.description,
+        "imageUrl": product.imageUrl,
+        "price": product.price,
+        "evaluate": product.evaluate,
+        "quantity": 1,
+        "idHang": product.idHang,
+      });
+      errorMessage = "Sản phẩm đã được thêm vào giỏ hàng!";
+    } catch (error) {
+      errorMessage = "Lỗi khi thêm sản phẩm vào giỏ hàng: $error";
+    }
+    loginController.ThongBao(context, errorMessage);
   }
 
   @override
@@ -188,23 +213,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
-                  final cartProvider =
-                      Provider.of<CartProvider>(context, listen: false);
-                  cartProvider.addToCart(CartItem(
-                    productId: widget.product.id,
-                    name: widget.product.name,
-                    description: widget.product.description,
-                    imageUrl: widget.product.imageUrl,
-                    price: double.tryParse(widget.product.price) ?? 0.0,
-                    evaluate: double.tryParse(widget.product.evaluate) ?? 0.0,
-                    idHang: widget.product.idHang,
-                  ));
-
-                  // Hiển thị thông báo khi thêm sản phẩm vào giỏ hàng
-                  loginController.ThongBao(
-                      context, "Sản phẩm đã được thêm vào giỏ hàng!");
-
-                  print("Sản phẩm đã được thêm vào giỏ hàng!");
+                  addProductToUserCart(userId, widget.product, context);
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -227,7 +236,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
-                  // Logic xử lý thanh toán
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => PaymentScreen(
+                              product: widget.product,
+                              products: [widget.product],
+                            )),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -240,7 +256,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Thanh Toán',
+                      'Mua ngay',
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),

@@ -7,8 +7,7 @@ import 'features/authentication/login/widgets/man_chao.dart';
 import 'features/shop/views/cart/providers/cart_provider.dart';
 import 'features/shop/views/favorites/providers/favorites_provider.dart';
 import 'features/shop/views/home/home_screen.dart'; // Thêm HomeScreen vào import
-import 'features/shop/providers/cart_provider.dart'; // Đảm bảo chỉ có một đường dẫn đúng cho CartProvider
-
+import 'features/shop/views/cart/providers/cart_provider.dart'; // Đảm bảo chỉ có một đường dẫn đúng cho CartProvider
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +17,8 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => CartProvider()),
-        ChangeNotifierProvider(create: (_) => FavoritesProvider()), // Cung cấp FavoritesProvider
+        ChangeNotifierProvider(
+            create: (_) => FavoritesProvider()), // Cung cấp FavoritesProvider
       ],
       child: const MyApp(),
     ),

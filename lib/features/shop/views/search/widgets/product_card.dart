@@ -12,7 +12,6 @@ import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
 import 'package:grofast_consumers/ulits/theme/app_style.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:grofast_consumers/features/shop/providers/cart_provider.dart';
 
 import '../../../models/category_model.dart';
 import '../../cart/providers/cart_provider.dart';
@@ -65,6 +64,41 @@ class _ProductCardState extends State<ProductCard> {
       setState(() {});
       print("Lỗi khi tải tên hãng: $error");
     }
+  }
+
+  Future<void> addProductToUserCart(
+      String userId, Product product, BuildContext context) async {
+    String errorMessage;
+    final DatabaseReference cartRef =
+        FirebaseDatabase.instance.ref('users/$userId/carts');
+    try {
+      // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+      final DatabaseEvent event = await cartRef.child(product.id).once();
+      if (event.snapshot.value != null) {
+        // Nếu sản phẩm đã có, tăng quantity lên 1
+        final currentQuantity = (event.snapshot.value as Map)['quantity'] ?? 0;
+        await cartRef.child(product.id).update({
+          "quantity": currentQuantity + 1,
+        });
+        errorMessage = "Đã tăng số lượng sản phẩm trong giỏ hàng!";
+      } else {
+        // Nếu sản phẩm chưa có, thêm sản phẩm mới vào giỏ hàng
+        await cartRef.child(product.id).set({
+          "id": product.id,
+          "name": product.name,
+          "description": product.description,
+          "imageUrl": product.imageUrl,
+          "price": product.price,
+          "evaluate": product.evaluate,
+          "quantity": 1,
+          "idHang": product.idHang,
+        });
+        errorMessage = "Sản phẩm đã được thêm vào giỏ hàng!";
+      }
+    } catch (error) {
+      errorMessage = "Lỗi khi thêm sản phẩm vào giỏ hàng: $error";
+    }
+    loginController.ThongBao(context, errorMessage);
   }
 
   @override
@@ -201,22 +235,7 @@ class _ProductCardState extends State<ProductCard> {
                         size: 35,
                       ),
                       onPressed: () {
-                        final cartProvider =
-                            Provider.of<CartProvider>(context, listen: false);
-                        cartProvider.addToCart(CartItem(
-                          productId: widget.product.id,
-                          name: widget.product.name,
-                          description: widget.product.description,
-                          imageUrl: widget.product.imageUrl,
-                          price: double.tryParse(widget.product.price) ?? 0.0,
-                          evaluate:
-                              double.tryParse(widget.product.evaluate) ?? 0.0,
-                          idHang: widget.product.idHang,
-                        ));
-                        loginController.ThongBao(
-                          context,
-                          "Sản phẩm đã được thêm vào giỏ hàng!",
-                        );
+                        addProductToUserCart(userId, widget.product, context);
                       },
                     ),
                   ),

@@ -1,10 +1,32 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:grofast_consumers/features/shop/views/cart/providers/cart_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
 import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
+import 'package:grofast_consumers/features/shop/views/cart/providers/cart_provider.dart';
+import 'package:grofast_consumers/features/shop/views/pay/pay_cart_screen.dart';
+import 'package:provider/provider.dart';
 
-class CartScreen extends StatelessWidget {
-  const CartScreen({Key? key}) : super(key: key);
+// Adjust to your actual CartProvider file path
+class CartScreen extends StatefulWidget {
+  const CartScreen({super.key});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  bool _isInitialized =
+      false; // Flag to check if fetchCartItems has been called
+  final Login_Controller login_controller = Login_Controller();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      String userId = FirebaseAuth.instance.currentUser!.uid;
+      Provider.of<CartProvider>(context, listen: false).fetchCartItems(userId);
+      _isInitialized = true; // Ensure fetchCartItems is only called once
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,28 +35,17 @@ class CartScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 1,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.more_vert, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
-        flexibleSpace: Center(
-          child: Padding(
-            padding: const EdgeInsets.only(right: 21.0),
-            child: Text(
-              'Giỏ Hàng',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 24.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+        title: const Text(
+          'Giỏ Hàng',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 24.0,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
@@ -43,7 +54,10 @@ class CartScreen extends StatelessWidget {
           // Tính toán tổng giá tiền cho các sản phẩm đã chọn
           double totalPrice = cartProvider.cartItems
               .where((item) => item.isChecked) // Lọc các sản phẩm đã được chọn
-              .fold(0, (total, item) => total + (item.price * item.quantity)); // Tính tổng giá
+              .fold(
+                  0,
+                  (total, item) =>
+                      total + (item.price * item.quantity)); // Tính tổng giá
 
           return Column(
             children: [
@@ -56,29 +70,63 @@ class CartScreen extends StatelessWidget {
                   },
                 ),
               ),
-              Divider(),
+              const Divider(),
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Tổng cộng:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text('Tổng cộng:',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
                     Row(
                       children: [
                         // Hiển thị tổng giá tiền đã tính toán
                         Text('$totalPrice ₫',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.red)),
-                        SizedBox(width: 10),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: Colors.red)),
+                        const SizedBox(width: 10),
                         ElevatedButton(
                           onPressed: () {
-                            // Thêm chức năng mua hàng ở đây
+                            // Lọc các sản phẩm đã được chọn
+                            final selectedProducts = cartProvider.cartItems
+                                .where((item) => item.isChecked)
+                                .toList();
+
+                            if (selectedProducts.isEmpty) {
+                              // Nếu không có sản phẩm nào được chọn, hiển thị cảnh báo
+
+                              login_controller.ThongBao(context,
+                                  'Vui lòng chọn ít nhất một sản phẩm để thanh toán.');
+                              return;
+                            }
+
+                            // Tính toán tổng giá cho các sản phẩm đã chọn
+                            double totalPrice = selectedProducts.fold(
+                              0,
+                              (total, item) =>
+                                  total + (item.price * item.quantity),
+                            );
+
+                            // Điều hướng đến PaymentCartScreen với danh sách sản phẩm và tổng giá
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PaymentCartScreen(
+                                  products: selectedProducts,
+                                ),
+                              ),
+                            );
                           },
-                          child: Text('Mua Hàng'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
-                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                            textStyle: TextStyle(fontSize: 16),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                            textStyle: const TextStyle(fontSize: 16),
                           ),
+                          child: const Text('Mua Hàng'),
                         ),
                       ],
                     ),
@@ -89,7 +137,6 @@ class CartScreen extends StatelessWidget {
           );
         },
       ),
-
     );
   }
 
@@ -105,7 +152,7 @@ class CartScreen extends StatelessWidget {
               color: Colors.grey.withOpacity(0.3),
               spreadRadius: 1,
               blurRadius: 5,
-              offset: Offset(0, 3),
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -129,12 +176,13 @@ class CartScreen extends StatelessWidget {
                 child: Row(
                   children: [
                     Container(
-                      width: 70,
-                      height: 70,
+                      width: 85,
+                      height: 75,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
                         image: DecorationImage(
-                          image: NetworkImage(cartItem.imageUrl), // Sử dụng NetworkImage
+                          image: NetworkImage(
+                              cartItem.imageUrl), // Sử dụng NetworkImage
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -166,13 +214,17 @@ class CartScreen extends StatelessWidget {
                         Row(
                           children: [
                             IconButton(
-                              icon: Icon(Icons.remove, color: Colors.blue),
+                              icon:
+                                  const Icon(Icons.remove, color: Colors.blue),
                               onPressed: () {
                                 if (cartItem.quantity > 1) {
                                   cartItem.quantity--;
-                                  cartProvider.notifyListeners();
+                                  cartProvider.updateQuantity(
+                                      FirebaseAuth.instance.currentUser!.uid,
+                                      cartItem); // Update in Firebase
                                 } else {
-                                  cartProvider.removeFromCart(cartItem);
+                                  cartProvider.removeItem(
+                                      cartItem); // Remove item if quantity is 1
                                 }
                               },
                             ),
@@ -184,10 +236,12 @@ class CartScreen extends StatelessWidget {
                               ),
                             ),
                             IconButton(
-                              icon: Icon(Icons.add, color: Colors.blue),
+                              icon: const Icon(Icons.add, color: Colors.blue),
                               onPressed: () {
                                 cartItem.quantity++;
-                                cartProvider.notifyListeners();
+                                cartProvider.updateQuantity(
+                                    FirebaseAuth.instance.currentUser!.uid,
+                                    cartItem); // Update in Firebase
                               },
                             ),
                           ],
@@ -202,10 +256,10 @@ class CartScreen extends StatelessWidget {
                         const SizedBox(height: 4),
                         GestureDetector(
                           onTap: () {
-                            cartProvider.removeFromCart(cartItem);
+                            cartProvider.removeItem(cartItem);
                           },
-                          child: Row(
-                            children: const [
+                          child: const Row(
+                            children: [
                               Icon(Icons.delete, size: 16),
                               SizedBox(width: 4),
                               Text('Xóa', style: TextStyle(color: Colors.red)),

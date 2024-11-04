@@ -1,37 +1,46 @@
-// ignore_for_file: file_names, unused_import
-
-import 'package:firebase_database/firebase_database.dart';
-
 class AddressModel {
-  String id; // ID của địa chỉ
-  String nameAddresUser; // Tên người nhận
-  String phoneAddresUser; // Số điện thoại
-  String addressUser; // Địa chỉ
+  final String nameAddresUser;
+  final String phoneAddresUser;
+  final String addressUser;
+  final String status; // Giữ nguyên final
 
   AddressModel({
-    required this.id,
     required this.nameAddresUser,
     required this.phoneAddresUser,
     required this.addressUser,
+    this.status = 'off', // Mặc định là 'off'
   });
 
-  // Phương thức chuyển đổi từ Map sang AddressModel
-  factory AddressModel.fromMap(Map<String, dynamic> map) {
+  AddressModel copyWith({String? status}) {
     return AddressModel(
-      id: map['id'] ?? '',
-      nameAddresUser: map['nameAddresUser'] ?? '',
-      phoneAddresUser: map['phoneAddresUser'] ?? '',
-      addressUser: map['addressUser'] ?? '',
+      nameAddresUser: nameAddresUser,
+      phoneAddresUser: phoneAddresUser,
+      addressUser: addressUser,
+      status: status ?? this.status, // Cập nhật trạng thái nếu có
     );
   }
 
-  // Phương thức chuyển đổi từ AddressModel sang Map (để lưu vào Firebase)
-  Map<String, dynamic> toJson() {
+  factory AddressModel.fromMap(Map<String, dynamic> map) {
+    return AddressModel(
+      nameAddresUser: map['nameAddresUser'] ?? '',
+      phoneAddresUser: map['phoneAddresUser'] ?? '',
+      addressUser: map['addressUser'] ?? '',
+      status: map['status'] ?? 'off',
+    );
+  }
+
+  Map<String, dynamic> toMap() {
     return {
-      'id': id,
       'nameAddresUser': nameAddresUser,
-      'phoneNumber': phoneAddresUser,
+      'phoneAddresUser': phoneAddresUser,
       'addressUser': addressUser,
+      'status': status,
     };
+  }
+
+  // Thêm phương thức toString
+  @override
+  String toString() {
+    return 'AddressModel(nameAddresUser: $nameAddresUser, phoneAddresUser: $phoneAddresUser, addressUser: $addressUser, status: $status)';
   }
 }

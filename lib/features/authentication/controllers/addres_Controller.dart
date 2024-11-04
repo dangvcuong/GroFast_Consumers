@@ -23,6 +23,7 @@ class AddRessController {
       'nameAddresUser': nameAddresUser,
       'phoneAddresUser': phoneAddresUser,
       'addressUser': addressUser,
+      'status': 'off'
     });
   }
 
@@ -35,6 +36,17 @@ class AddRessController {
       'phoneAddresUser': phoneAddresUser,
       'addressUser': addressUser,
     });
+  }
+
+  void editStatus(
+    String userId,
+    String key,
+  ) {
+    final addressRef = _database.child('users/$userId/addresses/$key');
+    addressRef.update({
+      'status': 'on',
+    });
+    print("Thay đôi mạc định");
   }
 
   // Hàm xóa địa chỉ trong Firebase theo userId và key

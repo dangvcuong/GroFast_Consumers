@@ -1,5 +1,3 @@
-// ignore_for_file: file_names, avoid_print
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -7,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:grofast_consumers/constants/app_sizes.dart';
 import 'package:grofast_consumers/features/authentication/controllers/addres_Controller.dart';
 import 'package:grofast_consumers/features/authentication/models/addressModel.dart';
+import 'package:grofast_consumers/features/shop/views/pay/pay_cart_screen.dart';
 import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
 import 'package:geocoding/geocoding.dart';
 
@@ -21,14 +20,20 @@ class _AddressUserState extends State<AddressUser> {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
   final AddRessController addRessController = AddRessController();
   final ShowDialogs showDiaLog = ShowDialogs();
-  User? currentUser; // Biến lưu trữ user hiện tại
-  List<AddressModel> addresses = []; // Danh sách địa chỉ
-  List<String> addressKeys = []; // Lưu các key của địa chỉ
+
+  User? currentUser;
+  List<AddressModel> addresses = [];
+  List<String> addressKeys = [];
+  String? defaultAddressKey;
+
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _getCurrentUser(); // Lấy thông tin người dùng
+    _getCurrentUser();
     _requestLocationPermission();
   }
 
@@ -42,46 +47,40 @@ class _AddressUserState extends State<AddressUser> {
     }
   }
 
-  // Lấy thông tin userId hiện tại
   void _getCurrentUser() {
     final User? user = FirebaseAuth.instance.currentUser;
     setState(() {
       currentUser = user;
     });
     if (user != null) {
-      loadDataFromFirebase(user.uid); // Gọi hàm load dữ liệu theo userId
+      loadDataFromFirebase(user.uid);
     }
   }
 
-  // Hàm tải dữ liệu địa chỉ từ Firebase Realtime Database dựa theo userId
   void loadDataFromFirebase(String userId) {
     _database.child('users/$userId/addresses').onValue.listen((event) {
       final data = event.snapshot.value as Map<dynamic, dynamic>?;
       if (data != null) {
         setState(() {
           addresses = data.entries
-              .map((e) => AddressModel.fromMap(Map<String, dynamic>.from(
-                  e.value))) // Sử dụng AddressModel.fromMap
+              .map((e) =>
+                  AddressModel.fromMap(Map<String, dynamic>.from(e.value)))
               .toList();
-          addressKeys = data.keys
-              .cast<String>()
-              .toList(); // Ép kiểu danh sách key sang List<String>
+          addressKeys = data.keys.cast<String>().toList();
         });
       }
     });
   }
 
-  // Hàm mở showDialog để nhập địa chỉ mới hoặc chỉnh sửa địa chỉ
   void showAddOrEditAddressDialog({
-    key,
+    String? key,
     String? name,
     String? phoneNumber,
     String? address,
   }) {
-    String newName = name ?? '';
-    String newPhoneNumber = phoneNumber ?? '';
-    String newAddress = address ?? '';
-    final addressController = TextEditingController(text: newAddress);
+    nameController.text = name ?? '';
+    phoneController.text = phoneNumber ?? '';
+    addressController.text = address ?? '';
 
     showDialog(
       context: context,
@@ -100,10 +99,7 @@ class _AddressUserState extends State<AddressUser> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  controller: TextEditingController(text: newName),
-                  onChanged: (value) {
-                    newName = value;
-                  },
+                  controller: nameController,
                 ),
                 gapH16,
                 TextField(
@@ -114,10 +110,7 @@ class _AddressUserState extends State<AddressUser> {
                     ),
                   ),
                   keyboardType: TextInputType.phone,
-                  controller: TextEditingController(text: newPhoneNumber),
-                  onChanged: (value) {
-                    newPhoneNumber = value;
-                  },
+                  controller: phoneController,
                 ),
                 gapH16,
                 Row(
@@ -131,9 +124,6 @@ class _AddressUserState extends State<AddressUser> {
                           ),
                         ),
                         controller: addressController,
-                        onChanged: (value) {
-                          newAddress = value;
-                        },
                       ),
                     ),
                     IconButton(
@@ -144,24 +134,17 @@ class _AddressUserState extends State<AddressUser> {
                               await Geolocator.getCurrentPosition(
                             desiredAccuracy: LocationAccuracy.high,
                           );
-
-                          // Chuyển tọa độ thành địa chỉ
                           List<Placemark> placemarks =
                               await placemarkFromCoordinates(
                             position.latitude,
                             position.longitude,
                           );
-
                           if (placemarks.isNotEmpty) {
                             Placemark place = placemarks[0];
-
-                            // Tạo địa chỉ chi tiết
                             String fullAddress =
                                 '${place.street}, ${place.subLocality}, ${place.locality}, ${place.administrativeArea}, ${place.country}';
                             setState(() {
-                              newAddress = fullAddress; // Cập nhật địa chỉ
-                              addressController.text =
-                                  newAddress; // Hiển thị địa chỉ vào TextField
+                              addressController.text = fullAddress;
                             });
                           }
                         } catch (e) {
@@ -183,16 +166,23 @@ class _AddressUserState extends State<AddressUser> {
             ),
             TextButton(
               onPressed: () async {
-                if (newName.isNotEmpty &&
-                    newPhoneNumber.isNotEmpty &&
-                    newAddress.isNotEmpty &&
+                if (nameController.text.isNotEmpty &&
+                    phoneController.text.isNotEmpty &&
+                    addressController.text.isNotEmpty &&
                     currentUser != null) {
                   if (key == null) {
                     addRessController.addAddressToFirebase(
-                        currentUser!.uid, newName, newPhoneNumber, newAddress);
+                        currentUser!.uid,
+                        nameController.text,
+                        phoneController.text,
+                        addressController.text);
                   } else {
-                    addRessController.editAddressInFirebase(currentUser!.uid,
-                        key, newName, newPhoneNumber, newAddress);
+                    addRessController.editAddressInFirebase(
+                        currentUser!.uid,
+                        key,
+                        nameController.text,
+                        phoneController.text,
+                        addressController.text);
                   }
                   Navigator.of(context).pop();
                 }
@@ -205,7 +195,22 @@ class _AddressUserState extends State<AddressUser> {
     );
   }
 
-  // Hàm thêm địa chỉ vào Firebase theo userId
+  void _setDefaultAddress(String key) {
+    setState(() {
+      defaultAddressKey = key; // Cập nhật địa chỉ mặc định
+
+      // Cập nhật trạng thái của tất cả các địa chỉ
+      for (int i = 0; i < addressKeys.length; i++) {
+        if (addressKeys[i] == key) {
+          addresses[i] =
+              addresses[i].copyWith(status: 'on'); // Cập nhật trạng thái
+        } else {
+          addresses[i] =
+              addresses[i].copyWith(status: 'off'); // Cập nhật trạng thái
+        }
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -224,6 +229,7 @@ class _AddressUserState extends State<AddressUser> {
         ),
         title: const Text("Địa chỉ của tôi"),
         centerTitle: true,
+        actions: const [],
       ),
       body: addresses.isNotEmpty
           ? ListView.builder(
@@ -231,6 +237,11 @@ class _AddressUserState extends State<AddressUser> {
               itemBuilder: (context, index) {
                 final address = addresses[index];
                 final addressKey = addressKeys[index];
+
+                // Kiểm tra trạng thái
+                Color buttonColor =
+                    address.status == 'on' ? Colors.green[300]! : Colors.grey;
+
                 return Container(
                   margin:
                       const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
@@ -246,6 +257,30 @@ class _AddressUserState extends State<AddressUser> {
                       children: [
                         Text('Số điện thoại: ${address.phoneAddresUser}'),
                         Text('Địa chỉ: ${address.addressUser}'),
+                        ElevatedButton(
+                          onPressed: () async {
+                            _setDefaultAddress(addressKey);
+                            addRessController.editStatus(
+                              currentUser!.uid,
+                              addressKey,
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.all(5),
+                            backgroundColor:
+                                buttonColor, // Sử dụng màu đã kiểm tra
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'Mặc định',
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
+                        ),
                       ],
                     ),
                     trailing: Column(
@@ -312,14 +347,11 @@ class _AddressUserState extends State<AddressUser> {
                 );
               },
             )
-          : const Center(
-              child: Text('Không có địa chỉ nào được lưu.'),
-            ),
+          : const Center(child: Text('Bạn chưa có địa chỉ nào!')),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showAddOrEditAddressDialog();
         },
-        tooltip: 'Thêm địa chỉ mới',
         child: const Icon(Icons.add),
       ),
     );
