@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable, file_names, avoid_print, duplicate_ignore
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -42,6 +44,7 @@ class _AddressUserState extends State<AddressUser> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
+        // ignore: avoid_print
         print('Location permissions are denied');
       }
     }

@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 class AddressModel {
   final String nameAddresUser;
   final String phoneAddresUser;

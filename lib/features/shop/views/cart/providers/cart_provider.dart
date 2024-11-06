@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart'; // Adjust file path as necessary

@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api, avoid_print
+// ignore_for_file: library_private_types_in_public_api, avoid_print, prefer_const_constructors
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -119,11 +119,12 @@ class _SearchScreenState extends State<SearchScreen> {
                           // Thực hiện hành động khi nhấn vào biểu tượng giỏ hàng
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => CartScreen()), // Điều hướng đến màn hình giỏ hàng
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    CartScreen()), // Điều hướng đến màn hình giỏ hàng
                           );
                         },
                       ),
-
                     ],
                   ),
                 ),
