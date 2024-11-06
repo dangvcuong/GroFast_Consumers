@@ -7,6 +7,7 @@ import 'package:grofast_consumers/constants/app_colors.dart';
 import 'package:grofast_consumers/constants/app_sizes.dart';
 import 'package:grofast_consumers/features/authentication/controllers/user_controller.dart';
 import 'package:grofast_consumers/features/authentication/models/user_Model.dart';
+import 'package:grofast_consumers/features/shop/models/order_model.dart';
 import 'package:grofast_consumers/features/shop/views/profile/profile_management.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/profile_detail_screen.dart';
 import 'package:grofast_consumers/ulits/theme/app_style.dart';

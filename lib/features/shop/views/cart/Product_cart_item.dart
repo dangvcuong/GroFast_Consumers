@@ -224,7 +224,9 @@ class _CartScreenState extends State<CartScreen> {
                                       cartItem); // Update in Firebase
                                 } else {
                                   cartProvider.removeItem(
-                                      cartItem); // Remove item if quantity is 1
+                                      FirebaseAuth.instance.currentUser!.uid,
+                                      cartItem
+                                          .productId); // Remove item if quantity is 1
                                 }
                               },
                             ),
@@ -256,7 +258,9 @@ class _CartScreenState extends State<CartScreen> {
                         const SizedBox(height: 4),
                         GestureDetector(
                           onTap: () {
-                            cartProvider.removeItem(cartItem);
+                            cartProvider.removeItem(
+                                FirebaseAuth.instance.currentUser!.uid,
+                                cartItem.productId);
                           },
                           child: const Row(
                             children: [

@@ -54,8 +54,41 @@ class CartProvider with ChangeNotifier {
   }
 
   // Optional method to remove an item from the cart
-  void removeItem(CartItem cartItem) {
-    _cartItems.remove(cartItem);
-    notifyListeners();
+  Future<void> clearCart(String userId) async {
+    try {
+      // Tham chiếu đến giỏ hàng của người dùng trong Firebase
+      final DatabaseReference cartRef =
+          FirebaseDatabase.instance.ref('users/$userId/carts');
+
+      // Xóa toàn bộ giỏ hàng từ Firebase
+      await cartRef.remove();
+
+      // Xóa toàn bộ giỏ hàng cục bộ trong ứng dụng
+      _cartItems.clear();
+
+      // Thông báo cho UI để cập nhật
+      notifyListeners();
+    } catch (error) {
+      print('Lỗi khi xóa giỏ hàng: $error');
+    }
+  }
+
+  Future<void> removeItem(String userId, String productId) async {
+    try {
+      final DatabaseReference itemRef =
+          FirebaseDatabase.instance.ref('users/$userId/carts/$productId');
+
+      // Xóa sản phẩm từ Firebase Realtime Database
+      await itemRef.remove();
+
+      // Xóa sản phẩm từ danh sách cục bộ
+      _cartItems.removeWhere((item) => item.productId == productId);
+
+      // Cập nhật giao diện
+      notifyListeners();
+      print('Đã xóa sản phẩm có ID: $productId');
+    } catch (error) {
+      print('Lỗi khi xóa sản phẩm: $error');
+    }
   }
 }

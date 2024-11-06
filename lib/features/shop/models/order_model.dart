@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:grofast_consumers/features/authentication/models/addressModel.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
@@ -48,4 +49,18 @@ class Order {
       'shippingAddress': shippingAddress.toMap(),
     };
   }
+}
+
+Future<List<Order>> getOrdersByUserIdAndStatus(
+    String userId, String status) async {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  QuerySnapshot snapshot = await firestore
+      .collection('orders')
+      .where('userId', isEqualTo: userId)
+      .where('orderStatus', isEqualTo: status)
+      .get();
+
+  return snapshot.docs.map((doc) {
+    return Order.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+  }).toList();
 }
