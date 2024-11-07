@@ -3,10 +3,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
+import 'package:grofast_consumers/features/authentication/login/loggin.dart';
 import 'package:grofast_consumers/features/authentication/models/addressModel.dart';
 import 'package:grofast_consumers/features/shop/models/order_model.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
+import 'package:grofast_consumers/features/shop/views/cart/providers/cart_provider.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
 import 'package:intl/intl.dart';
 
@@ -23,6 +26,7 @@ class PaymentCartScreen extends StatefulWidget {
 }
 
 class _PaymentCartScreenState extends State<PaymentCartScreen> {
+  final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
   double totalAmount = 0;
   int _selectedShippingOption = 1;
   int _selectedPaymentMethod = 1;
@@ -32,6 +36,9 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
   List<AddressModel> addresses = [];
   AddressModel? defaultAddress;
   double total = 0;
+  final CartProvider cartProvider = CartProvider();
+  final Login_Controller loginController = Login_Controller();
+  String idProduct = '';
   @override
   void initState() {
     super.initState();
@@ -115,6 +122,7 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
 
     // Chuyển đổi danh sách CartItem thành Product
     List<Product> products = widget.products.map((cartItem) {
+      idProduct = cartItem.productId;
       return Product(
         id: cartItem.productId, // Sử dụng productId làm ID của Product
         name: cartItem.name,
@@ -140,9 +148,9 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
 
     DatabaseReference ordersRef = FirebaseDatabase.instance.ref('orders');
     await ordersRef.child(order.id).set(order.toMap()).then((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đặt hàng thành công!')),
-      );
+      loginController.ThongBao(context, 'Đặt hàng thành công!');
+      cartProvider.removeItem(
+          FirebaseAuth.instance.currentUser!.uid, idProduct);
       // Tùy chọn: quay lại hoặc xóa giỏ hàng ở đây
     }).catchError((error) {
       String errorMessage = 'Lỗi không xác định';
@@ -151,10 +159,6 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
       }
 
       print('Error occurred: $errorMessage');
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi: $errorMessage')),
-      );
     });
   }
 
@@ -415,10 +419,13 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Tổng cộng:', style: TextStyle(fontSize: 16)),
-            Text('$total',
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Tổng cộng:',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(formatter.format(total),
+                style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red)),
           ],
         ),
         const SizedBox(height: 10),
