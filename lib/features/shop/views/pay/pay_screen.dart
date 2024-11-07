@@ -1,6 +1,9 @@
+// ignore_for_file: library_private_types_in_public_api, avoid_print, use_build_context_synchronously
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
 import 'package:grofast_consumers/features/authentication/models/addressModel.dart';
 import 'package:grofast_consumers/features/shop/models/order_model.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
@@ -22,6 +25,7 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
+  final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
   int totalAmount = 0;
   int _selectedShippingOption = 1;
   int _selectedPaymentMethod = 1;
@@ -31,6 +35,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   List<AddressModel> addresses = [];
   AddressModel? defaultAddress;
   double total = 0;
+  final Login_Controller loginController = Login_Controller();
   @override
   void initState() {
     super.initState();
@@ -135,9 +140,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     DatabaseReference ordersRef = FirebaseDatabase.instance.ref('orders');
     await ordersRef.child(order.id).set(order.toMap()).then((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đặt hàng thành công!')),
-      );
+      loginController.ThongBao(context, 'Đặt hàng thành công!');
     }).catchError((error) {
       String errorMessage = 'Lỗi không xác định';
       if (error is FirebaseException) {
@@ -301,7 +304,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Widget _buildOrderDetails() {
-    totalAmount = int.parse(widget.product.price) + shippingFee;
+    totalAmount =
+        widget.products.fold(0, (sum, item) => sum + int.parse(item.price)) +
+            shippingFee;
 
     return Card(
       child: Padding(
@@ -309,34 +314,38 @@ class _PaymentScreenState extends State<PaymentScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildOrderDetailRow(
-                'Tiền hàng (${widget.products.length} sản phẩm)',
-                '${widget.product.price}đ'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Tiền hàng (${widget.products.length} sản phẩm):'),
+                Text(NumberFormat.currency(locale: 'vi', symbol: 'đ')
+                    .format(totalAmount)),
+              ],
+            ),
             const SizedBox(height: 8.0),
-            const Divider(),
-            _buildOrderDetailRow('Phí giao hàng', '$shippingFeeđ'),
-            const Divider(),
-            _buildOrderDetailRow(
-              'Tổng cộng',
-              '$totalAmountđ',
-              isBold: true,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Phí giao hàng:'),
+                Text(NumberFormat.currency(locale: 'vi', symbol: 'đ')
+                    .format(shippingFee)),
+              ],
+            ),
+            const Divider(height: 16.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Tổng cộng:',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                    NumberFormat.currency(locale: 'vi', symbol: 'đ')
+                        .format(totalAmount + shippingFee),
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+              ],
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildOrderDetailRow(String title, String value,
-      {bool isBold = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(title,
-            style: TextStyle(
-                fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
-        Text(value),
-      ],
     );
   }
 
@@ -368,10 +377,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Tổng cộng:', style: TextStyle(fontSize: 16)),
-              Text('$totalAmountđ',
+              const Text('Tổng cộng:',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(formatter.format(totalAmount),
                   style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold)),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red)),
             ],
           ),
           const SizedBox(height: 10),

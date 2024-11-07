@@ -1,20 +1,16 @@
-// ignore_for_file: depend_on_referenced_packages
+// ignore_for_file: depend_on_referenced_packages, library_private_types_in_public_api, avoid_print, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
-import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
 import 'package:grofast_consumers/features/shop/views/favorites/providers/favorites_provider.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/productdetailscreen.dart';
-import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
-import 'package:grofast_consumers/ulits/theme/app_style.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/category_model.dart';
-import '../../cart/providers/cart_provider.dart';
 
 class ProductCard extends StatefulWidget {
   final Product product;
@@ -33,7 +29,6 @@ class ProductCard extends StatefulWidget {
 class _ProductCardState extends State<ProductCard> {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
   final Login_Controller loginController = Login_Controller();
-  final HAppStyle hAppStyle = HAppStyle();
   String userId = FirebaseAuth.instance.currentUser!.uid;
   String companyName = "Đang tải...";
 
@@ -46,7 +41,7 @@ class _ProductCardState extends State<ProductCard> {
   void _fetchCompanyName(String idHang) async {
     try {
       final DatabaseEvent event =
-          await _database.child('companys/$idHang').once();
+      await _database.child('companys/$idHang').once();
       final DataSnapshot snapshot = event.snapshot;
 
       if (snapshot.value != null) {
@@ -70,19 +65,16 @@ class _ProductCardState extends State<ProductCard> {
       String userId, Product product, BuildContext context) async {
     String errorMessage;
     final DatabaseReference cartRef =
-        FirebaseDatabase.instance.ref('users/$userId/carts');
+    FirebaseDatabase.instance.ref('users/$userId/carts');
     try {
-      // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
       final DatabaseEvent event = await cartRef.child(product.id).once();
       if (event.snapshot.value != null) {
-        // Nếu sản phẩm đã có, tăng quantity lên 1
         final currentQuantity = (event.snapshot.value as Map)['quantity'] ?? 0;
         await cartRef.child(product.id).update({
           "quantity": currentQuantity + 1,
         });
         errorMessage = "Đã tăng số lượng sản phẩm trong giỏ hàng!";
       } else {
-        // Nếu sản phẩm chưa có, thêm sản phẩm mới vào giỏ hàng
         await cartRef.child(product.id).set({
           "id": product.id,
           "name": product.name,
@@ -106,6 +98,7 @@ class _ProductCardState extends State<ProductCard> {
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
     num priceValue = num.tryParse(widget.product.price) ?? 0;
     final favoritesProvider = Provider.of<FavoritesProvider>(context);
+
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -162,10 +155,9 @@ class _ProductCardState extends State<ProductCard> {
                         ),
                         onPressed: () async {
                           if (favoritesProvider.isFavorite(widget.product)) {
-                            ShowDialogs().showDeleteFavoriteDialog(
-                                context, widget.product);
+                            favoritesProvider.removeFavorite(widget.product);
                           } else {
-                            favoritesProvider.addProductToUserHeart(
+                            await favoritesProvider.addProductToUserHeart(
                                 userId, widget.product, context);
                           }
                         },
@@ -200,7 +192,7 @@ class _ProductCardState extends State<ProductCard> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 2),
               Row(

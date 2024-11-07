@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print, duplicate_ignore
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -39,6 +41,7 @@ class FavoritesProvider with ChangeNotifier {
 
         _setLoading(false); // Cập nhật trạng thái tải sau khi nhận dữ liệu
       }, onError: (error) {
+        // ignore: avoid_print
         print("Lỗi khi tải sản phẩm yêu thích: $error");
         _setLoading(false);
       });

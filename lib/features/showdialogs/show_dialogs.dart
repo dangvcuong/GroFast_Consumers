@@ -1,4 +1,4 @@
-// ignore_for_file: file_names, unnecessary_import, use_build_context_synchronously, non_constant_identifier_names
+// ignore_for_file: file_names, unnecessary_import, use_build_context_synchronously, non_constant_identifier_names, depend_on_referenced_packages
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';

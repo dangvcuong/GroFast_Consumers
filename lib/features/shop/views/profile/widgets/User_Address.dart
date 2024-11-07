@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable, file_names, avoid_print, duplicate_ignore
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -42,6 +44,7 @@ class _AddressUserState extends State<AddressUser> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
+        // ignore: avoid_print
         print('Location permissions are denied');
       }
     }
@@ -195,21 +198,21 @@ class _AddressUserState extends State<AddressUser> {
     );
   }
 
-  void _setDefaultAddress(String key) {
-    setState(() {
-      defaultAddressKey = key; // Cập nhật địa chỉ mặc định
+  void _setDefaultAddress(String key) async {
+    for (int i = 0; i < addressKeys.length; i++) {
+      final addressKey = addressKeys[i];
+      final newStatus = addressKey == key ? 'on' : 'off';
 
-      // Cập nhật trạng thái của tất cả các địa chỉ
-      for (int i = 0; i < addressKeys.length; i++) {
-        if (addressKeys[i] == key) {
-          addresses[i] =
-              addresses[i].copyWith(status: 'on'); // Cập nhật trạng thái
-        } else {
-          addresses[i] =
-              addresses[i].copyWith(status: 'off'); // Cập nhật trạng thái
-        }
-      }
-    });
+      // Cập nhật trạng thái trong danh sách tạm thời
+      setState(() {
+        addresses[i] = addresses[i].copyWith(status: newStatus);
+      });
+
+      // Cập nhật trạng thái trong Firebase
+      await _database
+          .child('users/${currentUser!.uid}/addresses/$addressKey')
+          .update({'status': newStatus});
+    }
   }
 
   @override
@@ -267,8 +270,9 @@ class _AddressUserState extends State<AddressUser> {
                           },
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.all(5),
-                            backgroundColor:
-                                buttonColor, // Sử dụng màu đã kiểm tra
+                            backgroundColor: address.status == 'on'
+                                ? Colors.green[300]!
+                                : Colors.grey,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),

@@ -1,3 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages, duplicate_import, library_private_types_in_public_api
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
