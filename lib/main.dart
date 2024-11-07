@@ -40,21 +40,21 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue, // Ví dụ về theme
+        primarySwatch: Colors.blue,
       ),
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.active) {
             if (snapshot.hasData) {
-              return const Btn_Navigatin(); // Sử dụng HomeScreen làm trang chính khi đăng nhập
+              return const Btn_Navigatin();
             } else {
-              return const ManChao(); // Người dùng chưa đăng nhập
+              return const ManChao();
             }
           } else if (snapshot.hasError) {
-            return Center(child: Text("Lỗi: ${snapshot.error}")); // Xử lý lỗi
+            return Center(child: Text("Lỗi: ${snapshot.error}"));
           } else {
-            return const Center(child: CircularProgressIndicator()); // Đang tải
+            return const Center(child: CircularProgressIndicator());
           }
         },
       ),
