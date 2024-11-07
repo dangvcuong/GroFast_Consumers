@@ -1,7 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api, avoid_print
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
@@ -114,7 +114,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.shopping_cart),
+                        icon: const Icon(Icons.shopping_cart_outlined,color: Colors.black),
                         onPressed: () {
                           // Thực hiện hành động khi nhấn vào biểu tượng giỏ hàng
                           Navigator.push(

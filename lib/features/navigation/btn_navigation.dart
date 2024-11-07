@@ -27,7 +27,6 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
   @override
   void initState() {
     super.initState();
-    // Yêu cầu quyền khi khởi động ứng dụng
   }
 
   @override
@@ -35,7 +34,7 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
     return Scaffold(
       body: Padding(
         padding:
-            const EdgeInsets.only(top: 30.0), // Thêm khoảng cách ở trên cùng
+            const EdgeInsets.only(top: 30), // Thêm khoảng cách ở trên cùng
         child: _screens[_currentIndex], // Hiển thị màn hình tương ứng
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -46,23 +45,25 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
           });
         },
         selectedItemColor: Colors.blue, // Màu sắc khi icon được chọn
-        unselectedItemColor: Colors.black, // Màu sắc khi icon không được chọn
+        unselectedItemColor: Colors.black,
+        type: BottomNavigationBarType.fixed
+        ,// Màu sắc khi icon không được chọn
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '', // Có thể để trống nếu không muốn hiển thị
+            icon: Icon(Icons.home_outlined, size: 30,),
+            label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: '', // Có thể để trống nếu không muốn hiển thị
+            icon: Icon(Icons.search, size: 30),
+            label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: '', // Có thể để trống nếu không muốn hiển thị
+            icon: Icon(Icons.favorite_outline_outlined, size: 30),
+            label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '', // Có thể để trống nếu không muốn hiển thị
+            icon: Icon(Icons.person_outline, size: 30),
+            label: '',
           ),
         ],
       ),

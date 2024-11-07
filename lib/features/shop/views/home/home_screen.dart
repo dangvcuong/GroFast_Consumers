@@ -1,6 +1,15 @@
 import 'dart:async';
+
+import 'package:diacritic/diacritic.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:grofast_consumers/constants/app_sizes.dart';
+import 'package:grofast_consumers/features/shop/models/product_model.dart';
+import 'package:grofast_consumers/features/shop/views/home/widget/category_menu.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/profile_detail_screen.dart';
+import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
+
 import '../cart/Product_cart_item.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -11,33 +20,45 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final PageController _pageController =
-      PageController(); // Điều khiển PageView
-  int _currentPage = 0; // Biến lưu trang hiện tại
+  final DatabaseReference _databaseRef =
+  FirebaseDatabase.instance.ref('products');
+
+  final TextEditingController _searchController = TextEditingController();
+
+  List<Product> _products = [];
+  List<Product> _filteredProducts = [];
+  bool _isLoading = true;
+  String? _selectedBrandId;
+
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
   final List<String> _banners = [
     'https://img.pikbest.com/templates/20240902/food-sale-promotion-banner-for-supermarket-restaurants_10785489.jpg!w700wp',
     'https://www.bigc.vn/files/banners/2021/may-21/resize-template-black-red-banner-web-go-2.jpg',
     'https://img.freepik.com/free-vector/hand-drawn-fast-food-sale-banner_23-2150970571.jpg',
     'https://channel.mediacdn.vn/2021/4/27/photo-1-1619536488295922378403.jpg',
-  ]; // Danh sách URL của banner
-  Timer? _timer; // Khai báo Timer
+  ];
+
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
+    _fetchProducts();
+    _searchController.addListener(_filterProducts);
+
     _pageController.addListener(() {
-      // Cập nhật trang hiện tại khi PageView thay đổi
       setState(() {
         _currentPage = _pageController.page!.round();
       });
     });
 
-    // Tạo Timer để tự động chuyển trang
     _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
       if (_currentPage < _banners.length - 1) {
         _currentPage++;
       } else {
-        _currentPage = 0; // Quay lại trang đầu
+        _currentPage = 0;
       }
       _pageController.animateToPage(
         _currentPage,
@@ -47,11 +68,63 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _fetchProducts() async {
+    const timeoutDuration = Duration(seconds: 10);
+    bool dataLoaded = false;
+
+    _databaseRef.onValue.timeout(timeoutDuration, onTimeout: (eventSink) {
+      if (!dataLoaded) {
+        setState(() => _isLoading = false);
+        print("Timeout: Quá trình tải dữ liệu mất quá lâu.");
+      }
+    }).listen((event) {
+      final data = event.snapshot.value as Map<dynamic, dynamic>?;
+      if (data != null) {
+        final loadedProducts = data.entries.map((entry) {
+          return Product.fromMap(
+              Map<String, dynamic>.from(entry.value), entry.key);
+        }).toList();
+        setState(() {
+          _products = loadedProducts;
+          _filteredProducts = loadedProducts;
+          _isLoading = false;
+          dataLoaded = true;
+        });
+      } else {
+        print("Không tìm thấy dữ liệu trong Firebase.");
+        setState(() => _isLoading = false);
+      }
+    }, onError: (error) {
+      print("Lỗi khi tải sản phẩm: $error");
+      setState(() => _isLoading = false);
+    });
+  }
+
+  void _filterProducts() {
+    final query = removeDiacritics(_searchController.text.toLowerCase());
+    setState(() {
+      _filteredProducts = _products.where((product) {
+        final productName = removeDiacritics(product.name.toLowerCase());
+        final productDescription =
+        removeDiacritics(product.description.toLowerCase());
+
+        final matchesBrand = _selectedBrandId == null ||
+            (_selectedBrandId == "highRating"
+                ? (int.tryParse(product.evaluate) ?? 0) >= 4
+                : product.idHang == _selectedBrandId);
+        final matchesQuery =
+            productName.contains(query) || productDescription.contains(query);
+
+        return matchesBrand && matchesQuery;
+      }).toList();
+    });
+  }
+
   @override
   void dispose() {
-    _timer?.cancel(); // Hủy Timer
-    _pageController
-        .dispose(); // Giải phóng PageController khi không còn sử dụng
+    _timer?.cancel();
+    _searchController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -63,7 +136,6 @@ class _HomeScreenState extends State<HomeScreen> {
         preferredSize: const Size.fromHeight(30.0),
         child: AppBar(
           backgroundColor: Colors.white,
-          elevation: 0,
           leading: const Icon(Icons.location_on, color: Colors.blue),
           title: const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,214 +155,192 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                   MaterialPageRoute(
                       builder: (context) =>
-                          const ProfileDetailScreen()), // Điều hướng đến ProfileDetail
+                      const ProfileDetailScreen()),
                 );
               },
             ),
             IconButton(
-              icon:
-                  const Icon(Icons.shopping_cart_outlined, color: Colors.black),
+              icon: const Icon(
+                  Icons.shopping_cart_outlined, color: Colors.black),
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) =>
-                          const CartScreen()), // Điều hướng đến CartScreen
+                      const CartScreen()),
                 );
               },
             ),
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Thanh tìm kiếm
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Bạn muốn tìm gì?',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none,
-                  ),
-                  fillColor: Colors.grey[200],
-                  filled: true,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Bạn muốn tìm gì?',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
                 ),
               ),
-              const SizedBox(height: 16),
-
-              // Danh mục sản phẩm với 2 hàng ngang
-              SizedBox(
-                height: MediaQuery.of(context).size.height *
-                    0.20, // 10% chiều cao màn hình
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          _buildCategoryItem("Trái cây",
-                              "assets/images/category/vegetable.png"),
-                          const SizedBox(width: 16),
-                          _buildCategoryItem(
-                              "Hoa quả", "assets/images/category/fruit.png"),
-                          const SizedBox(width: 16),
-                          _buildCategoryItem(
-                              "Thực phẩm", "assets/images/category/basket.png"),
-                          const SizedBox(width: 16),
-                          _buildCategoryItem(
-                              "Bánh", "assets/images/category/milk.png"),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          _buildCategoryItem(
-                              "Đồ uống", "assets/images/category/milk.png"),
-                          const SizedBox(width: 16),
-                          _buildCategoryItem(
-                              "Rau củ", "assets/images/category/vegetable.png"),
-                          const SizedBox(width: 16),
-                          _buildCategoryItem(
-                              "Đồ dùng", "assets/images/category/fruit.png"),
-                          const SizedBox(width: 16),
-                          _buildCategoryItem(
-                              "Thịt", "assets/images/category/basket.png"),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Banner quảng cáo với PageView
-              SizedBox(
-                height: 120,
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: _banners.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: NetworkImage(_banners[index]),
-                          fit: BoxFit.cover,
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                CategoryMenu(
+                                    title: "Trái cây",
+                                    imagePath: "assets/images/category/vegetable.png"),
+                                gapW4,
+                                CategoryMenu(
+                                    title: "Hoa quả",
+                                    imagePath: "assets/images/category/fruit.png"),
+                                gapW4,
+                                CategoryMenu(
+                                    title: "Thực phẩm",
+                                    imagePath: "assets/images/category/basket.png"),
+                                gapW4,
+                                CategoryMenu(
+                                    title: "Bánh",
+                                    imagePath: "assets/images/category/milk.png"),
+                                gapW4,
+                                CategoryMenu(
+                                    title: "Hoa quả",
+                                    imagePath: "assets/images/category/fruit.png"),
+                                gapW4,
+                                CategoryMenu(
+                                    title: "Thực phẩm",
+                                    imagePath: "assets/images/category/basket.png"),
+                                gapW4,
+                                CategoryMenu(
+                                    title: "Bánh",
+                                    imagePath: "assets/images/category/milk.png"),
+                              ],
+                            ),
+                            gapH10,
+                            Row(
+                              children: [
+                                CategoryMenu(
+                                    title: "Đồ uống",
+                                    imagePath: "assets/images/category/milk.png"),
+                                gapW4,
+                                CategoryMenu(
+                                    title: "Rau củ",
+                                    imagePath: "assets/images/category/vegetable.png"),
+                                gapW4,
+                                CategoryMenu(
+                                    title: "Đồ dùng",
+                                    imagePath: "assets/images/category/fruit.png"),
+                                gapW4,
+                                CategoryMenu(
+                                    title: "Thịt",
+                                    imagePath: "assets/images/category/basket.png"),
+                                gapW4,
+                                CategoryMenu(
+                                    title: "Rau củ",
+                                    imagePath: "assets/images/category/vegetable.png"),
+                                gapW4,
+                                CategoryMenu(
+                                    title: "Đồ dùng",
+                                    imagePath: "assets/images/category/fruit.png"),
+                                gapW4,
+                                CategoryMenu(
+                                    title: "Thịt",
+                                    imagePath: "assets/images/category/basket.png"),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                    );
-                  },
-                ),
-              ),
-
-              // Thanh trượt indicator
-              const SizedBox(height: 5), // Thêm khoảng cách 5dp
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(_banners.length, (index) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    height: 4, // Thay đổi chiều cao thanh trượt
-                    width: _currentPage == index
-                        ? 10
-                        : 4, // Thay đổi chiều rộng của thanh trượt
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                      color: _currentPage == index ? Colors.blue : Colors.grey,
                     ),
-                  );
-                }),
-              ),
-              const SizedBox(height: 16),
-
-              // Sản phẩm gần đây
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("Sản phẩm gần đây",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text("Xem tất cả"),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 150,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    _buildProductItem(
-                        "Hoa quả", "Táo", "assets/images/category/apple.png"),
-                    _buildProductItem("Đồ uống", "Sữa tươi",
-                        "assets/images/category/milk.png"),
-                    // Thêm sản phẩm khác nếu cần
+                    gapH16,
+                    // Các banner cuộn
+                    SizedBox(
+                      height: 130,
+                      child: PageView.builder(
+                        controller: _pageController,
+                        itemCount: _banners.length,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              image: DecorationImage(
+                                image: NetworkImage(_banners[index]),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    gapH6,
+                    // Dấu chấm chỉ mục cho các banner
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(_banners.length, (index) {
+                        return Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          height: 6,
+                          width: 6,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _currentPage == index ? Colors.blue : Colors
+                                .grey,
+                          ),
+                        );
+                      }),
+                    ),
+                    gapH16,
+                    const Text("Sản phẩm mới nhất",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    gapH8,
+                    // Hiển thị các sản phẩm đã lọc
+                    _filteredProducts.isNotEmpty
+                        ? SizedBox(
+                      height: 265,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _filteredProducts.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4.0),
+                            child: Container(
+                              width: 200,
+                              child: ProductCard(
+                                product: _filteredProducts[index],
+                                userId: FirebaseAuth.instance.currentUser!.uid,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                        : const Center(
+                      child: Text("Không tìm thấy sản phẩm nào"),
+                    ),
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Hàm xây dựng một mục danh mục
-  Widget _buildCategoryItem(String title, String imagePath) {
-    return SizedBox(
-      width: 80,
-      child: Column(
-        children: [
-          Container(
-            width: 48, // Đặt chiều rộng cho hình ảnh
-            height: 48, // Đặt chiều cao cho hình ảnh
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(imagePath),
-                fit: BoxFit.cover,
-              ),
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.grey[200],
             ),
           ),
-          const SizedBox(height: 8),
-          Text(title, style: const TextStyle(fontSize: 14)),
-        ],
-      ),
-    );
-  }
-
-  // Hàm xây dựng một mục sản phẩm
-  Widget _buildProductItem(String category, String name, String imagePath) {
-    return Container(
-      width: 100,
-      margin: const EdgeInsets.only(right: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(imagePath),
-                fit: BoxFit.cover,
-              ),
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.grey[200],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(name, style: const TextStyle(fontSize: 14)),
-          Text(category,
-              style: const TextStyle(fontSize: 12, color: Colors.grey)),
         ],
       ),
     );
