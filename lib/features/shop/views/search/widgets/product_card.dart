@@ -1,5 +1,3 @@
-// ignore_for_file: depend_on_referenced_packages, library_private_types_in_public_api, avoid_print, use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -35,13 +33,12 @@ class _ProductCardState extends State<ProductCard> {
   @override
   void initState() {
     super.initState();
-    _fetchCompanyName(widget.product.idHang); // Gọi hàm để lấy tên hãng
+    _fetchCompanyName(widget.product.idHang);
   }
 
   void _fetchCompanyName(String idHang) async {
     try {
-      final DatabaseEvent event =
-      await _database.child('companys/$idHang').once();
+      final DatabaseEvent event = await _database.child('companys/$idHang').once();
       final DataSnapshot snapshot = event.snapshot;
 
       if (snapshot.value != null) {
@@ -53,19 +50,15 @@ class _ProductCardState extends State<ProductCard> {
         setState(() {
           companyName = "Không tìm thấy hãng";
         });
-        print("Không tìm thấy hãng với ID: $idHang");
       }
     } catch (error) {
-      setState(() {});
       print("Lỗi khi tải tên hãng: $error");
     }
   }
 
-  Future<void> addProductToUserCart(
-      String userId, Product product, BuildContext context) async {
+  Future<void> addProductToUserCart(String userId, Product product, BuildContext context) async {
     String errorMessage;
-    final DatabaseReference cartRef =
-    FirebaseDatabase.instance.ref('users/$userId/carts');
+    final DatabaseReference cartRef = FirebaseDatabase.instance.ref('users/$userId/carts');
     try {
       final DatabaseEvent event = await cartRef.child(product.id).once();
       if (event.snapshot.value != null) {
@@ -156,11 +149,12 @@ class _ProductCardState extends State<ProductCard> {
                         onPressed: () async {
                           if (favoritesProvider.isFavorite(widget.product)) {
                             favoritesProvider.removeFavorite(widget.product);
+                            loginController.ThongBao(context, "Đã xóa khỏi yêu thích!");
                           } else {
-                            await favoritesProvider.addProductToUserHeart(
-                                userId, widget.product, context);
+                            await favoritesProvider.addProductToUserHeart(userId, widget.product, context);
                           }
                         },
+
                       ),
                     ),
                   ),
@@ -191,8 +185,7 @@ class _ProductCardState extends State<ProductCard> {
                 widget.product.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style:
-                const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 2),
               Row(
