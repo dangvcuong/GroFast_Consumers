@@ -32,6 +32,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   final Login_Controller loginController = Login_Controller();
   String userId = FirebaseAuth.instance.currentUser!.uid;
   String errorMessage = "";
+
   @override
   void initState() {
     super.initState();
@@ -47,7 +48,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         final data = snapshot.value as Map<dynamic, dynamic>;
 
         otherProducts = data.entries
-            .where((entry) => entry.key != widget.product.id)
+            .where((entry) =>
+                entry.key != widget.product.id &&
+                Product.fromMap(
+                            Map<String, dynamic>.from(entry.value), entry.key)
+                        .idHang ==
+                    widget.product.idHang)
             .map((entry) => Product.fromMap(
                 Map<String, dynamic>.from(entry.value), entry.key))
             .toList();
