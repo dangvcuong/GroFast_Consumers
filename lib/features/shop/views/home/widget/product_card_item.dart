@@ -1,96 +1,43 @@
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
+import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
 import 'package:grofast_consumers/features/shop/views/favorites/providers/favorites_provider.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/productdetailscreen.dart';
+import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
+import 'package:grofast_consumers/ulits/theme/app_style.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/category_model.dart';
+import '../../cart/providers/cart_provider.dart';
 
-class ProductCard extends StatefulWidget {
+
+class ProductCardWidget extends StatelessWidget {
   final Product product;
   final String userId;
+  final String companyName;
+  final Function onAddToCart;
+  final Function onFavoriteToggle;
+  final bool isFavorite;
 
-  const ProductCard({
+  const ProductCardWidget({
     super.key,
     required this.product,
     required this.userId,
+    required this.companyName,
+    required this.onAddToCart,
+    required this.onFavoriteToggle,
+    required this.isFavorite,
   });
-
-  @override
-  _ProductCardState createState() => _ProductCardState();
-}
-
-class _ProductCardState extends State<ProductCard> {
-  final DatabaseReference _database = FirebaseDatabase.instance.ref();
-  final Login_Controller loginController = Login_Controller();
-  String userId = FirebaseAuth.instance.currentUser!.uid;
-  String companyName = "Đang tải...";
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchCompanyName(widget.product.idHang);
-  }
-
-  void _fetchCompanyName(String idHang) async {
-    try {
-      final DatabaseEvent event = await _database.child('companys/$idHang').once();
-      final DataSnapshot snapshot = event.snapshot;
-
-      if (snapshot.value != null) {
-        final data = snapshot.value as Map<dynamic, dynamic>;
-        setState(() {
-          companyName = data['name'] ?? "Không xác định";
-        });
-      } else {
-        setState(() {
-          companyName = "Không tìm thấy hãng";
-        });
-      }
-    } catch (error) {
-      print("Lỗi khi tải tên hãng: $error");
-    }
-  }
-
-  Future<void> addProductToUserCart(String userId, Product product, BuildContext context) async {
-    String errorMessage;
-    final DatabaseReference cartRef = FirebaseDatabase.instance.ref('users/$userId/carts');
-    try {
-      final DatabaseEvent event = await cartRef.child(product.id).once();
-      if (event.snapshot.value != null) {
-        final currentQuantity = (event.snapshot.value as Map)['quantity'] ?? 0;
-        await cartRef.child(product.id).update({
-          "quantity": currentQuantity + 1,
-        });
-        errorMessage = "Đã tăng số lượng sản phẩm trong giỏ hàng!";
-      } else {
-        await cartRef.child(product.id).set({
-          "id": product.id,
-          "name": product.name,
-          "description": product.description,
-          "imageUrl": product.imageUrl,
-          "price": product.price,
-          "evaluate": product.evaluate,
-          "quantity": 1,
-          "idHang": product.idHang,
-        });
-        errorMessage = "Sản phẩm đã được thêm vào giỏ hàng!";
-      }
-    } catch (error) {
-      errorMessage = "Lỗi khi thêm sản phẩm vào giỏ hàng: $error";
-    }
-    loginController.ThongBao(context, errorMessage);
-  }
 
   @override
   Widget build(BuildContext context) {
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
-    num priceValue = num.tryParse(widget.product.price) ?? 0;
-    final favoritesProvider = Provider.of<FavoritesProvider>(context);
+    num priceValue = num.tryParse(product.price) ?? 0;
 
     return InkWell(
       onTap: () {
@@ -98,7 +45,7 @@ class _ProductCardState extends State<ProductCard> {
           context,
           MaterialPageRoute(
             builder: (context) => ProductDetailScreen(
-              product: widget.product,
+              product: product,
             ),
           ),
         );
@@ -121,7 +68,7 @@ class _ProductCardState extends State<ProductCard> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12.0),
                       child: Image.network(
-                        widget.product.imageUrl,
+                        product.imageUrl,
                         height: 110,
                         fit: BoxFit.cover,
                       ),
@@ -142,19 +89,9 @@ class _ProductCardState extends State<ProductCard> {
                         icon: Icon(
                           Icons.favorite,
                           size: 18,
-                          color: favoritesProvider.isFavorite(widget.product)
-                              ? Colors.red
-                              : Colors.grey.shade300,
+                          color: isFavorite ? Colors.red : Colors.grey.shade300,
                         ),
-                        onPressed: () async {
-                          if (favoritesProvider.isFavorite(widget.product)) {
-                            favoritesProvider.removeFavorite(widget.product);
-                            loginController.ThongBao(context, "Đã xóa khỏi yêu thích!");
-                          } else {
-                            await favoritesProvider.addProductToUserHeart(userId, widget.product, context);
-                          }
-                        },
-
+                        onPressed: () => onFavoriteToggle(),
                       ),
                     ),
                   ),
@@ -172,7 +109,7 @@ class _ProductCardState extends State<ProductCard> {
                         fontSize: 10),
                   ),
                   Text(
-                    displayUnit(widget.product.idHang),
+                    displayUnit(product.idHang),
                     style: TextStyle(
                         color: Colors.black.withOpacity(0.6),
                         fontWeight: FontWeight.bold,
@@ -182,10 +119,11 @@ class _ProductCardState extends State<ProductCard> {
               ),
               const SizedBox(height: 2),
               Text(
-                widget.product.name,
+                product.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 2),
               Row(
@@ -194,10 +132,10 @@ class _ProductCardState extends State<ProductCard> {
                   Row(
                     children: [
                       const Icon(Icons.star, color: Colors.orange, size: 16),
-                      Text("${widget.product.evaluate}/5"),
+                      Text("${product.evaluate}/5"),
                     ],
                   ),
-                  Text("${widget.product.quantity} Đã bán"),
+                  Text("${product.quantity} Đã bán"),
                 ],
               ),
               const SizedBox(height: 1),
@@ -220,7 +158,7 @@ class _ProductCardState extends State<ProductCard> {
                         size: 35,
                       ),
                       onPressed: () {
-                        addProductToUserCart(userId, widget.product, context);
+                        onAddToCart(userId, product);
                       },
                     ),
                   ),
