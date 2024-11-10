@@ -24,6 +24,8 @@ import 'package:grofast_consumers/features/shop/views/voucher/voucher_screen.dar
 import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
 import 'package:grofast_consumers/ulits/theme/app_style.dart';
 
+import '../oder/oder_screen.dart';
+
 class ProFile_Management extends StatefulWidget {
   const ProFile_Management({super.key});
 
@@ -148,7 +150,12 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                       style: HAppStyle.heading4Style,
                     ),
                     GestureDetector(
-                      // onTap: () => Get.toNamed(HAppRoutes.listOrder),
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const OrderScreen()));
+                      },
                       child: const ListTile(
                         contentPadding: EdgeInsets.zero,
                         // leading: Icon(EvaIcons.shoppingBagOutline),
