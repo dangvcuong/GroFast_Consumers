@@ -133,7 +133,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       userId: currentUser!.uid,
       products: products,
       totalAmount: (int.parse(widget.product.price) + shippingFee).toString(),
-      orderStatus: 'pending',
+      orderStatus: 'Đang chờ xác nhận',
       orderDate: DateTime.now(),
       shippingAddress: defaultAddress!,
     );
