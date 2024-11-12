@@ -1,11 +1,11 @@
 // ignore_for_file: library_private_types_in_public_api, avoid_print, prefer_const_constructors
 
-import 'package:flutter/material.dart';
+import 'package:diacritic/diacritic.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
-import 'package:diacritic/diacritic.dart';
 
 import '../cart/Product_cart_item.dart';
 
@@ -99,7 +99,7 @@ class _SearchScreenState extends State<SearchScreen> {
           : Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  padding: const EdgeInsets.only(top: 30),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -116,7 +116,6 @@ class _SearchScreenState extends State<SearchScreen> {
                       IconButton(
                         icon: const Icon(Icons.shopping_cart_outlined,color: Colors.black),
                         onPressed: () {
-                          // Thực hiện hành động khi nhấn vào biểu tượng giỏ hàng
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -128,18 +127,18 @@ class _SearchScreenState extends State<SearchScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(14.0),
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
                       hintText: "Tìm kiếm...",
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 12.0)),
                   ),
                 ),
                 SingleChildScrollView(

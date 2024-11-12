@@ -1,4 +1,3 @@
-// ignore_for_file: camel_case_types, unused_import, duplicate_ignore, avoid_print, prefer_const_constructors
 
 import 'dart:io';
 
@@ -68,7 +67,7 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
               style: HAppStyle.heading3Style,
             ),
             IconButton(
-              icon: const Icon(Icons.shopping_cart),
+              icon: const Icon(Icons.shopping_cart_outlined,color: Colors.black,),
               onPressed: () {
                 Navigator.push(
                   context,

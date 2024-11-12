@@ -34,7 +34,7 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
     return Scaffold(
       body: Padding(
         padding:
-            const EdgeInsets.only(top: 30), // Thêm khoảng cách ở trên cùng
+            const EdgeInsets.only(top: 0), // Thêm khoảng cách ở trên cùng
         child: _screens[_currentIndex], // Hiển thị màn hình tương ứng
       ),
       bottomNavigationBar: BottomNavigationBar(

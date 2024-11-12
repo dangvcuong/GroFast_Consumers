@@ -107,7 +107,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   void _placeOrder() async {
-    // Kiểm tra xem có địa chỉ mặc định không
+
     if (defaultAddress == null || defaultAddress!.nameAddresUser.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng thêm địa chỉ giao hàng.')),
@@ -170,7 +170,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle('Thông tin giao hàng', 'Sửa', () {
+            _buildSectionTitle('Thông tin giao hàng', 'Thêm', () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const AddressUser()),

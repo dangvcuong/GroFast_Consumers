@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:grofast_consumers/constants/app_sizes.dart';
 import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/views/favorites/providers/favorites_provider.dart';
@@ -105,11 +106,11 @@ class _ProductCardState extends State<ProductCard> {
       },
       child: Card(
         color: Colors.white,
-        elevation: 5,
+        elevation: 1,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(8.0),
         ),
-        margin: const EdgeInsets.all(8.0),
+        margin: const EdgeInsets.symmetric(horizontal: 4),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
@@ -160,7 +161,7 @@ class _ProductCardState extends State<ProductCard> {
                   ),
                 ],
               ),
-              const SizedBox(height: 7),
+              gapH8,
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -169,14 +170,14 @@ class _ProductCardState extends State<ProductCard> {
                     style: TextStyle(
                         color: Colors.black.withOpacity(0.6),
                         fontWeight: FontWeight.bold,
-                        fontSize: 10),
+                        fontSize: 12),
                   ),
                   Text(
                     displayUnit(widget.product.idHang),
                     style: TextStyle(
                         color: Colors.black.withOpacity(0.6),
                         fontWeight: FontWeight.bold,
-                        fontSize: 10),
+                        fontSize: 12),
                   ),
                 ],
               ),
@@ -185,7 +186,7 @@ class _ProductCardState extends State<ProductCard> {
                 widget.product.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 2),
               Row(
@@ -193,7 +194,7 @@ class _ProductCardState extends State<ProductCard> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.star, color: Colors.orange, size: 16),
+                      const Icon(Icons.star, color: Colors.orange, size: 18),
                       Text("${widget.product.evaluate}/5"),
                     ],
                   ),
@@ -206,18 +207,18 @@ class _ProductCardState extends State<ProductCard> {
                 children: [
                   Text(formatter.format(priceValue),
                       style: const TextStyle(
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue)),
+                          color: Color(0xFFF44336))),
                   Container(
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
                       icon: const Icon(
-                        Icons.add_circle,
-                        color: Colors.blue,
-                        size: 35,
+                        Icons.add_circle_outline,
+                        color: Colors.red,
+                        size: 30,
                       ),
                       onPressed: () {
                         addProductToUserCart(userId, widget.product, context);
