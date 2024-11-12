@@ -10,6 +10,27 @@ class CategoryMenu extends StatelessWidget {
     required this.imagePath,
   });
 
+  static List<CategoryMenu> getCategoryList() {
+    return [
+      CategoryMenu(title: "Trái cây", imagePath: "assets/images/category/vegetable.png"),
+      CategoryMenu(title: "Hoa quả", imagePath: "assets/images/category/fruit.png"),
+      CategoryMenu(title: "Thực phẩm", imagePath: "assets/images/category/basket.png"),
+      CategoryMenu(title: "Bánh", imagePath: "assets/images/category/milk.png"),
+      CategoryMenu(title: "Đồ uống", imagePath: "assets/images/category/milk.png"),
+      CategoryMenu(title: "Rau củ", imagePath: "assets/images/category/vegetable.png"),
+      CategoryMenu(title: "Đồ dùng", imagePath: "assets/images/category/fruit.png"),
+      CategoryMenu(title: "Thịt", imagePath: "assets/images/category/basket.png"),
+      CategoryMenu(title: "Trái cây", imagePath: "assets/images/category/vegetable.png"),
+      CategoryMenu(title: "Hoa quả", imagePath: "assets/images/category/fruit.png"),
+      CategoryMenu(title: "Thực phẩm", imagePath: "assets/images/category/basket.png"),
+      CategoryMenu(title: "Bánh", imagePath: "assets/images/category/milk.png"),
+      CategoryMenu(title: "Đồ uống", imagePath: "assets/images/category/milk.png"),
+      CategoryMenu(title: "Rau củ", imagePath: "assets/images/category/vegetable.png"),
+      CategoryMenu(title: "Đồ dùng", imagePath: "assets/images/category/fruit.png"),
+      CategoryMenu(title: "Thịt", imagePath: "assets/images/category/basket.png"),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -25,7 +46,10 @@ class CategoryMenu extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
               borderRadius: BorderRadius.circular(8),
-              color: Colors.grey[200],
+              border: Border.all(
+                color: Colors.grey,
+                width: 1,
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -35,4 +59,3 @@ class CategoryMenu extends StatelessWidget {
     );
   }
 }
-

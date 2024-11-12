@@ -23,7 +23,7 @@ class FavoriteProductsScreen extends StatelessWidget {
           : Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  padding: const EdgeInsets.only(top: 30),
                   child: Row(
                     children: [
                       Padding(
@@ -54,7 +54,7 @@ class FavoriteProductsScreen extends StatelessWidget {
                       ),
                       const Spacer(),
                       IconButton(
-                        icon: const Icon(Icons.shopping_cart),
+                        icon: const Icon(Icons.shopping_cart_outlined,color: Colors.black,),
                         onPressed: () {
                           Navigator.push(
                             context,
