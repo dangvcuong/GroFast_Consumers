@@ -334,18 +334,6 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
             },
           ),
         ),
-        ListTile(
-          title: const Text('Thanh toán bằng Thẻ'),
-          leading: Radio(
-            value: 3,
-            groupValue: _selectedPaymentMethod,
-            onChanged: (int? value) {
-              setState(() {
-                _selectedPaymentMethod = value!;
-              });
-            },
-          ),
-        ),
       ],
     );
   }
