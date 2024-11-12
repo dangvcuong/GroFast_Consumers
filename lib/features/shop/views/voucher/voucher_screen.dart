@@ -1,5 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'dart:math';
+import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
 
 class VoucherScreen extends StatefulWidget {
   const VoucherScreen({super.key});
@@ -8,14 +10,10 @@ class VoucherScreen extends StatefulWidget {
   State<VoucherScreen> createState() => _VoucherScreenState();
 }
 
-class _VoucherScreenState extends State<VoucherScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-  double _currentAngle = 0.0;
-  bool _isSpinning = false;
+class _VoucherScreenState extends State<VoucherScreen> {
+  // Sử dụng broadcast để nhiều widget có thể lắng nghe stream
+  StreamController<int> selected = StreamController<int>.broadcast();
 
-  // Danh sách phần thưởng
   final List<String> rewards = [
     "Chúc bạn may mắn lần sau",
     "Thẻ quà tặng",
@@ -24,131 +22,142 @@ class _VoucherScreenState extends State<VoucherScreen>
     "Voucher ăn uống",
     "Phần thưởng đặc biệt"
   ];
+  List<String> voucherList = [];
+  bool isSpinning = false; // Trạng thái vòng quay đang quay hay không
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
+    isSpinning = false;
+  }
 
-    _animation = Tween<double>(begin: 0, end: 1).animate(_controller)
-      ..addListener(() {
-        setState(() {
-          _currentAngle = _animation.value * 2 * pi * 5; // Xoay 5 vòng
-        });
-      });
+  void spinWheel() {
+    if (isSpinning) return;
 
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        setState(() {
-          _isSpinning = false;
-        });
-        _showRewardDialog();
-        _controller.reset();
-      }
+    setState(() {
+      isSpinning = true;
     });
-  }
 
-  void _spinWheel() {
-    if (!_isSpinning) {
-      setState(() {
-        _isSpinning = true;
-      });
-      _controller.forward();
+    int randomIndex = Fortune.randomInt(0, rewards.length);
+    selected.add(randomIndex);
+
+    String wonReward= rewards[randomIndex];
+    if(wonReward !="Mất lượt"){
+      voucherList.add(wonReward);
     }
-  }
 
-  void _showRewardDialog() {
-    // Tính chỉ số phần thưởng dựa trên góc hiện tại
-    int rewardIndex = ((-(_currentAngle % (2 * pi)) + (pi / rewards.length)) /
-                (2 * pi / rewards.length))
-            .floor() %
-        rewards.length; // Đảm bảo rằng rewardIndex là kiểu int
+    Future.delayed(Duration(seconds: 5), () {
+      setState(() {
+        isSpinning = false;
+      });
 
-    String reward = rewards[rewardIndex];
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Chúc mừng!"),
-          content: Text("Bạn đã trúng: $reward"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Đóng"),
-            ),
-          ],
-        );
-      },
-    );
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Chúc mừng!"),
+            content: Text("Bạn đã trúng: $wonReward"),
+            actions: <Widget>[
+              TextButton(
+                child: Text("Đóng"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: Text("Xem Voucher"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> VoucherListScreen(vouchers: voucherList)));
+                },
+              ),
+            ],
+          );
+        },
+      );
+    });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    selected.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green[200],
       appBar: AppBar(
-        title: const Text("Vòng Quay May Mắn"),
+        title: Text('Mã ưu đãi của tôi'),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                Transform.rotate(
-                  angle: _currentAngle,
-                  child: CustomPaint(
-                    size: const Size(300, 300),
-                    painter: WheelPainter(rewards),
+            Positioned.fill(
+              child: Center(
+                child: Container(
+                  height: 300,
+                  width: 300,
+                  child: FortuneWheel(
+                    selected: selected.stream,
+                    items: [
+                      for (var it in rewards)
+                        FortuneItem(
+                          child: Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: Colors.primaries[rewards.indexOf(it) %
+                                  Colors.primaries.length],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: EdgeInsets.all(30),
+                            child: Text(
+                              it,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                              maxLines: 2,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-                const Positioned(
-                  top: 10,
-                  child: Icon(
-                    Icons.arrow_drop_up,
-                    size: 30,
-                    color: Colors.red,
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: _isSpinning ? null : _spinWheel,
-                  style: ElevatedButton.styleFrom(
-                    shape: const CircleBorder(),
-                    backgroundColor: Colors.grey[800],
-                    padding: const EdgeInsets.all(24),
-                  ),
-                  child: const Text(
-                    "QUAY",
-                    style: TextStyle(fontSize: 18, color: Colors.white),
-                  ),
-                ),
-              ],
+              ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () {
-                // Logic cho nút "Thêm lượt" (nếu có)
-              },
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text("Thêm lượt",
-                  style: TextStyle(color: Colors.white)),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              "Mã dự thưởng tháng 10",
-              style: TextStyle(color: Colors.black, fontSize: 16),
+            Positioned(
+              top: MediaQuery.of(context).size.height * 0.41,
+              left: MediaQuery.of(context).size.width * 0.5 - 25,
+              child: GestureDetector(
+                onTap: spinWheel,
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      "Quay",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -156,77 +165,25 @@ class _VoucherScreenState extends State<VoucherScreen>
     );
   }
 }
-
-class WheelPainter extends CustomPainter {
-  final List<String> rewards;
-
-  WheelPainter(this.rewards);
+class VoucherListScreen extends StatelessWidget {
+  final List<String> vouchers;
+  
+  const VoucherListScreen({super.key, required this.vouchers});
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..style = PaintingStyle.fill;
-    final radius = size.width / 2;
-
-    for (int i = 0; i < rewards.length; i++) {
-      final startAngle = (i * 2 * pi) / rewards.length;
-      final sweepAngle = (2 * pi) / rewards.length;
-
-      // Chọn màu cho mỗi phần
-      paint.color = Colors.primaries[i % Colors.primaries.length];
-
-      // Vẽ hình tròn
-      canvas.drawArc(
-        Rect.fromCircle(center: Offset(radius, radius), radius: radius),
-        startAngle,
-        sweepAngle,
-        true,
-        paint,
-      );
-
-      // Vẽ chữ phần thưởng
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: rewards[i],
-          style: const TextStyle(
-            color: Colors.white, // Màu chữ chính
-            fontSize: 16, // Kích thước chữ lớn hơn
-            fontWeight: FontWeight.bold, // Chữ in đậm
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-
-      textPainter.layout();
-
-      final x = radius +
-          (radius / 2) * cos(startAngle + sweepAngle / 2) -
-          textPainter.width / 2;
-      final y = radius +
-          (radius / 2) * sin(startAngle + sweepAngle / 2) -
-          textPainter.height / 2;
-
-      // Vẽ viền chữ (bóng chữ)
-      final textBorderPainter = TextPainter(
-        text: TextSpan(
-          text: rewards[i],
-          style: const TextStyle(
-            color: Colors.black, // Màu viền
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-
-      textBorderPainter.layout();
-      textBorderPainter.paint(
-          canvas, Offset(x + 1, y + 1)); // Dịch chuyển viền một chút
-
-      // Vẽ chữ chính
-      textPainter.paint(canvas, Offset(x, y));
-    }
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Danh Sách Voucher của bạn"),
+      ),
+      body: ListView.builder(
+        itemCount: vouchers.length,
+          itemBuilder: (context,index){
+          return ListTile(
+            title: Text(vouchers[index]),
+          );
+          }),
+    );
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
+
