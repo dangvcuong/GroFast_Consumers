@@ -6,7 +6,6 @@ import 'package:grofast_consumers/features/authentication/controllers/login_cont
 import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
 import 'package:grofast_consumers/features/shop/views/cart/providers/cart_provider.dart';
 import 'package:grofast_consumers/features/shop/views/pay/pay_cart_screen.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 // Adjust to your actual CartProvider file path
@@ -21,7 +20,6 @@ class _CartScreenState extends State<CartScreen> {
   bool _isInitialized =
       false; // Flag to check if fetchCartItems has been called
   final Login_Controller login_controller = Login_Controller();
-  final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -82,18 +80,18 @@ class _CartScreenState extends State<CartScreen> {
                   children: [
                     const Text('Tổng cộng:',
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
+                            fontSize: 18, fontWeight: FontWeight.bold)),
                     Row(
                       children: [
                         // Hiển thị tổng giá tiền đã tính toán
-                        Text(formatter.format(totalPrice),
+                        Text('$totalPrice ₫',
                             style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
                                 color: Colors.red)),
                         const SizedBox(width: 10),
                         ElevatedButton(
-                          onPressed: () async {
+                          onPressed: () {
                             // Lọc các sản phẩm đã được chọn
                             final selectedProducts = cartProvider.cartItems
                                 .where((item) => item.isChecked)
@@ -122,14 +120,7 @@ class _CartScreenState extends State<CartScreen> {
                                   products: selectedProducts,
                                 ),
                               ),
-                            ).then((_) {
-                              String userId =
-                                  FirebaseAuth.instance.currentUser!.uid;
-                              Provider.of<CartProvider>(context, listen: false)
-                                  .fetchCartItems(userId);
-                              _isInitialized =
-                                  true; // Ensure fetchCartItems is only called once
-                            });
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
@@ -137,12 +128,7 @@ class _CartScreenState extends State<CartScreen> {
                                 horizontal: 20, vertical: 10),
                             textStyle: const TextStyle(fontSize: 16),
                           ),
-                          child: const Text(
-                            'Mua Hàng',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
-                          ),
+                          child: const Text('Mua Hàng'),
                         ),
                       ],
                     ),
@@ -178,8 +164,6 @@ class _CartScreenState extends State<CartScreen> {
             SizedBox(
               width: 40,
               child: Checkbox(
-                checkColor: Colors.white, // Màu của dấu tích khi được chọn
-                activeColor: Colors.blue, // Màu nền của checkbox khi được chọn
                 value: cartItem.isChecked, // Trạng thái checkbox
                 onChanged: (bool? value) {
                   cartItem.isChecked = value ?? false; // Cập nhật trạng thái
@@ -213,20 +197,17 @@ class _CartScreenState extends State<CartScreen> {
                           Text(
                             cartItem.name,
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
-                            maxLines: 1, // Giới hạn hiển thị chỉ 1 dòng
-                            overflow: TextOverflow
-                                .ellipsis, // Hiển thị dấu "..." nếu nội dung vượt qu
                           ),
-                          Text(
-                            formatter.format(cartItem.price),
-                            style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue),
-                          ),
+                          // Text(
+                          //   cartItem.unit, // Hiển thị đơn vị
+                          //   style: const TextStyle(
+                          //     fontSize: 14,
+                          //     color: Colors.grey,
+                          //   ),
+                          // ),
                         ],
                       ),
                     ),
@@ -235,11 +216,8 @@ class _CartScreenState extends State<CartScreen> {
                         Row(
                           children: [
                             IconButton(
-                              icon: const Icon(
-                                Icons.remove,
-                                color: Colors.blue,
-                                size: 20,
-                              ),
+                              icon:
+                                  const Icon(Icons.remove, color: Colors.blue),
                               onPressed: () {
                                 if (cartItem.quantity > 1) {
                                   cartItem.quantity--;
@@ -257,16 +235,12 @@ class _CartScreenState extends State<CartScreen> {
                             Text(
                               cartItem.quantity.toString(),
                               style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             IconButton(
-                              icon: const Icon(
-                                Icons.add,
-                                color: Colors.blue,
-                                size: 20,
-                              ),
+                              icon: const Icon(Icons.add, color: Colors.blue),
                               onPressed: () {
                                 cartItem.quantity++;
                                 cartProvider.updateQuantity(
@@ -275,6 +249,13 @@ class _CartScreenState extends State<CartScreen> {
                               },
                             ),
                           ],
+                        ),
+                        Text(
+                          '${cartItem.price} ₫',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         GestureDetector(
@@ -285,11 +266,9 @@ class _CartScreenState extends State<CartScreen> {
                           },
                           child: const Row(
                             children: [
-                              Icon(
-                                Icons.delete,
-                                size: 20,
-                                color: Colors.red,
-                              ),
+                              Icon(Icons.delete, size: 16),
+                              SizedBox(width: 4),
+                              Text('Xóa', style: TextStyle(color: Colors.red)),
                             ],
                           ),
                         ),

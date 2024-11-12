@@ -122,7 +122,6 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
 
     // Chuyển đổi danh sách CartItem thành Product
     List<Product> products = widget.products.map((cartItem) {
-      idProduct = cartItem.productId;
       return Product(
         id: cartItem.productId, // Sử dụng productId làm ID của Product
         name: cartItem.name,
@@ -130,36 +129,41 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
         imageUrl: cartItem.imageUrl,
         price: cartItem.price.toString(),
         evaluate: cartItem.evaluate.toString(),
-        quantity: cartItem.quantity
-            .toString(), // Giả sử quantity cũng là thuộc tính của Product
+        quantity: cartItem.quantity.toString(),
         idHang: cartItem.idHang,
       );
     }).toList();
 
+    // Tạo đơn hàng
     Order order = Order(
       id: '${DateTime.now().millisecondsSinceEpoch}',
       userId: currentUser!.uid,
-      products: products, // Sử dụng danh sách Product đã chuyển đổi
+      products: products,
       totalAmount: total.toString(),
-      orderStatus: 'pending',
+      orderStatus: 'Đang chờ xác nhận',
       orderDate: DateTime.now(),
       shippingAddress: defaultAddress!,
     );
 
     DatabaseReference ordersRef = FirebaseDatabase.instance.ref('orders');
-    await ordersRef.child(order.id).set(order.toMap()).then((_) {
+
+    try {
+      // Lưu đơn hàng vào Firebase
+      await ordersRef.child(order.id).set(order.toMap());
       loginController.ThongBao(context, 'Đặt hàng thành công!');
-      cartProvider.removeItem(
-          FirebaseAuth.instance.currentUser!.uid, idProduct);
-      // Tùy chọn: quay lại hoặc xóa giỏ hàng ở đây
-    }).catchError((error) {
+
+      // Xóa từng sản phẩm trong giỏ hàng
+      for (var product in products) {
+        cartProvider.removeItem(
+            FirebaseAuth.instance.currentUser!.uid, product.id);
+      }
+    } catch (error) {
       String errorMessage = 'Lỗi không xác định';
       if (error is FirebaseException) {
         errorMessage = error.message ?? 'Lỗi không xác định';
       }
-
       print('Error occurred: $errorMessage');
-    });
+    }
   }
 
   @override
