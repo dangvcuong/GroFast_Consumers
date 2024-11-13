@@ -138,20 +138,21 @@ class Login_Controller {
   }
 
   void ThongBao(BuildContext context, String errorMessage) {
+    // Ẩn nhanh SnackBar hiện tại nếu có
+    ScaffoldMessenger.of(context).clearSnackBars();
+
     final snackBar = SnackBar(
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 1), // Thời gian hiển thị ngắn
       backgroundColor: Colors.blue,
       content: Row(
         children: [
-          const Icon(Icons.check_circle,
-              color: Colors.white), // Icon thành công
+          const Icon(Icons.check_circle, color: Colors.white),
           const SizedBox(width: 10),
           Expanded(
-            // Sử dụng Expanded để giãn nội dung
             child: Text(
               errorMessage,
               style: const TextStyle(color: Colors.white),
-              overflow: TextOverflow.ellipsis, // Để cắt ngắn nếu quá dài
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

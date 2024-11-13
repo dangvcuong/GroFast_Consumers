@@ -9,6 +9,21 @@ class CartProvider with ChangeNotifier {
 
   List<CartItem> get cartItems => _cartItems;
 
+  void selectAllItems() {
+    for (var item in cartItems) {
+      item.isChecked = true;
+    }
+    notifyListeners();
+  }
+
+  // Hàm bỏ chọn tất cả sản phẩm
+  void deselectAllItems() {
+    for (var item in cartItems) {
+      item.isChecked = false;
+    }
+    notifyListeners();
+  }
+
   // Method to fetch cart items from Firebase
   Future<void> fetchCartItems(String userId) async {
     try {

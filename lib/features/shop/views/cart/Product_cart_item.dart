@@ -6,6 +6,7 @@ import 'package:grofast_consumers/features/authentication/controllers/login_cont
 import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
 import 'package:grofast_consumers/features/shop/views/cart/providers/cart_provider.dart';
 import 'package:grofast_consumers/features/shop/views/pay/pay_cart_screen.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 // Adjust to your actual CartProvider file path
@@ -20,6 +21,9 @@ class _CartScreenState extends State<CartScreen> {
   bool _isInitialized =
       false; // Flag to check if fetchCartItems has been called
   final Login_Controller login_controller = Login_Controller();
+  final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
+  bool isEditing = false;
+  bool isSelectAll = false;
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -30,6 +34,8 @@ class _CartScreenState extends State<CartScreen> {
     }
   }
 
+  // Biến để kiểm tra trạng thái của checkbox "Chọn tất cả"
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,29 +43,30 @@ class _CartScreenState extends State<CartScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
         title: const Text(
           'Giỏ hàng của tôi',
-          style: TextStyle(
-            color: Colors.black,
-          ),
+          style: TextStyle(color: Colors.black),
         ),
         centerTitle: true,
+        actions: [
+          TextButton(
+            onPressed: () {
+              setState(() {
+                isEditing = !isEditing;
+              });
+            },
+            child: Text(
+              isEditing ? 'Xong' : 'Sửa',
+              style: const TextStyle(color: Colors.blue, fontSize: 16),
+            ),
+          ),
+        ],
       ),
       body: Consumer<CartProvider>(
         builder: (context, cartProvider, child) {
-          // Tính toán tổng giá tiền cho các sản phẩm đã chọn
           double totalPrice = cartProvider.cartItems
-              .where((item) => item.isChecked) // Lọc các sản phẩm đã được chọn
-              .fold(
-                  0,
-                  (total, item) =>
-                      total + (item.price * item.quantity)); // Tính tổng giá
+              .where((item) => item.isChecked)
+              .fold(0, (total, item) => total + (item.price * item.quantity));
 
           return Column(
             children: [
@@ -74,73 +81,138 @@ class _CartScreenState extends State<CartScreen> {
               ),
               const Divider(),
               Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Tổng cộng:',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                    Row(
-                      children: [
-                        // Hiển thị tổng giá tiền đã tính toán
-                        Text('$totalPrice ₫',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                                color: Colors.red)),
-                        const SizedBox(width: 10),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Lọc các sản phẩm đã được chọn
-                            final selectedProducts = cartProvider.cartItems
-                                .where((item) => item.isChecked)
-                                .toList();
+                padding: const EdgeInsets.all(5),
+                child: isEditing
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                // Checkbox "Chọn tất cả"
+                                Checkbox(
+                                  value: isSelectAll,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      isSelectAll = value ?? false;
+                                      if (isSelectAll) {
+                                        cartProvider.selectAllItems();
+                                      } else {
+                                        cartProvider.deselectAllItems();
+                                      }
+                                    });
+                                  },
+                                ),
+                                const Text(
+                                  'Tất cả',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ],
+                            ),
+                            OutlinedButton(
+                              onPressed: () {
+                                final selectedItems = cartProvider.cartItems
+                                    .where((item) => item.isChecked)
+                                    .toList();
 
-                            if (selectedProducts.isEmpty) {
-                              // Nếu không có sản phẩm nào được chọn, hiển thị cảnh báo
+                                if (selectedItems.isEmpty) {
+                                  // Hiển thị cảnh báo nếu không có sản phẩm nào được chọn
+                                  return;
+                                }
 
-                              login_controller.ThongBao(context,
-                                  'Vui lòng chọn ít nhất một sản phẩm để thanh toán.');
-                              return;
-                            }
+                                for (var item in selectedItems) {
+                                  cartProvider.removeItem(
+                                      FirebaseAuth.instance.currentUser!.uid,
+                                      item.productId);
+                                }
 
-                            // Tính toán tổng giá cho các sản phẩm đã chọn
-                            double totalPrice = selectedProducts.fold(
-                              0,
-                              (total, item) =>
-                                  total + (item.price * item.quantity),
-                            );
-
-                            // Điều hướng đến PaymentCartScreen với danh sách sản phẩm và tổng giá
-
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PaymentCartScreen(
-                                    products: selectedProducts),
+                                setState(() {
+                                  isEditing = false;
+                                });
+                              },
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                    color:
+                                        Colors.grey), // Đặt màu viền của button
+                                textStyle: const TextStyle(fontSize: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      5), // Để nút có hình vuông
+                                ),
                               ),
-                            ).then((_) {
-                              String userId =
-                                  FirebaseAuth.instance.currentUser!.uid;
-                              Provider.of<CartProvider>(context, listen: false)
-                                  .fetchCartItems(userId);
-                              _isInitialized =
-                                  true; // Ensure fetchCartItems is only called once
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 10),
-                            textStyle: const TextStyle(fontSize: 16),
-                          ),
-                          child: const Text('Mua Hàng'),
+                              child: const Text(
+                                'Xóa',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            )
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Tổng cộng:',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          Row(
+                            children: [
+                              Text(
+                                formatter.format(totalPrice),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    color: Colors.red),
+                              ),
+                              const SizedBox(width: 10),
+                              OutlinedButton(
+                                onPressed: () {
+                                  final selectedProducts = cartProvider
+                                      .cartItems
+                                      .where((item) => item.isChecked)
+                                      .toList();
+
+                                  if (selectedProducts.isEmpty) {
+                                    // Hiển thị cảnh báo nếu không có sản phẩm nào được chọn
+                                    return;
+                                  }
+
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PaymentCartScreen(
+                                          products: selectedProducts),
+                                    ),
+                                  ).then((_) {
+                                    String userId =
+                                        FirebaseAuth.instance.currentUser!.uid;
+                                    Provider.of<CartProvider>(context,
+                                            listen: false)
+                                        .fetchCartItems(userId);
+                                  });
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                      color: Colors
+                                          .blue), // Đặt màu viền của button
+                                  textStyle: const TextStyle(fontSize: 16),
+                                  backgroundColor: Colors.blue,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        5), // Để nút có hình vuông
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Mua Hàng',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
               ),
             ],
           );
@@ -171,10 +243,10 @@ class _CartScreenState extends State<CartScreen> {
             SizedBox(
               width: 40,
               child: Checkbox(
-                value: cartItem.isChecked, // Trạng thái checkbox
+                value: cartItem.isChecked,
                 onChanged: (bool? value) {
-                  cartItem.isChecked = value ?? false; // Cập nhật trạng thái
-                  cartProvider.notifyListeners(); // Thông báo cho UI cập nhật
+                  cartItem.isChecked = value ?? false;
+                  cartProvider.notifyListeners();
                 },
               ),
             ),
@@ -190,8 +262,7 @@ class _CartScreenState extends State<CartScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
                         image: DecorationImage(
-                          image: NetworkImage(
-                              cartItem.imageUrl), // Sử dụng NetworkImage
+                          image: NetworkImage(cartItem.imageUrl),
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -208,78 +279,61 @@ class _CartScreenState extends State<CartScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          // Text(
-                          //   cartItem.unit, // Hiển thị đơn vị
-                          //   style: const TextStyle(
-                          //     fontSize: 14,
-                          //     color: Colors.grey,
-                          //   ),
-                          // ),
+                          Text(
+                            formatter.format(cartItem.price),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red,
+                            ),
+                          ),
+                          // Dấu cộng và trừ số lượng ở góc dưới
+                          Align(
+                            alignment: Alignment.bottomRight,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.remove,
+                                      color: Colors.blue),
+                                  onPressed: () {
+                                    if (cartItem.quantity > 1) {
+                                      cartItem.quantity--;
+                                      cartProvider.updateQuantity(
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                        cartItem,
+                                      );
+                                    } else {
+                                      cartProvider.removeItem(
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                        cartItem.productId,
+                                      );
+                                    }
+                                  },
+                                ),
+                                Text(
+                                  cartItem.quantity.toString(),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                IconButton(
+                                  icon:
+                                      const Icon(Icons.add, color: Colors.blue),
+                                  onPressed: () {
+                                    cartItem.quantity++;
+                                    cartProvider.updateQuantity(
+                                      FirebaseAuth.instance.currentUser!.uid,
+                                      cartItem,
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                    Column(
-                      children: [
-                        Row(
-                          children: [
-                            IconButton(
-                              icon:
-                                  const Icon(Icons.remove, color: Colors.blue),
-                              onPressed: () {
-                                if (cartItem.quantity > 1) {
-                                  cartItem.quantity--;
-                                  cartProvider.updateQuantity(
-                                      FirebaseAuth.instance.currentUser!.uid,
-                                      cartItem); // Update in Firebase
-                                } else {
-                                  cartProvider.removeItem(
-                                      FirebaseAuth.instance.currentUser!.uid,
-                                      cartItem
-                                          .productId); // Remove item if quantity is 1
-                                }
-                              },
-                            ),
-                            Text(
-                              cartItem.quantity.toString(),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.add, color: Colors.blue),
-                              onPressed: () {
-                                cartItem.quantity++;
-                                cartProvider.updateQuantity(
-                                    FirebaseAuth.instance.currentUser!.uid,
-                                    cartItem); // Update in Firebase
-                              },
-                            ),
-                          ],
-                        ),
-                        Text(
-                          '${cartItem.price} ₫',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        GestureDetector(
-                          onTap: () {
-                            cartProvider.removeItem(
-                                FirebaseAuth.instance.currentUser!.uid,
-                                cartItem.productId);
-                          },
-                          child: const Row(
-                            children: [
-                              Icon(Icons.delete, size: 16),
-                              SizedBox(width: 4),
-                              Text('Xóa', style: TextStyle(color: Colors.red)),
-                            ],
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),
@@ -291,3 +345,89 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 }
+ // GestureDetector(
+                        //   onTap: () {
+                        //     cartProvider.removeItem(
+                        //         FirebaseAuth.instance.currentUser!.uid,
+                        //         cartItem.productId);
+                        //   },
+                        //   child: const Row(
+                        //     children: [
+                        //       Icon(Icons.delete, size: 16),
+                        //       SizedBox(width: 4),
+                        //       Text('Xóa', style: TextStyle(color: Colors.red)),
+                        //     ],
+                        //   ),
+                        // )
+
+
+
+              //           Padding(
+              //   padding: const EdgeInsets.all(16.0),
+              //   child: Row(
+              //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //     children: [
+              //       const Text('Tổng cộng:',
+              //           style: TextStyle(
+              //               fontSize: 18, fontWeight: FontWeight.bold)),
+              //       Row(
+              //         children: [
+              //           // Hiển thị tổng giá tiền đã tính toán
+              //           Text(formatter.format(totalPrice),
+              //               style: const TextStyle(
+              //                   fontWeight: FontWeight.bold,
+              //                   fontSize: 18,
+              //                   color: Colors.red)),
+              //           const SizedBox(width: 10),
+              //           ElevatedButton(
+              //             onPressed: () {
+              //               // Lọc các sản phẩm đã được chọn
+              //               final selectedProducts = cartProvider.cartItems
+              //                   .where((item) => item.isChecked)
+              //                   .toList();
+
+              //               if (selectedProducts.isEmpty) {
+              //                 // Nếu không có sản phẩm nào được chọn, hiển thị cảnh báo
+
+              //                 login_controller.ThongBao(context,
+              //                     'Vui lòng chọn ít nhất một sản phẩm để thanh toán.');
+              //                 return;
+              //               }
+
+              //               // Tính toán tổng giá cho các sản phẩm đã chọn
+              //               double totalPrice = selectedProducts.fold(
+              //                 0,
+              //                 (total, item) =>
+              //                     total + (item.price * item.quantity),
+              //               );
+
+              //               // Điều hướng đến PaymentCartScreen với danh sách sản phẩm và tổng giá
+
+              //               Navigator.push(
+              //                 context,
+              //                 MaterialPageRoute(
+              //                   builder: (context) => PaymentCartScreen(
+              //                       products: selectedProducts),
+              //                 ),
+              //               ).then((_) {
+              //                 String userId =
+              //                     FirebaseAuth.instance.currentUser!.uid;
+              //                 Provider.of<CartProvider>(context, listen: false)
+              //                     .fetchCartItems(userId);
+              //                 _isInitialized =
+              //                     true; // Ensure fetchCartItems is only called once
+              //               });
+              //             },
+              //             style: ElevatedButton.styleFrom(
+              //               backgroundColor: Colors.blue,
+              //               padding: const EdgeInsets.symmetric(
+              //                   horizontal: 20, vertical: 10),
+              //               textStyle: const TextStyle(fontSize: 16),
+              //             ),
+              //             child: const Text('Mua Hàng'),
+              //           ),
+              //         ],
+              //       ),
+              //     ],
+              //   ),
+              // ),
