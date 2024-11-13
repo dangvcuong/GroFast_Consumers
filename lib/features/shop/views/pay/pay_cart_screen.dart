@@ -10,6 +10,7 @@ import 'package:grofast_consumers/features/shop/models/order_model.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
 import 'package:grofast_consumers/features/shop/views/cart/providers/cart_provider.dart';
+import 'package:grofast_consumers/features/shop/views/oder/oder_screen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
 import 'package:intl/intl.dart';
 
@@ -150,7 +151,11 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
     try {
       // Lưu đơn hàng vào Firebase
       await ordersRef.child(order.id).set(order.toMap());
-      loginController.ThongBao(context, 'Đặt hàng thành công!');
+      loginController.ThongBao(context, 'Vui lòng chờ xác nhận!');
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const OrderScreen()),
+      );
 
       // Xóa từng sản phẩm trong giỏ hàng
       for (var product in products) {
@@ -169,7 +174,9 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),

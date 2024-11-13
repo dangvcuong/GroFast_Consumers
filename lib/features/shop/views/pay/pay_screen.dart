@@ -7,6 +7,7 @@ import 'package:grofast_consumers/features/authentication/controllers/login_cont
 import 'package:grofast_consumers/features/authentication/models/addressModel.dart';
 import 'package:grofast_consumers/features/shop/models/order_model.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
+import 'package:grofast_consumers/features/shop/views/oder/oder_screen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
 import 'package:intl/intl.dart';
 
@@ -107,7 +108,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   void _placeOrder() async {
-
     if (defaultAddress == null || defaultAddress!.nameAddresUser.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng thêm địa chỉ giao hàng.')),
@@ -140,7 +140,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     DatabaseReference ordersRef = FirebaseDatabase.instance.ref('orders');
     await ordersRef.child(order.id).set(order.toMap()).then((_) {
-      loginController.ThongBao(context, 'Đặt hàng thành công!');
+      loginController.ThongBao(context, 'Vui lòng chờ xác nhận!');
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const OrderScreen()),
+      );
     }).catchError((error) {
       String errorMessage = 'Lỗi không xác định';
       if (error is FirebaseException) {
@@ -158,7 +162,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -250,8 +256,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
       children: [
         _buildShippingOptionTile('Ưu tiên', 1, '(+10.000đ)'),
         _buildShippingOptionTile('Tiêu chuẩn', 2, '(Miễn phí)'),
-        _buildShippingOptionTile('Đặt lịch', 3, '(+20.000đ)',
-            showDatePicker: true),
       ],
     );
   }
@@ -281,7 +285,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
       children: [
         _buildPaymentMethodTile('Tiền mặt', 1),
         _buildPaymentMethodTile('Ví điện tử MoMo', 2),
-        _buildPaymentMethodTile('Thanh toán bằng Thẻ', 3),
       ],
     );
   }

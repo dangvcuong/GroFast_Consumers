@@ -19,7 +19,7 @@ class HAppStyle {
   );
   static const heading3Style = TextStyle(
     fontStyle: FontStyle.normal,
-    color: HAppColor.hDarkColor,
+    color: Color.fromARGB(255, 32, 97, 219),
     fontFamily: HAppFont.nunitoFontFamily,
     fontSize: 24,
     fontWeight: HAppFont.nunitoBold,

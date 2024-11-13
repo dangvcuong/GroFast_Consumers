@@ -21,6 +21,7 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
     const Center(child: HomeScreen()),
     const Center(child: SearchScreen()),
     const Center(child: FavoriteProductsScreen()),
+    const Center(child: FavoriteProductsScreen()),
     const Center(child: ProFile_Management()),
   ];
 
@@ -33,11 +34,11 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding:
-            const EdgeInsets.only(top: 0), // Thêm khoảng cách ở trên cùng
+        padding: const EdgeInsets.only(top: 0), // Thêm khoảng cách ở trên cùng
         child: _screens[_currentIndex], // Hiển thị màn hình tương ứng
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
         currentIndex: _currentIndex, // Chỉ số của tab đang được chọn
         onTap: (int index) {
           setState(() {
@@ -46,11 +47,13 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
         },
         selectedItemColor: Colors.blue, // Màu sắc khi icon được chọn
         unselectedItemColor: Colors.black,
-        type: BottomNavigationBarType.fixed
-        ,// Màu sắc khi icon không được chọn
+        type: BottomNavigationBarType.fixed, // Màu sắc khi icon không được chọn
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined, size: 30,),
+            icon: Icon(
+              Icons.home_outlined,
+              size: 30,
+            ),
             label: '',
           ),
           BottomNavigationBarItem(
@@ -59,6 +62,10 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite_outline_outlined, size: 30),
+            label: '',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications_none_outlined, size: 30),
             label: '',
           ),
           BottomNavigationBarItem(

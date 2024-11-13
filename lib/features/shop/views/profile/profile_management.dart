@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -57,23 +56,16 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        title: const Row(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'GroFast',
               style: HAppStyle.heading3Style,
-            ),
-            IconButton(
-              icon: const Icon(Icons.shopping_cart_outlined,color: Colors.black,),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CartScreen()),
-                );
-              },
             ),
           ],
         ),
@@ -135,11 +127,6 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                               )
                             ],
                           ),
-                          const Spacer(),
-                          const Icon(
-                            Icons.arrow_forward_ios,
-                            size: 15,
-                          )
                         ],
                       ),
                     ),
@@ -151,13 +138,14 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const OrderScreen()));
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const OrderScreen()),
+                        );
                       },
                       child: const ListTile(
                         contentPadding: EdgeInsets.zero,
-                        // leading: Icon(EvaIcons.shoppingBagOutline),
+                        leading: Icon(Icons.shopping_bag),
                         title: Text('Đơn hàng'),
                         trailing: Icon(
                           Icons.arrow_forward_ios,
@@ -165,16 +153,18 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                         ),
                       ),
                     ),
+                    const Divider(thickness: 1, color: Colors.grey),
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const CartScreen()));
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const CartScreen()),
+                        );
                       },
                       child: const ListTile(
                         contentPadding: EdgeInsets.zero,
-                        // leading: Icon(EvaIcons.shoppingCartOutline),
+                        leading: Icon(Icons.shopping_cart),
                         title: Text('Giỏ hàng'),
                         trailing: Icon(
                           Icons.arrow_forward_ios,
@@ -182,16 +172,18 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                         ),
                       ),
                     ),
+                    const Divider(thickness: 1, color: Colors.grey),
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const AddressUser()));
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const AddressUser()),
+                        );
                       },
                       child: const ListTile(
                         contentPadding: EdgeInsets.zero,
-                        // leading: Icon(EneftyIcons.location_outline),
+                        leading: Icon(Icons.location_on),
                         title: Text('Địa chỉ'),
                         trailing: Icon(
                           Icons.arrow_forward_ios,
@@ -199,11 +191,12 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                         ),
                       ),
                     ),
+                    const Divider(thickness: 1, color: Colors.grey),
                     GestureDetector(
                       // onTap: () => Get.to(AllChatScreen()),
                       child: const ListTile(
                         contentPadding: EdgeInsets.zero,
-                        // leading: Icon(EvaIcons.messageSquareOutline),
+                        leading: Icon(Icons.message),
                         title: Text('Tin nhắn'),
                         trailing: Icon(
                           Icons.arrow_forward_ios,
@@ -211,16 +204,19 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                         ),
                       ),
                     ),
+                    const Divider(thickness: 1, color: Colors.grey),
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const VoucherScreen()));
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const VoucherScreen(),
+                          ),
+                        );
                       },
                       child: const ListTile(
                         contentPadding: EdgeInsets.zero,
-                        // leading: Icon(EvaIcons.pricetagsOutline),
+                        leading: Icon(Icons.local_offer),
                         title: Text('Mã ưu đãi'),
                         trailing: Icon(
                           Icons.arrow_forward_ios,
@@ -228,30 +224,23 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                         ),
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        // Get.to(const NotificationScreen());
-                      },
-                      child: const ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        // leading: Icon(EvaIcons.bellOutline),
-                        title: Text('Thông báo'),
-                        trailing: Icon(
-                          Icons.arrow_forward_ios,
-                          size: 15,
-                        ),
-                      ),
-                    ),
+                    const Divider(thickness: 1, color: Colors.grey),
                     const ListTile(
                       contentPadding: EdgeInsets.zero,
-                      // leading: Icon(EvaIcons.externalLinkOutline),
+                      leading: Icon(Icons.person_add),
                       title: Text('Giới thiệu với bạn bè'),
                       trailing: Icon(
                         Icons.arrow_forward_ios,
                         size: 15,
                       ),
                     ),
-                    gapH40,
+                    const Divider(
+                      thickness: 1, // Độ dày của gạch ngang
+                      color: Colors.grey, // Màu sắc của gạch ngang
+                      height:
+                          1, // Khoảng cách của gạch ngang so với các thành phần xung quanh
+                    ),
+                    gapH100,
                     Center(
                       child: GestureDetector(
                         onTap: () async {

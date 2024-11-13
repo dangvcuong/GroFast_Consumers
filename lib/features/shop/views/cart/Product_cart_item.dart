@@ -33,6 +33,7 @@ class _CartScreenState extends State<CartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
@@ -43,13 +44,12 @@ class _CartScreenState extends State<CartScreen> {
           },
         ),
         title: const Text(
-          'Giỏ Hàng',
+          'Giỏ hàng của tôi',
           style: TextStyle(
             color: Colors.black,
-            fontSize: 24.0,
-            fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: true,
       ),
       body: Consumer<CartProvider>(
         builder: (context, cartProvider, child) {
@@ -113,14 +113,21 @@ class _CartScreenState extends State<CartScreen> {
                             );
 
                             // Điều hướng đến PaymentCartScreen với danh sách sản phẩm và tổng giá
+
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => PaymentCartScreen(
-                                  products: selectedProducts,
-                                ),
+                                    products: selectedProducts),
                               ),
-                            );
+                            ).then((_) {
+                              String userId =
+                                  FirebaseAuth.instance.currentUser!.uid;
+                              Provider.of<CartProvider>(context, listen: false)
+                                  .fetchCartItems(userId);
+                              _isInitialized =
+                                  true; // Ensure fetchCartItems is only called once
+                            });
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,

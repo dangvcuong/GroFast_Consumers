@@ -18,6 +18,7 @@ class FavoriteProductsScreen extends StatelessWidget {
     final favoritesProvider = Provider.of<FavoritesProvider>(context);
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: favoritesProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
@@ -54,7 +55,10 @@ class FavoriteProductsScreen extends StatelessWidget {
                       ),
                       const Spacer(),
                       IconButton(
-                        icon: const Icon(Icons.shopping_cart_outlined,color: Colors.black,),
+                        icon: const Icon(
+                          Icons.shopping_cart_outlined,
+                          color: Colors.black,
+                        ),
                         onPressed: () {
                           Navigator.push(
                             context,

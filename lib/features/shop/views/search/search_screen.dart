@@ -94,6 +94,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
@@ -106,7 +107,6 @@ class _SearchScreenState extends State<SearchScreen> {
                       SizedBox(
                         width: 40,
                         height: 40,
-                        child: Image.asset("assets/logos/logo.png"),
                       ),
                       const Text(
                         "Khám phá",
@@ -114,7 +114,8 @@ class _SearchScreenState extends State<SearchScreen> {
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.shopping_cart_outlined,color: Colors.black),
+                        icon: const Icon(Icons.shopping_cart_outlined,
+                            color: Colors.black),
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -132,9 +133,9 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: "Tìm kiếm...",
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
+                        hintText: "Tìm kiếm...",
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
