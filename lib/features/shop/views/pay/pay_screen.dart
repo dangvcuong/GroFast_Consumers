@@ -11,6 +11,10 @@ import 'package:grofast_consumers/features/shop/views/oder/oder_screen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
 import 'package:intl/intl.dart';
 
+import '../oder/OrderSuccessScreen.dart';
+
+
+
 class PaymentScreen extends StatefulWidget {
   final Product product;
   final List<Product> products;
@@ -114,20 +118,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
       );
       return;
     }
+
     List<Product> products = widget.products.map((cartItem) {
       return Product(
-        id: widget.product.id, // Sử dụng productId làm ID của Product
+        id: widget.product.id,
         name: cartItem.name,
         description: cartItem.description,
         imageUrl: cartItem.imageUrl,
         price: cartItem.price.toString(),
         evaluate: cartItem.evaluate.toString(),
-        quantity:
-            1.toString(), // Giả sử quantity cũng là thuộc tính của Product
+        quantity: 1.toString(),  // Giả sử quantity là 1
         idHang: cartItem.idHang,
       );
     }).toList();
+
     print("Address $defaultAddress!");
+
     Order order = Order(
       id: '${DateTime.now().millisecondsSinceEpoch}',
       userId: currentUser!.uid,
@@ -141,9 +147,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
     DatabaseReference ordersRef = FirebaseDatabase.instance.ref('orders');
     await ordersRef.child(order.id).set(order.toMap()).then((_) {
       loginController.ThongBao(context, 'Vui lòng chờ xác nhận!');
+
+      // Chuyển sang màn hình "Thanh toán thành công"
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const OrderScreen()),
+        MaterialPageRoute(
+          builder: (context) => OrderSuccessScreen(orderId: order.id),  // Truyền ID đơn hàng vào màn hình OrderSuccessScreen
+        ),
       );
     }).catchError((error) {
       String errorMessage = 'Lỗi không xác định';
