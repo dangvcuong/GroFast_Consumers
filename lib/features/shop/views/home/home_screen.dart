@@ -13,6 +13,7 @@ import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/views/home/widget/category_menu.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/profile_detail_screen.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
+import 'package:grofast_consumers/features/shop/views/chatbot/chat_screen.dart';
 import 'package:grofast_consumers/constants/app_sizes.dart';
 import 'package:grofast_consumers/features/authentication/models/addressModel.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
@@ -26,10 +27,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final String _currentLocation = "Đang lấy vị trí... ";
+  String _currentLocation = "Đang lấy vị trí... ";
 
   final DatabaseReference _databaseRef =
-      FirebaseDatabase.instance.ref('products');
+  FirebaseDatabase.instance.ref('products');
 
   final TextEditingController _searchController = TextEditingController();
   final searchProductController = Get.put(SearchProductController());
@@ -61,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     _fetchProducts();
 
+
     _searchController.addListener(_filterProducts);
     _pageController.addListener(() {
       setState(() {
@@ -68,7 +70,8 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     });
 
-    currentUser = FirebaseAuth.instance.currentUser;
+    currentUser=FirebaseAuth.instance.currentUser;
+
 
     _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
       if (_currentPage < _banners.length - 1) {
@@ -84,6 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
         curve: Curves.easeInOut,
       );
     });
+
   }
 
   void _fetchProducts() async {
@@ -125,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final productName = removeDiacritics(product.name.toLowerCase());
         final productDescription =
             removeDiacritics(product.description.toLowerCase());
-        final productBrandId = product.idHang.toLowerCase() ?? "";
+        final productBrandId = product.idHang?.toLowerCase() ?? "";
 
         final matchesBrand = _selectedBrandId == null ||
             (_selectedBrandId == "highRating"
@@ -145,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchAddresses() async {
     final userId = currentUser!.uid;
     final databaseRef =
-        FirebaseDatabase.instance.ref('users/$userId/addresses');
+    FirebaseDatabase.instance.ref('users/$userId/addresses');
     final DatabaseEvent event = await databaseRef.once();
     final DataSnapshot snapshot = event.snapshot;
 
@@ -163,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }).toList();
 
         defaultAddress = addresses.firstWhere(
-          (address) => address.status == 'on',
+              (address) => address.status == 'on',
           orElse: () => AddressModel(
               nameAddresUser: '',
               phoneAddresUser: '',
@@ -174,6 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -182,7 +187,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
@@ -193,41 +197,35 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: Padding(
-            padding: const EdgeInsets.only(
-                top: 0), // Tạo khoảng cách 15dp từ đầu màn hình
+            padding: const EdgeInsets.only(top: 0), // Tạo khoảng cách 15dp từ đầu màn hình
             child: AppBar(
               elevation: 0,
               scrolledUnderElevation: 0,
               backgroundColor: Colors.white,
               leading: IconButton(
                 icon: const Icon(Icons.location_on, color: Colors.blue),
-                onPressed: () async {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const AddressUser()),
-                  ).then((_) {
-                    _fetchAddresses();
-                  });
+                onPressed: ()async{
+                   Navigator.push(context,
+                       MaterialPageRoute(builder: (context)=> const AddressUser()),
+                   ).then((_){
+                 _fetchAddresses();
+                   });
                 },
               ),
               title: InkWell(
                 onTap: () async {
                   await Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => const AddressUser()),
+                    MaterialPageRoute(builder: (context) => const AddressUser()),
                   );
                   _fetchAddresses();
                 },
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Giao tới",
-                        style: TextStyle(color: Colors.grey, fontSize: 10)),
+                    const Text("Giao tới", style: TextStyle(color: Colors.grey, fontSize: 10)),
                     Text(
-                      defaultAddress?.nameAddresUser != null &&
-                              defaultAddress?.addressUser != null
+                      defaultAddress?.nameAddresUser != null && defaultAddress?.addressUser != null
                           ? '${defaultAddress!.nameAddresUser} - ${defaultAddress!.addressUser}'
                           : 'Chưa có địa chỉ',
                       style: const TextStyle(color: Colors.black, fontSize: 14),
@@ -238,23 +236,21 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.shopping_cart_outlined,
-                      color: Colors.black),
+                  icon: const Icon(Icons.shopping_cart_outlined, color: Colors.black),
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const CartScreen()),
+                      MaterialPageRoute(builder: (context) => const CartScreen()),
                     );
                   },
                 ),
                 IconButton(
-                  icon: const Icon(Icons.message_outlined, color: Colors.black),
+                  icon: const Icon(Icons.chat_outlined, color: Colors.black),
                   onPressed: () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(builder: (context) => const ProfileDetailScreen()),
-                    // );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) =>  ChatScreen()),
+                    );
                   },
                 ),
               ],
@@ -300,7 +296,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           }).toList(),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       SizedBox(
                         height: 130,
                         child: PageView.builder(
@@ -322,7 +318,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(_banners.length, (index) {
@@ -355,16 +351,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                         }),
                       ),
-                      const SizedBox(height: 16),
-                      const Padding(
-                        padding: EdgeInsets.only(left: 16.0),
-                        child: Text(
+                      SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16.0),
+                        child: const Text(
                           "Sản phẩm mới nhất",
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       _filteredProducts.isNotEmpty
                           ? SizedBox(
                               height: 265,
@@ -375,7 +371,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 4.0),
-                                    child: SizedBox(
+                                    child: Container(
                                       width: 200,
                                       child: ProductCard(
                                         product: _filteredProducts[index],

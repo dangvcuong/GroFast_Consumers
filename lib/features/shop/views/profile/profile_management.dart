@@ -14,6 +14,7 @@ import 'package:grofast_consumers/features/authentication/controllers/user_contr
 import 'package:grofast_consumers/features/authentication/models/user_Model.dart';
 
 // ignore: unused_import
+import 'package:grofast_consumers/features/shop/views/chatbot/chat_screen.dart';
 import 'package:grofast_consumers/features/authentication/sigup/widgets/complete_create_account_screen.dart';
 import 'package:grofast_consumers/features/shop/views/cart/Product_cart_item.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
@@ -193,7 +194,10 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                     ),
                     const Divider(thickness: 1, color: Colors.grey),
                     GestureDetector(
-                      // onTap: () => Get.to(AllChatScreen()),
+                     onTap: (){
+                       Navigator.push(context,
+                           MaterialPageRoute(builder: (context)=> ChatScreen()),);
+                     },
                       child: const ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: Icon(Icons.message),

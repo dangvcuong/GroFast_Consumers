@@ -341,7 +341,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 const Text('Tổng cộng:',
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 Text(
-                    NumberFormat.currency(locale: 'vi', symbol: 'đ')
+                    NumberFormat.currency(locale: '', symbol: 'đ')
                         .format(totalAmount + shippingFee),
                     style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
