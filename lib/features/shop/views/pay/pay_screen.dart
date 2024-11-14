@@ -11,7 +11,9 @@ import 'package:grofast_consumers/features/shop/views/oder/oder_screen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
 import 'package:intl/intl.dart';
 
-import '../oder/widgets/OrderSuccessScreen.dart';
+import '../oder/OrderSuccessScreen.dart';
+
+
 
 class PaymentScreen extends StatefulWidget {
   final Product product;
