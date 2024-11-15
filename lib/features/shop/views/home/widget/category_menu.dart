@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 
 class CategoryMenu extends StatelessWidget {
@@ -12,22 +14,36 @@ class CategoryMenu extends StatelessWidget {
 
   static List<CategoryMenu> getCategoryList() {
     return [
-      CategoryMenu(title: "Trái cây", imagePath: "assets/images/category/vegetable.png"),
-      CategoryMenu(title: "Hoa quả", imagePath: "assets/images/category/fruit.png"),
-      CategoryMenu(title: "Thực phẩm", imagePath: "assets/images/category/basket.png"),
+      CategoryMenu(
+          title: "Trái cây", imagePath: "assets/images/category/vegetable.png"),
+      CategoryMenu(
+          title: "Hoa quả", imagePath: "assets/images/category/fruit.png"),
+      CategoryMenu(
+          title: "Thực phẩm", imagePath: "assets/images/category/basket.png"),
       CategoryMenu(title: "Bánh", imagePath: "assets/images/category/milk.png"),
-      CategoryMenu(title: "Đồ uống", imagePath: "assets/images/category/milk.png"),
-      CategoryMenu(title: "Rau củ", imagePath: "assets/images/category/vegetable.png"),
-      CategoryMenu(title: "Đồ dùng", imagePath: "assets/images/category/fruit.png"),
-      CategoryMenu(title: "Thịt", imagePath: "assets/images/category/basket.png"),
-      CategoryMenu(title: "Trái cây", imagePath: "assets/images/category/vegetable.png"),
-      CategoryMenu(title: "Hoa quả", imagePath: "assets/images/category/fruit.png"),
-      CategoryMenu(title: "Thực phẩm", imagePath: "assets/images/category/basket.png"),
+      CategoryMenu(
+          title: "Đồ uống", imagePath: "assets/images/category/milk.png"),
+      CategoryMenu(
+          title: "Rau củ", imagePath: "assets/images/category/vegetable.png"),
+      CategoryMenu(
+          title: "Đồ dùng", imagePath: "assets/images/category/fruit.png"),
+      CategoryMenu(
+          title: "Thịt", imagePath: "assets/images/category/basket.png"),
+      CategoryMenu(
+          title: "Trái cây", imagePath: "assets/images/category/vegetable.png"),
+      CategoryMenu(
+          title: "Hoa quả", imagePath: "assets/images/category/fruit.png"),
+      CategoryMenu(
+          title: "Thực phẩm", imagePath: "assets/images/category/basket.png"),
       CategoryMenu(title: "Bánh", imagePath: "assets/images/category/milk.png"),
-      CategoryMenu(title: "Đồ uống", imagePath: "assets/images/category/milk.png"),
-      CategoryMenu(title: "Rau củ", imagePath: "assets/images/category/vegetable.png"),
-      CategoryMenu(title: "Đồ dùng", imagePath: "assets/images/category/fruit.png"),
-      CategoryMenu(title: "Thịt", imagePath: "assets/images/category/basket.png"),
+      CategoryMenu(
+          title: "Đồ uống", imagePath: "assets/images/category/milk.png"),
+      CategoryMenu(
+          title: "Rau củ", imagePath: "assets/images/category/vegetable.png"),
+      CategoryMenu(
+          title: "Đồ dùng", imagePath: "assets/images/category/fruit.png"),
+      CategoryMenu(
+          title: "Thịt", imagePath: "assets/images/category/basket.png"),
     ];
   }
 

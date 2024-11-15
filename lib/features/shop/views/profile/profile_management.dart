@@ -1,3 +1,5 @@
+// ignore_for_file: camel_case_types, prefer_const_constructors
+
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -194,10 +196,12 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                     ),
                     const Divider(thickness: 1, color: Colors.grey),
                     GestureDetector(
-                     onTap: (){
-                       Navigator.push(context,
-                           MaterialPageRoute(builder: (context)=> ChatScreen()),);
-                     },
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ChatScreen()),
+                        );
+                      },
                       child: const ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: Icon(Icons.message),

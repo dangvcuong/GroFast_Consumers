@@ -1,4 +1,4 @@
-// ignore_for_file: unused_local_variable, invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member, depend_on_referenced_packages, non_constant_identifier_names, file_names
+// ignore_for_file: unused_local_variable, invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member, depend_on_referenced_packages, non_constant_identifier_names, file_names, use_build_context_synchronously
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';

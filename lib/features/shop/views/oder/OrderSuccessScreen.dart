@@ -1,9 +1,10 @@
+// ignore_for_file: use_super_parameters, library_private_types_in_public_api, file_names, avoid_print, prefer_const_constructors
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
-
 
 class OrderSuccessScreen extends StatefulWidget {
   final String orderId;
@@ -38,7 +39,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
 
         recommendedProducts = data.entries
             .map((entry) => Product.fromMap(
-            Map<String, dynamic>.from(entry.value), entry.key))
+                Map<String, dynamic>.from(entry.value), entry.key))
             .toList();
 
         setState(() {});
@@ -71,11 +72,15 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
                 children: [
                   Row(
                     children: const [
-                      Icon(Icons.warning_amber_rounded, color: Colors.white, size: 28),
+                      Icon(Icons.warning_amber_rounded,
+                          color: Colors.white, size: 28),
                       SizedBox(width: 8),
                       Text(
                         'Đơn đã được đặt thành công',
-                        style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -93,7 +98,8 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                             side: const BorderSide(color: Colors.white),
@@ -108,15 +114,14 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                             side: const BorderSide(color: Colors.white),
                           ),
                         ),
-                        onPressed: () {
-
-                        },
+                        onPressed: () {},
                         child: const Text('Chi tiết đơn hàng'),
                       ),
                     ],
@@ -139,22 +144,23 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
             // Hiển thị sản phẩm gợi ý
             recommendedProducts.isNotEmpty
                 ? GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 8.0,
-                mainAxisSpacing: 8.0,
-                childAspectRatio: 0.7,
-              ),
-              itemCount: recommendedProducts.length,
-              itemBuilder: (context, index) {
-                return ProductCard(
-                  product: recommendedProducts[index],
-                  userId: FirebaseAuth.instance.currentUser!.uid,
-                );
-              },
-            )
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 8.0,
+                      mainAxisSpacing: 8.0,
+                      childAspectRatio: 0.7,
+                    ),
+                    itemCount: recommendedProducts.length,
+                    itemBuilder: (context, index) {
+                      return ProductCard(
+                        product: recommendedProducts[index],
+                        userId: FirebaseAuth.instance.currentUser!.uid,
+                      );
+                    },
+                  )
                 : const Center(child: CircularProgressIndicator()),
           ],
         ),

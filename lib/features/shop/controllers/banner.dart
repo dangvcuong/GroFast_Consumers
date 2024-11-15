@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_final_fields, library_private_types_in_public_api, use_key_in_widget_constructors
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:diacritic/diacritic.dart';
@@ -43,8 +45,8 @@ class _BannerPageState extends State<BannerPage> {
       // Chuyển trang tiếp theo với hiệu ứng mượt mà
       _pageController.animateToPage(
         _currentPage,
-        duration: const Duration(milliseconds: 500),  // Thời gian chuyển trang
-        curve: Curves.easeInOut,  // Sử dụng curve cho hiệu ứng mượt mà
+        duration: const Duration(milliseconds: 500), // Thời gian chuyển trang
+        curve: Curves.easeInOut, // Sử dụng curve cho hiệu ứng mượt mà
       );
     });
   }
