@@ -218,16 +218,13 @@ class ShowDialogs {
                           await FirebaseAuth.instance.signOut();
                           Navigator.of(context)
                               .pop(); // Đóng dialog sau khi đăng xuất thành công
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Đăng xuất thành công!')),
-                          );
+
+                          loginController.ThongBao(
+                              context, 'Đăng xuất thành công!');
                         } catch (e) {
                           Navigator.of(context).pop(); // Đóng dialog
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Có lỗi xảy ra khi đăng xuất.')),
-                          );
+                          loginController.ThongBao(
+                              context, 'Có lỗi xảy ra khi đăng xuất.');
                         }
                       },
                     ),
