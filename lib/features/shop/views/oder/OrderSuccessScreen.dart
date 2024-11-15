@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
+import 'package:grofast_consumers/features/shop/views/oder/widgets/oder_detailscreen.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
 
 class OrderSuccessScreen extends StatefulWidget {
@@ -121,7 +122,14 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
                             side: const BorderSide(color: Colors.white),
                           ),
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    OrderDetail(widget.orderId)),
+                          );
+                        },
                         child: const Text('Chi tiết đơn hàng'),
                       ),
                     ],

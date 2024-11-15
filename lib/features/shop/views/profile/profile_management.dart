@@ -148,7 +148,10 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                       },
                       child: const ListTile(
                         contentPadding: EdgeInsets.zero,
-                        leading: Icon(Icons.shopping_bag),
+                        leading: Icon(
+                          Icons.shopping_bag,
+                          color: Colors.grey,
+                        ),
                         title: Text('Đơn hàng'),
                         trailing: Icon(
                           Icons.arrow_forward_ios,
@@ -167,7 +170,10 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                       },
                       child: const ListTile(
                         contentPadding: EdgeInsets.zero,
-                        leading: Icon(Icons.shopping_cart),
+                        leading: Icon(
+                          Icons.shopping_cart,
+                          color: Colors.black,
+                        ),
                         title: Text('Giỏ hàng'),
                         trailing: Icon(
                           Icons.arrow_forward_ios,
@@ -186,7 +192,10 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                       },
                       child: const ListTile(
                         contentPadding: EdgeInsets.zero,
-                        leading: Icon(Icons.location_on),
+                        leading: Icon(
+                          Icons.location_on,
+                          color: Colors.blue,
+                        ),
                         title: Text('Địa chỉ'),
                         trailing: Icon(
                           Icons.arrow_forward_ios,
@@ -204,7 +213,10 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                       },
                       child: const ListTile(
                         contentPadding: EdgeInsets.zero,
-                        leading: Icon(Icons.message),
+                        leading: Icon(
+                          Icons.message,
+                          color: Colors.pink,
+                        ),
                         title: Text('Tin nhắn'),
                         trailing: Icon(
                           Icons.arrow_forward_ios,
@@ -224,7 +236,10 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                       },
                       child: const ListTile(
                         contentPadding: EdgeInsets.zero,
-                        leading: Icon(Icons.local_offer),
+                        leading: Icon(
+                          Icons.local_offer,
+                          color: Colors.red,
+                        ),
                         title: Text('Mã ưu đãi'),
                         trailing: Icon(
                           Icons.arrow_forward_ios,

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:grofast_consumers/features/shop/views/oder/widgets/oder_detailscreen.dart';
 import 'package:intl/intl.dart';
 
 class OrderScreen extends StatefulWidget {
@@ -15,6 +16,7 @@ class _OrderScreenState extends State<OrderScreen> {
   final String _currentUserId = FirebaseAuth.instance.currentUser!.uid;
   String _currentStatus = 'Đang chờ xác nhận'; // Trạng thái mặc định
   String? _selectedStatus; // Biến lưu trạng thái được chọn
+  final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
 
   @override
   void initState() {
@@ -25,6 +27,7 @@ class _OrderScreenState extends State<OrderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Đơn hàng của tôi'),
         centerTitle: true,
@@ -39,19 +42,19 @@ class _OrderScreenState extends State<OrderScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildStatusIcon(
+                buildStatusIcon(
                   context,
                   icon: Icons.pending_actions,
                   label: "Đang chờ xác nhận",
                   status: 'Đang chờ xác nhận',
                 ),
-                _buildStatusIcon(
+                buildStatusIcon(
                   context,
                   icon: Icons.local_shipping,
                   label: "Đang giao hàng",
                   status: 'Đang giao hàng',
                 ),
-                _buildStatusIcon(
+                buildStatusIcon(
                   context,
                   icon: Icons.check_circle_outline,
                   label: "Đã nhận hàng",
@@ -105,6 +108,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   itemCount: orders.length,
                   itemBuilder: (context, index) {
                     final order = orders[index];
+
                     DateTime orderDate = DateTime.parse(
                         order['orderDate'] ?? DateTime.now().toString());
                     String formattedTime =
@@ -112,6 +116,12 @@ class _OrderScreenState extends State<OrderScreen> {
                     String formattedDate =
                         DateFormat('dd/MM/yyyy').format(orderDate);
 
+                    double totalAmount = 0;
+                    if (order['totalAmount'] is String) {
+                      totalAmount = double.tryParse(order['totalAmount']) ?? 0;
+                    } else if (order['totalAmount'] is num) {
+                      totalAmount = order['totalAmount'].toDouble();
+                    }
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Card(
@@ -153,14 +163,23 @@ class _OrderScreenState extends State<OrderScreen> {
                                   "Số lượng: ${order['products']?.length ?? 0} sản phẩm"),
                               const SizedBox(height: 5),
                               Text(
-                                "Giá: ${order['totalAmount']}đ",
+                                formatter.format(totalAmount),
                                 style: const TextStyle(color: Colors.blue),
                               ),
                             ],
                           ),
                           trailing: ElevatedButton(
                             onPressed: () {
-                              // Xử lý khi nhấn "Xem chi tiết"
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        OrderDetail(order['id'])),
+                              ).then((_) {
+                                setState(() {
+                                  _selectedStatus = _currentStatus;
+                                });
+                              });
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.lightBlueAccent,
@@ -183,7 +202,7 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 
-  Widget _buildStatusIcon(
+  Widget buildStatusIcon(
     BuildContext context, {
     required IconData icon,
     required String label,

@@ -13,8 +13,6 @@ import 'package:intl/intl.dart';
 
 import '../oder/OrderSuccessScreen.dart';
 
-
-
 class PaymentScreen extends StatefulWidget {
   final Product product;
   final List<Product> products;
@@ -127,7 +125,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         imageUrl: cartItem.imageUrl,
         price: cartItem.price.toString(),
         evaluate: cartItem.evaluate.toString(),
-        quantity: 1.toString(),  // Giả sử quantity là 1
+        quantity: 1.toString(), // Giả sử quantity là 1
         idHang: cartItem.idHang,
       );
     }).toList();
@@ -152,7 +150,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => OrderSuccessScreen(orderId: order.id),  // Truyền ID đơn hàng vào màn hình OrderSuccessScreen
+          builder: (context) => OrderSuccessScreen(
+              orderId: order
+                  .id), // Truyền ID đơn hàng vào màn hình OrderSuccessScreen
         ),
       );
     }).catchError((error) {
@@ -351,7 +351,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 const Text('Tổng cộng:',
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 Text(
-                    NumberFormat.currency(locale: '', symbol: 'đ')
+                    NumberFormat.currency(locale: 'vi', symbol: 'đ')
                         .format(totalAmount + shippingFee),
                     style: const TextStyle(fontWeight: FontWeight.bold)),
               ],

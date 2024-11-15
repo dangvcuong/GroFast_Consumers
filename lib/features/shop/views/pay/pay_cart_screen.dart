@@ -10,6 +10,7 @@ import 'package:grofast_consumers/features/shop/models/order_model.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
 import 'package:grofast_consumers/features/shop/views/cart/providers/cart_provider.dart';
+import 'package:grofast_consumers/features/shop/views/oder/OrderSuccessScreen.dart';
 import 'package:grofast_consumers/features/shop/views/oder/oder_screen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
 import 'package:intl/intl.dart';
@@ -154,7 +155,11 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
       loginController.ThongBao(context, 'Vui lòng chờ xác nhận!');
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const OrderScreen()),
+        MaterialPageRoute(
+          builder: (context) => OrderSuccessScreen(
+              orderId: order
+                  .id), // Truyền ID đơn hàng vào màn hình OrderSuccessScreen
+        ),
       );
 
       // Xóa từng sản phẩm trong giỏ hàng
