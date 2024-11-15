@@ -57,17 +57,6 @@ class UserController {
     }
   }
 
-  Future<String> getImageUrl(String imagePath) async {
-    try {
-      String downloadUrl =
-          await FirebaseStorage.instance.ref(imagePath).getDownloadURL();
-      return downloadUrl;
-    } catch (e) {
-      print("Error getting image URL: $e"); // Ghi lại lỗi
-      return ""; // Trả về chuỗi rỗng nếu có lỗi
-    }
-  }
-
   void copyToClipboard(String errorMessage, BuildContext context) {
     Clipboard.setData(ClipboardData(text: errorMessage)).then((_) {
       // Có thể hiển thị thông báo cho người dùng
@@ -78,13 +67,17 @@ class UserController {
   Future<void> updateUserName(
       String userId, String newName, BuildContext context) async {
     String? errorMessage;
-    try {
-      await FirebaseDatabase.instance
-          .ref('users/$userId') // Đường dẫn đến user trong Realtime Database
-          .update({'name': newName}); // Cập nhật chỉ field 'name'
-      errorMessage = "Đổi tên thành công";
-    } catch (e) {
-      print("Error updating user name: $e");
+    if (newName.isEmpty) {
+    } else if (newName.length < 2) {
+    } else {
+      try {
+        await FirebaseDatabase.instance
+            .ref('users/$userId') // Đường dẫn đến user trong Realtime Database
+            .update({'name': newName}); // Cập nhật chỉ field 'name'
+        errorMessage = "Đổi tên thành công";
+      } catch (e) {
+        print("Error updating user name: $e");
+      }
     }
     signUp__Controller.ThongBao(context, errorMessage!);
   }
@@ -92,20 +85,17 @@ class UserController {
   Future<void> updateSDT(
       String userId, String newPhoneNumber, BuildContext context) async {
     String? errorMessage;
+    final RegExp phoneRegExp = RegExp(r'^[0-9]+$');
+
     try {
       await FirebaseDatabase.instance
           .ref('users/$userId') // Đường dẫn đến user trong Realtime Database
           .update({'phoneNumber': newPhoneNumber}); // Cập nhật chỉ field 'name'
       errorMessage = "Cập nhật số điện thoại thành công";
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) =>
-                const ProfileDetailScreen()), // ProfileScreen là màn hình đích
-      );
     } catch (e) {
       print("Error updating user name: $e");
     }
+
     signUp__Controller.ThongBao(context, errorMessage!);
   }
 
@@ -116,14 +106,6 @@ class UserController {
     // Kiểm tra xem người dùng có đăng nhập không
     if (user != null) {
       // Kiểm tra xem mật khẩu mới có giống mật khẩu nhập lại không
-      if (newPassword != nhaplaiMKmoi) {
-        errorMessage = "Mật khẩu mới và mật khẩu nhập lại không khớp.";
-      }
-
-      // Kiểm tra độ dài mật khẩu mới
-      if (newPassword.length < 6) {
-        errorMessage = "Mật khẩu mới phải có ít nhất 6 ký tự.";
-      }
 
       // Để đổi mật khẩu, bạn cần xác thực mật khẩu cũ
       try {
@@ -136,19 +118,13 @@ class UserController {
         // Đổi mật khẩu
         await user.updatePassword(newPassword);
         errorMessage = "Đổi mật khẩu thành công!";
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  const ProfileDetailScreen()), // ProfileScreen là màn hình đích
-        );
       } catch (e) {
         // Kiểm tra lỗi khi xác thực mật khẩu cũ
         if (e is FirebaseAuthException && e.code == 'wrong-password') {
           errorMessage =
               "Mật khẩu cũ không chính xác."; // Thông báo cho người dùng
         } else {
-          errorMessage = "Lỗi khi đổi mật khẩu";
+          errorMessage = "Mật khẩu cũ không đúng";
           // Ném lỗi lên trên để xử lý tại nơi gọi
         }
       }
@@ -159,8 +135,9 @@ class UserController {
   }
 
   Future<void> deleteUser(String password, BuildContext context) async {
-    User? user = _auth.currentUser;
+    User? user = FirebaseAuth.instance.currentUser;
     String? errorMessage;
+
     if (user != null) {
       try {
         // Xác thực lại người dùng với mật khẩu
@@ -171,7 +148,7 @@ class UserController {
           ),
         );
 
-        // Xóa thông tin người dùng từ Firestore
+        // Xóa thông tin người dùng từ Firebase Realtime Database
         await FirebaseDatabase.instance.ref('users/${user.uid}').remove();
 
         // Xóa tài khoản người dùng
@@ -183,14 +160,16 @@ class UserController {
         } else if (e.code == 'requires-recent-login') {
           errorMessage = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
         } else {
-          errorMessage = "Lỗi xác thực lại: ";
+          errorMessage = "Mật khẩu không đúng"; // Chỉnh sửa thông báo lỗi ở đây
         }
       } catch (e) {
-        errorMessage = "Lỗi khi xóa tài khoản: ";
+        errorMessage = "Lỗi khi xóa tài khoản: ${e.toString()}";
       }
     } else {
       errorMessage = "Người dùng chưa đăng nhập.";
     }
+
+    // Hiển thị thông báo
     signUp__Controller.ThongBao(context, errorMessage);
   }
 

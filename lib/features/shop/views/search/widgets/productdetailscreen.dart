@@ -32,7 +32,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   final Login_Controller loginController = Login_Controller();
   String userId = FirebaseAuth.instance.currentUser!.uid;
   String errorMessage = "";
-
+  int quantity = 1;
   @override
   void initState() {
     super.initState();
@@ -67,7 +67,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
-  int quantity = 1; // Biến để lưu số lượng sản phẩm
+  // Biến để lưu số lượng sản phẩm
 
   Future<void> addProductToUserCart(
       String userId, Product product, BuildContext context) async {
@@ -208,11 +208,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           },
         );
       },
-    );
+    ).whenComplete(() {
+      // Đảm bảo quantity được đặt lại thành 1 khi người dùng nhấn ra ngoài
+      quantity = 1;
+    });
   }
 
   Future<void> buyProductNow(
       String userId, Product product, BuildContext context) async {
+    // Đặt giá trị quantity ban đầu là 1
+    int quantity = 1;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -315,7 +321,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                     ),
                     onPressed: () {
-                      Navigator.pop(context); // Đóng BottomSheet
+                      // Đóng BottomSheet và đặt lại quantity
+                      Navigator.pop(context);
+                      setModalState(() {
+                        quantity = 1; // Đặt lại quantity sau khi mua
+                      });
+                      // Chuyển đến màn hình thanh toán với số lượng đã chọn
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -340,7 +351,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           },
         );
       },
-    );
+    ).whenComplete(() {
+      // Đảm bảo quantity được đặt lại thành 1 khi người dùng nhấn ra ngoài
+      quantity = 1;
+    });
   }
 
   @override

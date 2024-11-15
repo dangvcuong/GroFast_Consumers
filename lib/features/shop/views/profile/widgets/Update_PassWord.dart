@@ -11,6 +11,7 @@ import 'package:grofast_consumers/features/authentication/models/user_Model.dart
 import 'package:grofast_consumers/features//shop/views/profile/profile_management.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/profile_detail_screen.dart';
 import 'package:grofast_consumers/ulits/theme/app_style.dart';
+import 'package:grofast_consumers/validates/validate_Dk.dart';
 
 class Updata_PassWord extends StatefulWidget {
   const Updata_PassWord({super.key});
@@ -30,6 +31,10 @@ class _Updata_PassWord extends State<Updata_PassWord> {
   bool _isPasswordVisible = false;
   bool _isPasswordUpdateVisible = false;
   bool _isPasswordUpdateNhapLaiVisible = false;
+  String? errorMessagePass;
+  String? errorMessagePassNew;
+  String? errorMessagePassConfic;
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +44,52 @@ class _Updata_PassWord extends State<Updata_PassWord> {
   Future<void> _getUserInfo() async {
     currentUser = await userController.getUserInfo();
     setState(() {}); // Cập nhật lại giao diện sau khi có dữ liệu
+  }
+
+  Future<bool> check() async {
+    bool check = true;
+    if (ord_PassWordController.text.isEmpty) {
+      errorMessagePass = "Vui lòng không để trống";
+      check = false;
+    } else {
+      errorMessagePass = "";
+      check = true;
+    }
+
+    if (update_PassWordController.text.isEmpty) {
+      errorMessagePassNew = "Mật khẩu không được để trống";
+      check = false;
+    } else if (update_PassWordController.text.length < 6) {
+      errorMessagePassNew = "Mật khẩu phải có ít nhất 6 ký tự";
+      check = false;
+    } else if (!RegExp(r'(?=.*[A-Z])')
+        .hasMatch(update_PassWordController.text)) {
+      errorMessagePassNew = "Mật khẩu phải có ít nhất một chữ in hoa";
+      check = false;
+    } else if (!RegExp(r'(?=.*\d)').hasMatch(update_PassWordController.text)) {
+      errorMessagePassNew = "Mật khẩu phải có ít nhất một chữ số";
+      check = false;
+    } else if (!RegExp(r'(?=.*[@$!%*?&])')
+        .hasMatch(update_PassWordController.text)) {
+      errorMessagePassNew = "Mật khẩu phải có ít nhất một ký tự đặc biệt";
+      check = false;
+    } else {
+      errorMessagePassNew = ""; // Không có lỗi
+      check = true;
+    }
+
+    if (nhaplai_update_PassWordController.text.isEmpty) {
+      errorMessagePassConfic = "Nhập lại mật khẩu không được để trống";
+      check = false;
+    } else if (nhaplai_update_PassWordController.text !=
+        update_PassWordController.text) {
+      errorMessagePassConfic = "Nhập lại mật khẩu không đúng";
+      check = false;
+    } else {
+      errorMessagePassConfic = ""; // Không có lỗi
+      check = true;
+    }
+    return check;
   }
 
   @override
@@ -96,6 +147,13 @@ class _Updata_PassWord extends State<Updata_PassWord> {
                 ),
               ),
             ),
+            SizedBox(
+              width: double.infinity,
+              child: Text(
+                errorMessagePass ?? '',
+                style: const TextStyle(color: Colors.red, fontSize: 10),
+              ),
+            ),
             gapH20,
             TextField(
               keyboardType: TextInputType.visiblePassword,
@@ -120,6 +178,13 @@ class _Updata_PassWord extends State<Updata_PassWord> {
                     });
                   },
                 ),
+              ),
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: Text(
+                errorMessagePassNew ?? '',
+                style: const TextStyle(color: Colors.red, fontSize: 10),
               ),
             ),
             gapH20,
@@ -149,22 +214,42 @@ class _Updata_PassWord extends State<Updata_PassWord> {
                 ),
               ),
             ),
+            SizedBox(
+              width: double.infinity,
+              child: Text(
+                errorMessagePassConfic ?? '',
+                style: const TextStyle(color: Colors.red, fontSize: 10),
+              ),
+            ),
             gapH20,
             ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  userController.updatePassword(
+              onPressed: () async {
+                bool isValid = await check(); // Await the result of check()
+                if (isValid) {
+                  setState(() {
+                    // Cập nhật thông báo khi xác nhận thành công
+                    userController.updatePassword(
                       ord_PassWordController.text,
                       update_PassWordController.text,
                       nhaplai_update_PassWordController.text,
-                      context);
-                });
+                      context,
+                    );
+                    update_PassWordController.text = "";
+                    ord_PassWordController.text = "";
+                    nhaplai_update_PassWordController.text = "";
+                  });
+                } else {
+                  setState(() {
+                    // Cập nhật thông báo khi có lỗi
+                  });
+                }
               },
               style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  fixedSize: const Size(double.maxFinite, 50),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50))),
+                backgroundColor: Colors.blue,
+                fixedSize: const Size(double.maxFinite, 50),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50)),
+              ),
               child: const Text("Xác nhận",
                   style: TextStyle(color: Colors.white, fontSize: 18)),
             ),

@@ -46,8 +46,19 @@ class valideteDK {
     } else if (password.length < 6) {
       errorMessagePass = "Mật khẩu phải có ít nhất 6 ký tự";
       check = false;
+    } else if (!RegExp(r'(?=.*[A-Z])').hasMatch(password)) {
+      errorMessagePass = "Mật khẩu phải có ít nhất một chữ in hoa";
+      check = false;
+    } else if (!RegExp(r'(?=.*\d)').hasMatch(password)) {
+      errorMessagePass = "Mật khẩu phải có ít nhất một chữ số";
+      check = false;
+    }
+    // Kiểm tra chứa ít nhất một ký tự đặc biệt
+    else if (!RegExp(r'(?=.*[@$!%*?&])').hasMatch(password)) {
+      errorMessagePass = "Mật khẩu phải có ít nhất một ký tự đặc biệt";
+      check = false;
     } else {
-      errorMessagePass = "";
+      errorMessagePass = ""; // Không có lỗi
     }
     // Bạn có thể thêm quy tắc khác nếu cần như yêu cầu ký tự đặc biệt
     return check;

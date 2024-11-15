@@ -105,8 +105,9 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                                     currentUser!.image.isNotEmpty
                                 ? ClipRRect(
                                     borderRadius: BorderRadius.circular(100),
-                                    child: Image.file(
-                                      File(currentUser!.image),
+                                    child: Image.network(
+                                      currentUser!
+                                          .image, // Sử dụng trực tiếp URL ảnh từ Realtime Database
                                       width: 100,
                                       height: 100,
                                       fit: BoxFit.cover,
