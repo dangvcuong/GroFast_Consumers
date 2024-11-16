@@ -1,16 +1,13 @@
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 
-
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mime/mime.dart';
+import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
+import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_chat_ui/flutter_chat_ui.dart';
-import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
-import 'package:file_picker/file_picker.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -231,6 +228,46 @@ class _ChatScreenState extends State<ChatScreen> {
               showUserAvatars: true,
               showUserNames: true,
               user: _user,
+                theme: DefaultChatTheme(
+                  inputBackgroundColor: Colors.white, // Đặt màu nền là trắng
+                  inputTextDecoration: InputDecoration(
+                    hintText: "Nhập văn bản...",
+                    hintStyle: TextStyle(color: Colors.black),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  ),
+                  inputTextStyle: TextStyle(
+                    fontSize: 16, // Kích thước chữ
+                    color: Colors.black, // Đảm bảo màu chữ là đen
+                    fontWeight: FontWeight.normal,
+                  ),
+                  primaryColor: Color(0xFF80DEEA),
+                  backgroundColor: Color(0xFFF5F5F5),
+                  sentMessageBodyTextStyle: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                  ),
+                  receivedMessageBodyTextStyle: TextStyle(
+                    color: Colors.red,
+                    fontSize: 16,
+                  ),
+                  sendButtonIcon: Icon(
+                    Icons.send,
+                    color: Colors.blue,
+                  ),
+                  attachmentButtonIcon: Icon(
+                    Icons.photo_library,
+                    color: Colors.blue,
+                  ),
+                )
+
             ),
           ),
         ],

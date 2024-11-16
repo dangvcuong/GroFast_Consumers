@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_const_constructors, use_build_context_synchronously, deprecated_member_use, prefer_const_literals_to_create_immutables
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -7,7 +5,7 @@ import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
 import 'package:grofast_consumers/features/navigation/btn_navigation.dart';
 import 'package:grofast_consumers/features/shop/views/home/home_screen.dart';
 import 'package:grofast_consumers/features/shop/views/voucher/widgets/voucher_list_screen.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 class VoucherScreen extends StatefulWidget {
   const VoucherScreen({super.key});
 
@@ -34,8 +32,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
     super.initState();
     isSpinning = false;
   }
-
-  void spinWheel() {
+  void spinWheel() async{
     if (isSpinning) return;
 
     setState(() {
@@ -48,12 +45,16 @@ class _VoucherScreenState extends State<VoucherScreen> {
     String wonReward = rewards[randomIndex];
 
     if (wonReward != "Mất lượt") {
+      // Thêm phần thưởng vào danh sách voucher
       voucherList.add(wonReward);
+      // Lưu voucher vào SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setStringList('voucherList', voucherList);
     }
 
     bool autoCloseDialog = true; // Biến để kiểm tra tự động đóng popup
 
-    Future.delayed(Duration(seconds: 5), () {
+    Future.delayed(Duration(seconds: 4), () {
       setState(() {
         isSpinning = false;
       });
@@ -80,10 +81,8 @@ class _VoucherScreenState extends State<VoucherScreen> {
                     child: IconButton(
                       icon: Icon(Icons.close),
                       onPressed: () {
-                        autoCloseDialog =
-                            false; // Hủy tự động đóng khi nhấn icon
-                        Navigator.of(context)
-                            .pop(); // Đóng popup khi nhấn vào icon
+                        autoCloseDialog = false; // Hủy tự động đóng khi nhấn icon
+                        Navigator.of(context).pop(); // Đóng popup khi nhấn vào icon
                       },
                     ),
                   ),
@@ -97,8 +96,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
         // Đóng popup sau 3 giây nếu không nhấn icon đóng
         Future.delayed(Duration(seconds: 3), () {
           if (autoCloseDialog) {
-            Navigator.of(context)
-                .pop(); // Đóng popup tự động nếu không nhấn icon đóng
+            Navigator.of(context).pop(); // Đóng popup tự động nếu không nhấn icon đóng
           }
         });
       } else {
@@ -123,8 +121,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
                     child: IconButton(
                       icon: Icon(Icons.close),
                       onPressed: () {
-                        Navigator.of(context)
-                            .pop(); // Đóng popup khi nhấn vào icon
+                        Navigator.of(context).pop(); // Đóng popup khi nhấn vào icon
                       },
                     ),
                   ),
@@ -139,8 +136,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            VoucherListScreen(vouchers: voucherList),
+                        builder: (context) => VoucherListScreen(vouchers: voucherList),
                       ),
                     );
                   },
@@ -152,6 +148,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
       }
     });
   }
+
 
   @override
   void dispose() {
@@ -168,8 +165,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(
-                'assets/images/category/banner.jpg'), // Thay thế bằng URL ảnh của bạn
+            image: AssetImage('assets/images/category/banner.jpg'), // Thay thế bằng URL ảnh của bạn
             fit: BoxFit.cover, // Điều chỉnh ảnh để bao phủ toàn bộ nền
           ),
         ),
@@ -186,21 +182,20 @@ class _VoucherScreenState extends State<VoucherScreen> {
                         MaterialPageRoute(
                           builder: (context) => Btn_Navigatin(),
                         ),
-                        (Route<dynamic> route) => false,
+                            (Route<dynamic> route) => false,
                       );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white70,
-                      side: BorderSide(color: Colors.green, width: 2),
+                      side:  BorderSide(color: Colors.green,width: 2),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                       elevation: 5,
                     ).copyWith(
-                      backgroundColor:
-                          MaterialStateProperty.resolveWith((states) {
-                        if (states.contains(MaterialState.pressed)) {
+                      backgroundColor: MaterialStateProperty.resolveWith((states){
+                        if(states.contains(MaterialState.pressed)){
                           return Colors.red;
                         }
                         return Colors.blue;
@@ -213,23 +208,21 @@ class _VoucherScreenState extends State<VoucherScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              VoucherListScreen(vouchers: voucherList),
+                          builder: (context) => VoucherListScreen(vouchers: voucherList),
                         ),
                       );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white70,
-                      side: BorderSide(color: Colors.green, width: 2),
+                      side: BorderSide(color: Colors.green,width: 2),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                       elevation: 5,
                     ).copyWith(
-                      backgroundColor:
-                          MaterialStateProperty.resolveWith((states) {
-                        if (states.contains(MaterialState.pressed)) {
+                      backgroundColor: MaterialStateProperty.resolveWith((states){
+                        if(states.contains(MaterialState.pressed)){
                           return Colors.red;
                         }
                         return Colors.blue;
@@ -252,12 +245,11 @@ class _VoucherScreenState extends State<VoucherScreen> {
                             height: 300,
                             width: 300,
                             decoration: BoxDecoration(
-                              border: Border.all(
-                                  color: Colors.amber,
-                                  width: 8), // Border color and width
+                              border: Border.all(color: Colors.amber, width: 8),  // Border color and width
                               shape: BoxShape.circle,
                             ),
                             child: FortuneWheel(
+                              animateFirst:  false,
                               selected: selected.stream,
                               items: [
                                 for (var it in rewards)
@@ -265,9 +257,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
                                     child: Container(
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
-                                        color: Colors.primaries[
-                                            rewards.indexOf(it) %
-                                                Colors.primaries.length],
+                                        color: Colors.primaries[rewards.indexOf(it) % Colors.primaries.length],
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       padding: EdgeInsets.all(30),
