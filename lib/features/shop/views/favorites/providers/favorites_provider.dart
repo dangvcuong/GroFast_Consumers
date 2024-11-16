@@ -16,7 +16,17 @@ class FavoritesProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
 
   FavoritesProvider() {
-    _fetchFavorites(); // Tải danh sách yêu thích khi khởi tạo provider
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user == null) {
+        _clearFavorites(); // Xóa danh sách nếu người dùng đăng xuất
+      } else {
+        _fetchFavorites(); // Tải danh sách yêu thích nếu có người dùng mới
+      }
+    });
+  }
+  void _clearFavorites() {
+    _favorites.clear(); // Xóa danh sách yêu thích
+    notifyListeners(); // Cập nhật giao diện
   }
 
   // Hàm tải sản phẩm yêu thích từ Firebase

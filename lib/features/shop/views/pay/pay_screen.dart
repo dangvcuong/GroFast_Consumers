@@ -14,13 +14,12 @@ import 'package:intl/intl.dart';
 import '../oder/OrderSuccessScreen.dart';
 
 class PaymentScreen extends StatefulWidget {
-  final Product product;
   final List<Product> products;
-
+  final int quantity;
   const PaymentScreen({
     super.key,
-    required this.product,
     required this.products,
+    required this.quantity,
   });
 
   @override
@@ -38,7 +37,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
   List<AddressModel> addresses = [];
   AddressModel? defaultAddress;
   double total = 0;
+
   final Login_Controller loginController = Login_Controller();
+  late int soluong;
   @override
   void initState() {
     super.initState();
@@ -110,43 +111,46 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   void _placeOrder() async {
-    if (defaultAddress == null || defaultAddress!.nameAddresUser.isEmpty) {
+    soluong = widget.quantity;
+
+    if (defaultAddress == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng thêm địa chỉ giao hàng.')),
       );
       return;
     }
 
+    // Chuyển đổi danh sách CartItem thành Product
     List<Product> products = widget.products.map((cartItem) {
       return Product(
-        id: widget.product.id,
+        id: cartItem.id, // Sử dụng productId làm ID của Product
         name: cartItem.name,
         description: cartItem.description,
         imageUrl: cartItem.imageUrl,
         price: cartItem.price.toString(),
         evaluate: cartItem.evaluate.toString(),
-        quantity: 1.toString(), // Giả sử quantity là 1
+        quantity: soluong.toString(),
         idHang: cartItem.idHang,
       );
     }).toList();
 
-    print("Address $defaultAddress!");
-
+    // Tạo đơn hàng
     Order order = Order(
       id: '${DateTime.now().millisecondsSinceEpoch}',
       userId: currentUser!.uid,
       products: products,
-      totalAmount: (int.parse(widget.product.price) + shippingFee).toString(),
+      totalAmount: (totalAmount + shippingFee).toString(),
       orderStatus: 'Đang chờ xác nhận',
       orderDate: DateTime.now(),
       shippingAddress: defaultAddress!,
     );
 
     DatabaseReference ordersRef = FirebaseDatabase.instance.ref('orders');
-    await ordersRef.child(order.id).set(order.toMap()).then((_) {
-      loginController.ThongBao(context, 'Vui lòng chờ xác nhận!');
 
-      // Chuyển sang màn hình "Thanh toán thành công"
+    try {
+      // Lưu đơn hàng vào Firebase
+      await ordersRef.child(order.id).set(order.toMap());
+      loginController.ThongBao(context, 'Vui lòng chờ xác nhận!');
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -155,22 +159,20 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   .id), // Truyền ID đơn hàng vào màn hình OrderSuccessScreen
         ),
       );
-    }).catchError((error) {
+
+      // Xóa từng sản phẩm trong giỏ hàng
+    } catch (error) {
       String errorMessage = 'Lỗi không xác định';
       if (error is FirebaseException) {
         errorMessage = error.message ?? 'Lỗi không xác định';
       }
-
       print('Error occurred: $errorMessage');
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi: $errorMessage')),
-      );
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    print(widget.products);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -186,7 +188,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle('Thông tin giao hàng', 'Thêm', () {
+            _buildSectionTitle('Thông tin giao hàng', 'Sửa', () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const AddressUser()),
@@ -317,10 +319,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Widget _buildOrderDetails() {
-    totalAmount =
-        widget.products.fold(0, (sum, item) => sum + int.parse(item.price)) +
-            shippingFee;
-
+    totalAmount = widget.products.fold(0, (sum, item) {
+      return sum + (int.parse(item.price) * widget.quantity);
+    });
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -392,7 +393,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             children: [
               const Text('Tổng cộng:',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              Text(formatter.format(totalAmount),
+              Text(formatter.format(totalAmount + shippingFee),
                   style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

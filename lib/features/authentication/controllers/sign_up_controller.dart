@@ -42,8 +42,13 @@ class SignUp__Controller {
       check = false;
     } else if (passwordController.text.length < 6) {
       check = false;
+    } else if (!RegExp(r'(?=.*[A-Z])').hasMatch(passwordController.text)) {
+      check = false;
+    } else if (!RegExp(r'(?=.*\d)').hasMatch(passwordController.text)) {
+      check = false;
+    } else if (!RegExp(r'(?=.*[@$!%*?&])').hasMatch(passwordController.text)) {
+      check = false;
     }
-
     if (passwordController.text.isEmpty) {
       check = false;
     } else if (conficPasswordController.text.length < 6) {
@@ -172,7 +177,7 @@ class SignUp__Controller {
 //Hiển thị thông báo
   void ThongBao(BuildContext context, String errorMessage) {
     final snackBar = SnackBar(
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 1),
       backgroundColor: Colors.blue,
       content: Row(
         children: [

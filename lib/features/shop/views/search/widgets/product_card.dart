@@ -8,6 +8,7 @@ import 'package:grofast_consumers/features/authentication/controllers/login_cont
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/views/favorites/providers/favorites_provider.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/productdetailscreen.dart';
+import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -30,6 +31,7 @@ class ProductCard extends StatefulWidget {
 class _ProductCardState extends State<ProductCard> {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
   final Login_Controller loginController = Login_Controller();
+  final ShowDialogs showDialogs = ShowDialogs();
   String userId = FirebaseAuth.instance.currentUser!.uid;
   String companyName = "Đang tải...";
 
@@ -58,38 +60,6 @@ class _ProductCardState extends State<ProductCard> {
     } catch (error) {
       print("Lỗi khi tải tên hãng: $error");
     }
-  }
-
-  Future<void> addProductToUserCart(
-      String userId, Product product, BuildContext context) async {
-    String errorMessage;
-    final DatabaseReference cartRef =
-        FirebaseDatabase.instance.ref('users/$userId/carts');
-    try {
-      final DatabaseEvent event = await cartRef.child(product.id).once();
-      if (event.snapshot.value != null) {
-        final currentQuantity = (event.snapshot.value as Map)['quantity'] ?? 0;
-        await cartRef.child(product.id).update({
-          "quantity": currentQuantity + 1,
-        });
-        errorMessage = "Đã tăng số lượng sản phẩm trong giỏ hàng!";
-      } else {
-        await cartRef.child(product.id).set({
-          "id": product.id,
-          "name": product.name,
-          "description": product.description,
-          "imageUrl": product.imageUrl,
-          "price": product.price,
-          "evaluate": product.evaluate,
-          "quantity": 1,
-          "idHang": product.idHang,
-        });
-        errorMessage = "Sản phẩm đã được thêm vào giỏ hàng!";
-      }
-    } catch (error) {
-      errorMessage = "Lỗi khi thêm sản phẩm vào giỏ hàng: $error";
-    }
-    loginController.ThongBao(context, errorMessage);
   }
 
   @override
@@ -154,9 +124,9 @@ class _ProductCardState extends State<ProductCard> {
                         ),
                         onPressed: () async {
                           if (favoritesProvider.isFavorite(widget.product)) {
-                            favoritesProvider.removeFavorite(widget.product);
-                            loginController.ThongBao(
-                                context, "Đã xóa khỏi yêu thích!");
+                            // favoritesProvider.removeFavorite(widget.product);
+                            showDialogs.showDeleteFavoriteDialog(
+                                context, widget.product);
                           } else {
                             await favoritesProvider.addProductToUserHeart(
                                 userId, widget.product, context);
@@ -228,7 +198,8 @@ class _ProductCardState extends State<ProductCard> {
                         size: 30,
                       ),
                       onPressed: () {
-                        addProductToUserCart(userId, widget.product, context);
+                        showDialogs.showAddCartDialog(
+                            context, widget.product, userId);
                       },
                     ),
                   ),

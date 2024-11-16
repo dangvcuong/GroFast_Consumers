@@ -89,84 +89,120 @@ class _AddressUserState extends State<AddressUser> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(key == null ? 'Thêm địa chỉ mới' : 'Chỉnh sửa địa chỉ'),
+          title: Text(
+            key == null ? 'Thêm địa chỉ mới' : 'Chỉnh sửa địa chỉ',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.blueAccent,
+            ),
+          ),
           content: SizedBox(
             width: 450,
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: "Tên",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  controller: nameController,
-                ),
-                gapH16,
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: "Số điện thoại",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  keyboardType: TextInputType.phone,
-                  controller: phoneController,
-                ),
-                gapH16,
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          labelText: "Địa chỉ",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        controller: addressController,
+                // Tên
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: "Tên",
+                      labelStyle: const TextStyle(color: Colors.blueAccent),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
+                      filled: true,
+                      fillColor: Colors.grey[200],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.location_on, color: Colors.blue),
-                      onPressed: () async {
-                        try {
-                          Position position =
-                              await Geolocator.getCurrentPosition(
-                            desiredAccuracy: LocationAccuracy.high,
-                          );
-                          List<Placemark> placemarks =
-                              await placemarkFromCoordinates(
-                            position.latitude,
-                            position.longitude,
-                          );
-                          if (placemarks.isNotEmpty) {
-                            Placemark place = placemarks[0];
-                            String fullAddress =
-                                '${place.street}, ${place.subLocality}, ${place.locality}, ${place.administrativeArea}, ${place.country}';
-                            setState(() {
-                              addressController.text = fullAddress;
-                            });
+                    controller: nameController,
+                  ),
+                ),
+
+                // Số điện thoại
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: "Số điện thoại",
+                      labelStyle: const TextStyle(color: Colors.blueAccent),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                    ),
+                    keyboardType: TextInputType.phone,
+                    controller: phoneController,
+                  ),
+                ),
+
+                // Địa chỉ và Icon lấy vị trí
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            labelText: "Địa chỉ",
+                            labelStyle:
+                                const TextStyle(color: Colors.blueAccent),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                          ),
+                          controller: addressController,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.location_on, color: Colors.blue),
+                        onPressed: () async {
+                          try {
+                            Position position =
+                                await Geolocator.getCurrentPosition(
+                              desiredAccuracy: LocationAccuracy.high,
+                            );
+                            List<Placemark> placemarks =
+                                await placemarkFromCoordinates(
+                              position.latitude,
+                              position.longitude,
+                            );
+                            if (placemarks.isNotEmpty) {
+                              Placemark place = placemarks[0];
+                              String fullAddress =
+                                  '${place.street}, ${place.subLocality}, ${place.locality}, ${place.administrativeArea}, ${place.country}';
+                              setState(() {
+                                addressController.text = fullAddress;
+                              });
+                            }
+                          } catch (e) {
+                            print("Error: $e");
                           }
-                        } catch (e) {
-                          print("Error: $e");
-                        }
-                      },
-                    )
-                  ],
+                        },
+                      )
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
           actions: [
+            // Nút Hủy
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.redAccent,
+                textStyle: const TextStyle(fontSize: 16),
+              ),
               child: const Text('Hủy'),
             ),
+            // Nút Lưu
             TextButton(
               onPressed: () async {
                 if (nameController.text.isNotEmpty &&
@@ -190,6 +226,10 @@ class _AddressUserState extends State<AddressUser> {
                   Navigator.of(context).pop();
                 }
               },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.blueAccent,
+                textStyle: const TextStyle(fontSize: 16),
+              ),
               child: const Text('Lưu'),
             ),
           ],
@@ -218,7 +258,9 @@ class _AddressUserState extends State<AddressUser> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         toolbarHeight: 80,
         leading: Align(
           alignment: Alignment.centerLeft,
@@ -308,36 +350,95 @@ class _AddressUserState extends State<AddressUser> {
                         gapH6,
                         GestureDetector(
                           onTap: () => {
-                            showDialog(
+                            showModalBottomSheet(
                               context: context,
+                              backgroundColor: Colors.transparent,
                               builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: const Text('Xóa địa chỉ'),
-                                  content: const Text(
-                                      'Bạn có chắc chắn muốn xóa địa chỉ này không?'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(),
-                                      child: const Text('Hủy'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        addRessController
-                                            .deleteAddressInFirebase(
-                                                currentUser!.uid, addressKey);
-                                        setState(() {
-                                          addresses.removeAt(index);
-                                          addressKeys.removeAt(index);
-                                        });
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: const Text('Xóa'),
-                                    ),
-                                  ],
+                                return StatefulBuilder(
+                                  builder: (BuildContext context,
+                                      StateSetter setModalState) {
+                                    return Container(
+                                      padding: const EdgeInsets.all(16.0),
+                                      height: 200,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(20),
+                                          topRight: Radius.circular(20),
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.5),
+                                            spreadRadius: 5,
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            width: 50,
+                                            height: 5,
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey[300],
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 20),
+                                          const Text(
+                                            'Bạn có chắc chắn muốn xóa địa chỉ này?',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.grey,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          const SizedBox(height: 20),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              // Nút Hủy
+                                              IconButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                                icon: const Icon(Icons.cancel,
+                                                    color: Colors.red),
+                                                iconSize: 30,
+                                              ),
+                                              const SizedBox(width: 30),
+                                              // Nút Xóa
+                                              IconButton(
+                                                onPressed: () {
+                                                  addRessController
+                                                      .deleteAddressInFirebase(
+                                                          currentUser!.uid,
+                                                          addressKey);
+                                                  setState(() {
+                                                    addresses.removeAt(index);
+                                                    addressKeys.removeAt(index);
+                                                  });
+                                                  Navigator.pop(context);
+                                                },
+                                                icon: const Icon(Icons.delete,
+                                                    color: Colors.blue),
+                                                iconSize: 30,
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
                                 );
                               },
-                            ),
+                            )
                           },
                           child: const Icon(
                             Icons.delete,
@@ -352,11 +453,32 @@ class _AddressUserState extends State<AddressUser> {
               },
             )
           : const Center(child: Text('Bạn chưa có địa chỉ nào!')),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showAddOrEditAddressDialog();
-        },
-        child: const Icon(Icons.add),
+      floatingActionButton: Padding(
+        padding:
+            const EdgeInsets.only(left: 25), // Thêm khoảng cách từ dưới lên
+        child: Align(
+          alignment: Alignment.bottomCenter, // Căn giữa nút dưới cùng
+          child: FloatingActionButton.extended(
+            onPressed: () {
+              showAddOrEditAddressDialog();
+            },
+            backgroundColor: Colors.blueAccent, // Màu nền
+            elevation: 8.0, // Độ nổi bật
+            shape: RoundedRectangleBorder(
+              // Hình dạng
+              borderRadius: BorderRadius.circular(16), // Góc bo tròn
+            ),
+            icon: const SizedBox.shrink(), // Không hiển thị icon
+            label: const Text(
+              "Thêm địa chỉ mới", // Hiển thị văn bản thay vì icon
+              style: TextStyle(
+                color: Colors.white, // Màu văn bản
+                fontWeight: FontWeight.bold, // Đậm
+                fontSize: 16.0, // Kích thước văn bản
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

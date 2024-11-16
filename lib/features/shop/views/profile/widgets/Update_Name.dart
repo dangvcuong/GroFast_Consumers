@@ -23,7 +23,7 @@ class _Updata_NameState extends State<Updata_Name> {
   UserModel? currentUser;
   final UserController userController = UserController();
   final TextEditingController update_nameController = TextEditingController();
-
+  String? errorMessage;
   @override
   void initState() {
     super.initState();
@@ -71,20 +71,39 @@ class _Updata_NameState extends State<Updata_Name> {
               controller: update_nameController,
               decoration: InputDecoration(
                 labelText: "Nhập tên của bạn", // Chữ ghi chú
-                hintText: currentUser?.name ?? "",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10), // Bo tròn góc
                 ),
                 floatingLabelBehavior: FloatingLabelBehavior.auto, // Chế độ nổi
               ),
             ),
+            SizedBox(
+              width: double.infinity,
+              child: Text(
+                errorMessage ?? '',
+                style: const TextStyle(color: Colors.red, fontSize: 10),
+              ),
+            ),
             gapH20,
             ElevatedButton(
               onPressed: () async {
-                await userController.updateUserName(
-                    currentUser!.id, update_nameController.value.text, context);
-                await _getUserInfo();
-                print(update_nameController.text);
+                if (update_nameController.text.isEmpty) {
+                  errorMessage = "Vui lòng không để trống!";
+                } else if (update_nameController.text.length < 2) {
+                  errorMessage = "Tên phải từ 2 kí tự";
+                } else {
+                  if (currentUser != null) {
+                    // Null check for currentUser
+                    await userController.updateUserName(currentUser!.id,
+                        update_nameController.value.text, context);
+                    await _getUserInfo();
+                  } else {
+                    errorMessage = "Không tìm thấy thông tin người dùng.";
+                  }
+                }
+                setState(() {
+                  update_nameController.text = "";
+                }); // Update the UI to reflect the error message
               },
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,

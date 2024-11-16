@@ -44,4 +44,26 @@ class Product {
       'id_Hang': idHang,
     };
   }
+
+  Product copyWith({
+    String? id,
+    String? name,
+    String? description,
+    String? imageUrl,
+    String? price,
+    String? evaluate,
+    int? quantity,
+    String? idHang,
+  }) {
+    return Product(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      imageUrl: imageUrl ?? this.imageUrl,
+      price: price ?? this.price,
+      evaluate: evaluate ?? this.evaluate,
+      quantity: (quantity ?? this.quantity).toString(),
+      idHang: idHang ?? this.idHang,
+    );
+  }
 }

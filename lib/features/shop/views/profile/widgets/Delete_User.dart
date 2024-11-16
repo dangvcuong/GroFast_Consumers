@@ -21,6 +21,7 @@ class _Delete_UserState extends State<Delete_User> {
   final TextEditingController passWord_Controller = TextEditingController();
   final UserController user_Controller = UserController();
   final ShowDialogs showDiaLog = ShowDialogs();
+  String? errorMessagePass;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,17 +77,33 @@ class _Delete_UserState extends State<Delete_User> {
                 ),
               ),
             ),
+            SizedBox(
+              width: double.infinity,
+              child: Text(
+                errorMessagePass ?? '',
+                style: const TextStyle(color: Colors.red, fontSize: 10),
+              ),
+            ),
             gapH20,
             ElevatedButton(
               onPressed: () async {
-                // Lấy mật khẩu từ TextField hoặc input nào đó
-                try {
-                  await showDiaLog.showDeleteConfirmationDialog(
-                      context,
-                      passWord_Controller
-                          .text); // Sau khi xác thực, xóa tài khoản
-                } catch (e) {
-                  print("Lỗi khi xóa tài khoản: $e");
+                if (passWord_Controller.text.isEmpty) {
+                  setState(() {
+                    errorMessagePass = "Vui lòng không để trống";
+                  });
+                } else {
+                  try {
+                    // Hiển thị dialog xác nhận
+                    await showDiaLog.showDeleteConfirmationDialog(
+                        context,
+                        passWord_Controller
+                            .text); // Sau khi xác thực, xóa tài khoản
+                  } catch (e) {
+                    setState(() {
+                      errorMessagePass = "Lỗi khi xóa tài khoản: $e";
+                    });
+                    print("Lỗi khi xóa tài khoản: $e");
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(

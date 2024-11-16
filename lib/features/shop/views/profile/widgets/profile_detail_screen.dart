@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:grofast_consumers/constants/app_colors.dart';
@@ -52,21 +53,34 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   }
 
   Future<void> _pickImage(String userId) async {
-    String? imagePath;
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
     if (image != null) {
-      setState(() {
-        imagePath = image.path; // Cập nhật đường dẫn ảnh
-      });
-      // Bạn có thể gọi hàm để cập nhật vào Realtime Database ở đây
-      await updateImage(userId, imagePath!);
+      // Tạo một unique name cho ảnh (ví dụ: dựa trên timestamp)
+      String fileName =
+          'user_images/${userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      try {
+        // Tải ảnh lên Firebase Storage
+        final storageRef = FirebaseStorage.instance.ref().child(fileName);
+        await storageRef.putFile(File(image.path)); // Tải file ảnh lên
+
+        // Lấy URL của ảnh sau khi tải lên thành công
+        String imageUrl = await storageRef.getDownloadURL();
+
+        // Cập nhật URL ảnh vào Realtime Database
+        await updateImage(userId, imageUrl);
+      } catch (e) {
+        // Nếu có lỗi trong quá trình tải ảnh lên hoặc cập nhật
+        signUp__Controller.ThongBao(context, "Lỗi khi tải ảnh lên: $e");
+      }
     }
   }
 
   Future<void> updateImage(String userId, String imageUrl) async {
     String? errorMessage;
     try {
+      // Cập nhật URL ảnh vào Realtime Database
       await FirebaseDatabase.instance
           .ref('users/$userId') // Đường dẫn đến user trong Realtime Database
           .update({'image': imageUrl}); // Cập nhật trường 'image' với URL ảnh
@@ -120,9 +134,9 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(
                                 100), // Bo góc với bán kính 20
-                            child: Image.file(
-                              File(currentUser!
-                                  .image), // Sử dụng FileImage để hiển thị ảnh từ đường dẫn cục bộ
+                            child: Image.network(
+                              currentUser!
+                                  .image, // Sử dụng FileImage để hiển thị ảnh từ đường dẫn cục bộ
                               width: 100,
                               height: 100,
                               fit: BoxFit.cover,

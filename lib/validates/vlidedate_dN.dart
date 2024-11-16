@@ -44,8 +44,10 @@ class validete {
     } else if (password.length < 6) {
       errorMessagePass = "Mật khẩu phải có ít nhất 6 ký tự";
       check = false;
-    } else {
-      errorMessagePass = "";
+    }
+    // Kiểm tra chứa ít nhất một số
+    else {
+      errorMessagePass = ""; // Không có lỗi
     }
     // Bạn có thể thêm quy tắc khác nếu cần như yêu cầu ký tự đặc biệt
     return check;
