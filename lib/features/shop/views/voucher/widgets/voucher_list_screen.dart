@@ -43,7 +43,7 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
     await prefs.setStringList('voucherList', vouchers);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Voucher "$voucher" đã được sử dụng 15 lan!')),
+      SnackBar(content: Text('Voucher "$voucher" đã được sử dụng!')),
     );
   }
 
