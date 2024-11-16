@@ -8,6 +8,7 @@ import 'package:grofast_consumers/features/authentication/controllers/addres_Con
 import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
 import 'package:grofast_consumers/features/authentication/controllers/user_controller.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
+import 'package:grofast_consumers/features/shop/views/pay/pay_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../shop/views/favorites/providers/favorites_provider.dart';
@@ -497,7 +498,151 @@ class ShowDialogs {
                       }
                     },
                     child: const Text(
-                      'Xác nhận',
+                      'Thêm vào giỏ hàng',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // mua ngay
+  Future<void> buyProductNow(
+      String userId, Product product, BuildContext context) async {
+    // Đặt giá trị quantity ban đầu là 1
+    int quantity = 1;
+    List<Product> cartItems = [product];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Container(
+              padding: const EdgeInsets.all(16.0),
+              height: 250,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 5,
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 50,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Chọn số lượng sản phẩm',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Nút Trừ
+                      IconButton(
+                        onPressed: () {
+                          if (quantity > 1) {
+                            setModalState(() {
+                              quantity--;
+                            });
+                          }
+                        },
+                        icon: const Icon(Icons.remove_circle_outline,
+                            color: Colors.blue),
+                        iconSize: 30,
+                      ),
+                      // Hiển thị số lượng
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[50],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          quantity.toString(),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      // Nút Cộng
+                      IconButton(
+                        onPressed: () {
+                          setModalState(() {
+                            quantity++;
+                          });
+                        },
+                        icon: const Icon(Icons.add_circle_outline,
+                            color: Colors.blue),
+                        iconSize: 30,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // Nút Xác nhận mua ngay
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 12),
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () {
+                      // Đóng BottomSheet và chuyển đến màn hình thanh toán với số lượng đã chọn
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PaymentScreen(
+                            products: cartItems.map((product) {
+                              // Cập nhật số lượng của sản phẩm trong giỏ hàng
+                              Product updatedProduct = product.copyWith(
+                                quantity: quantity, // Sử dụng quantity đã chọn
+                              );
+                              return updatedProduct;
+                            }).toList(),
+                            quantity: quantity,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      'Mua ngay',
                       style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

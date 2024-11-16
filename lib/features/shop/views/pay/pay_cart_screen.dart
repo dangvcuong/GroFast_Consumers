@@ -193,7 +193,7 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle('Thông tin giao hàng', 'Thêm', () async {
+            _buildSectionTitle('Thông tin giao hàng', 'Sửa', () async {
               Navigator.push(
                 context,
                 MaterialPageRoute(
