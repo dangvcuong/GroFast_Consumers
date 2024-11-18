@@ -34,7 +34,7 @@ class _CartScreenState extends State<CartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F6F6),
+      backgroundColor: const Color(0xFFE8E2E2),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
@@ -68,7 +68,7 @@ class _CartScreenState extends State<CartScreen> {
             children: [
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 16), // Thêm padding ở trên cùng
                   itemCount: cartProvider.cartItems.length,
                   itemBuilder: (context, index) {
                     final cartItem = cartProvider.cartItems[index];
@@ -170,7 +170,7 @@ class _CartScreenState extends State<CartScreen> {
                         },
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
@@ -179,6 +179,7 @@ class _CartScreenState extends State<CartScreen> {
       ),
     );
   }
+
 
   Widget _buildEditActions(CartProvider cartProvider) {
     return Row(
@@ -220,20 +221,22 @@ class _CartScreenState extends State<CartScreen> {
             // Hiển thị hộp thoại xác nhận
             final confirm = await showDialog(
               context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Xác nhận'),
-                content: const Text('Bạn có chắc muốn xóa các sản phẩm đã chọn?'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Hủy'),
+              builder: (context) =>
+                  AlertDialog(
+                    title: const Text('Xác nhận'),
+                    content: const Text(
+                        'Bạn có chắc muốn xóa các sản phẩm đã chọn?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Hủy'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Đồng ý'),
+                      ),
+                    ],
                   ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Đồng ý'),
-                  ),
-                ],
-              ),
             );
 
             if (confirm == true) {
@@ -254,53 +257,97 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildSummary(double totalPrice, CartProvider cartProvider) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          'Tổng cộng:',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        Row(
-          children: [
-            Text(
-              formatter.format(totalPrice),
-              style: const TextStyle(
-                  fontSize: 18, color: Colors.red, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(width: 16),
-            ElevatedButton(
-              onPressed: () {
-                final selectedProducts =
-                cartProvider.cartItems.where((item) => item.isChecked).toList();
-                if (selectedProducts.isEmpty) return;
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        PaymentCartScreen(products: selectedProducts),
+    // Tính tổng số lượng sản phẩm đã chọn (mỗi sản phẩm chỉ tính 1 lần)
+    int totalQuantity = cartProvider.cartItems
+        .where((item) => item.isChecked) // Lọc ra các sản phẩm đã chọn
+        .length; // Đếm số lượng sản phẩm đã chọn
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        children: [
+          // Hiển thị "Tổng thanh toán" và tổng giá
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Tổng thanh toán:',
+                style: TextStyle(
+                  fontSize: 14,  // Giảm kích thước chữ
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                formatter.format(totalPrice),
+                style: const TextStyle(
+                    fontSize: 14, color: Colors.red, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8), // Khoảng cách giữa "Tổng thanh toán" và nút "Mua hàng"
+
+          // Nút "Mua hàng" và tổng số sản phẩm đã chọn
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Hiển thị nút chọn tất cả
+              Row(
+                children: [
+                  Checkbox(
+                    value: isSelectAll,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        isSelectAll = value ?? false;
+                        isSelectAll
+                            ? cartProvider.selectAllItems()
+                            : cartProvider.deselectAllItems();
+                      });
+                    },
                   ),
-                ).then((_) {
-                  String userId = FirebaseAuth.instance.currentUser!.uid;
-                  Provider.of<CartProvider>(context, listen: false)
-                      .fetchCartItems(userId);
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-                padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  const Text(
+                    'tất cả',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                ],
               ),
-              child: const Text(
-                'Mua hàng',
-                style: TextStyle(color: Colors.white, fontSize: 16),
+              // Hiển thị nút "Mua hàng" với tổng số sản phẩm đã chọn
+              ElevatedButton(
+                onPressed: () {
+                  final selectedProducts =
+                  cartProvider.cartItems.where((item) => item.isChecked).toList();
+                  if (selectedProducts.isEmpty) return;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          PaymentCartScreen(products: selectedProducts),
+                    ),
+                  ).then((_) {
+                    String userId = FirebaseAuth.instance.currentUser!.uid;
+                    Provider.of<CartProvider>(context, listen: false)
+                        .fetchCartItems(userId);
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                ),
+                child: Text(
+                  'Mua hàng ($totalQuantity)', // Hiển thị tổng số sản phẩm đã chọn
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
+
+
+
 }
