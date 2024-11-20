@@ -18,10 +18,10 @@ class _VoucherScreenState extends State<VoucherScreen> {
 
   final List<String> rewards = [
     "Mã giảm giá 10%",
-    "Thẻ quà tặng",
+    "Mã giảm giá 20%",
     "Mất lượt",
     "Mã giảm giá 15%",
-    "Voucher ăn uống",
+    "Mã giảm giá 10%",
     "FreeShip Extra"
   ];
   List<String> voucherList = [];
@@ -62,6 +62,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
       // Nếu người chơi quay trúng "Mất lượt", hiển thị popup thông báo
       if (wonReward == "Mất lượt") {
         showDialog(
+          barrierDismissible: false,
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
@@ -102,6 +103,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
       } else {
         // Popup "Chúc mừng" không có tự động đóng
         showDialog(
+          barrierDismissible: false,
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
@@ -145,7 +147,13 @@ class _VoucherScreenState extends State<VoucherScreen> {
             );
           },
         );
+        Future.delayed(Duration(seconds: 3), () {
+          if (autoCloseDialog) {
+            Navigator.of(context).pop(); // Đóng popup tự động nếu không nhấn icon đóng
+          }
+        });
       }
+
     });
   }
 

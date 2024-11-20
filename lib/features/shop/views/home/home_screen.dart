@@ -61,7 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     _fetchProducts();
-
     _searchController.addListener(_filterProducts);
     _pageController.addListener(() {
       setState(() {
@@ -70,6 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     currentUser = FirebaseAuth.instance.currentUser;
+    _fetchAddresses();
 
     _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
       if (_currentPage < _banners.length - 1) {

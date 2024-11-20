@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:grofast_consumers/constants/app_sizes.dart';
 import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
 import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
 import 'package:grofast_consumers/features/shop/views/cart/providers/cart_provider.dart';
@@ -317,7 +318,50 @@ class _CartScreenState extends State<CartScreen> {
                 onPressed: () {
                   final selectedProducts =
                   cartProvider.cartItems.where((item) => item.isChecked).toList();
-                  if (selectedProducts.isEmpty) return;
+                  if (selectedProducts.isEmpty) {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      barrierColor: Colors.transparent,// Không cho phép đóng bằng cách nhấn ra ngoài
+                      builder: (context) => Dialog(
+                        backgroundColor: Colors.black.withOpacity(0.6), // Nền đen trong
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.warning_amber_rounded,
+                                color: Colors.amber,
+                                size: 40, // Kích thước icon
+                              ),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'Bạn vẫn chưa có sản phẩm nào để mua.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white, // Màu chữ trắng
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+
+                    // Tự động đóng popup sau 2 giây
+                    Future.delayed(const Duration(seconds: 2), () {
+                      Navigator.of(context, rootNavigator: true).pop();
+                    });
+                    return;
+                  }
+
                   Navigator.push(
                     context,
                     MaterialPageRoute(

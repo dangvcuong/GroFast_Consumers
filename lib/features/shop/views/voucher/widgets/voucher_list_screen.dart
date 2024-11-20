@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
+import 'package:grofast_consumers/features/shop/views/pay/pay_cart_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class VoucherListScreen extends StatefulWidget {
   final List<String> vouchers;
+
 
   VoucherListScreen({required this.vouchers});
 
@@ -12,6 +15,7 @@ class VoucherListScreen extends StatefulWidget {
 
 class _VoucherListScreenState extends State<VoucherListScreen> {
   late List<String> vouchers = [];
+  late List<CartItem> products=[];
 
   @override
   void initState() {
@@ -41,6 +45,8 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
     });
 
     await prefs.setStringList('voucherList', vouchers);
+
+   Navigator.pop(context, MaterialPageRoute(builder: (context)=> PaymentCartScreen(products: products,selectedVouchers: voucher,)));
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Voucher "$voucher" đã được sử dụng!')),

@@ -12,15 +12,18 @@ import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart'
 import 'package:grofast_consumers/features/shop/views/cart/providers/cart_provider.dart';
 import 'package:grofast_consumers/features/shop/views/oder/OrderSuccessScreen.dart';
 import 'package:grofast_consumers/features/shop/views/oder/oder_screen.dart';
+import 'package:grofast_consumers/features/shop/views/voucher/widgets/voucher_list_screen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
 import 'package:intl/intl.dart';
 
 class PaymentCartScreen extends StatefulWidget {
   final List<CartItem> products;
+final String? selectedVouchers;
 
   const PaymentCartScreen({
     super.key,
     required this.products,
+    this.selectedVouchers
   });
 
   @override
@@ -41,44 +44,66 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
   final CartProvider cartProvider = CartProvider();
   final Login_Controller loginController = Login_Controller();
   String idProduct = '';
+  String? selectedVoucher;
+  double discountValue=0;
+  List<String> vouchers=[];
+
+
+
   @override
   void initState() {
     super.initState();
     currentUser =
         FirebaseAuth.instance.currentUser; // Lấy thông tin người dùng hiện tại
     _fetchAddresses(); // Gọi hàm để lấy địa chỉ
+    _applyVoucher();
   }
 
   void _updateShippingFee(int option) {
     setState(() {
       switch (option) {
         case 1:
-          shippingFee = 10000; // Phí 10.000đ cho "Ưu tiên"
+          shippingFee = 100000; // Phí 10.000đ cho "Ưu tiên"
           break;
         case 2:
-          shippingFee = 0; // Miễn phí cho "Tiêu chuẩn"
+          shippingFee = 200000; // Miễn phí cho "Tiêu chuẩn"
           break;
         case 3:
-          shippingFee = 20000; // Phí 20.000đ cho "Đặt lịch"
+          shippingFee = 200000; // Phí 20.000đ cho "Đặt lịch"
           break;
       }
       _selectedShippingOption = option;
     });
   }
-
-  Future<void> _selectDeliveryDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDeliveryDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2025),
-    );
-    if (picked != null && picked != selectedDeliveryDate) {
-      setState(() {
-        selectedDeliveryDate = picked;
-      });
+  void _applyVoucher(){
+    if(widget.selectedVouchers!=null){
+      final voucher=widget.selectedVouchers!;
+      if(voucher =='freeship'){
+        shippingFee=0;
+      }else if(voucher.endsWith('%')){
+        final discount=int.parse(voucher.replaceAll('%', ''));
+        shippingFee=(shippingFee *(1-discount/100)).round();
+      }
     }
+    setState(() {
+      totalAmount = widget.products
+          .fold(0.0, (sum, cartItem) => sum + (cartItem.price * cartItem.quantity))+shippingFee;
+    });
   }
+
+  // Future<void> _selectDeliveryDate(BuildContext context) async {
+  //   final DateTime? picked = await showDatePicker(
+  //     context: context,
+  //     initialDate: selectedDeliveryDate ?? DateTime.now(),
+  //     firstDate: DateTime.now(),
+  //     lastDate: DateTime(2025),
+  //   );
+  //   if (picked != null && picked != selectedDeliveryDate) {
+  //     setState(() {
+  //       selectedDeliveryDate = picked;
+  //     });
+  //   }
+  // }
 
   Future<void> _fetchAddresses() async {
     final userId = currentUser!.uid;
@@ -277,7 +302,7 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
     return Column(
       children: [
         ListTile(
-          title: const Text('Ưu tiên'),
+          title: const Text('Tiết kiệm'),
           subtitle: const Text('(+10.000đ)'),
           leading: Radio(
             value: 1,
@@ -288,30 +313,13 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
           ),
         ),
         ListTile(
-          title: const Text('Tiêu chuẩn'),
-          subtitle: const Text('(Miễn phí)'),
+          title: const Text('Nhanh'),
+          subtitle: const Text('(+20.000đ)'),
           leading: Radio(
             value: 2,
             groupValue: _selectedShippingOption,
             onChanged: (int? value) {
               if (value != null) _updateShippingFee(value);
-            },
-          ),
-        ),
-        ListTile(
-          title: const Text('Đặt lịch'),
-          subtitle: selectedDeliveryDate != null
-              ? Text(
-                  'Ngày: ${DateFormat('dd/MM/yyyy').format(selectedDeliveryDate!)}')
-              : null,
-          leading: Radio(
-            value: 3,
-            groupValue: _selectedShippingOption,
-            onChanged: (int? value) {
-              if (value != null) {
-                _updateShippingFee(value);
-                _selectDeliveryDate(context);
-              }
             },
           ),
         ),
@@ -335,7 +343,7 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
           ),
         ),
         ListTile(
-          title: const Text('Ví điện tử MoMo'),
+          title: const Text('VN_Pay'),
           leading: Radio(
             value: 2,
             groupValue: _selectedPaymentMethod,
@@ -352,7 +360,7 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
 
   Widget _buildOrderDetails() {
     totalAmount = widget.products
-        .fold(0, (sum, cartItem) => sum + (cartItem.price * cartItem.quantity));
+        .fold(0.0, (sum, cartItem) => sum + (cartItem.price * cartItem.quantity))+shippingFee;
 
     return Card(
       child: Padding(
@@ -397,7 +405,9 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
 
   Widget _buildDiscountSection() {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context)=> VoucherListScreen(vouchers: vouchers)));
+      },
       child: const Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
