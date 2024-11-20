@@ -128,6 +128,7 @@ dependencies:
   file_picker: ^8.1.4
   open_filex: ^4.5.0
   flutter_launcher_icons: ^0.14.1
+  
 
 dev_dependencies:
   flutter_test:
