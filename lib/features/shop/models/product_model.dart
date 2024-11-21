@@ -3,10 +3,11 @@ class Product {
   final String name;
   final String description;
   final String imageUrl;
-  final String price;
+  final int price;
   final String evaluate;
-  final String quantity;
+  final int quantity;
   final String idHang; // Thêm thuộc tính idHang
+  final int quantitysold;
 
   Product({
     required this.id,
@@ -16,31 +17,42 @@ class Product {
     required this.price,
     required this.evaluate,
     required this.quantity,
+    required this.quantitysold,
     required this.idHang, // Thêm vào constructor
   });
-
   factory Product.fromMap(Map<String, dynamic> map, String id) {
     return Product(
       id: id,
       name: map['name'] ?? '',
       description: map['describe'] ?? '',
       imageUrl: map['imageUrl'] ?? '',
-      price: map['price'] ?? '0',
-      evaluate: map['evaluate'] ?? '0',
-      quantity: map['quantity'] ?? '0',
-      idHang: map['id_Hang'] ?? '', // Lấy id_Hang từ Firebase
+      price: map['price'] is int
+          ? map['price']
+          : int.tryParse(map['price'].toString()) ??
+              0, // Ensure price is an int
+      evaluate: map['evaluate'] ?? '0', // Ensure evaluate is a String
+      quantity: map['quantity'] is int
+          ? map['quantity']
+          : int.tryParse(map['quantity'].toString()) ??
+              0, // Ensure quantity is an int
+      quantitysold: map['quantitysold'] is int
+          ? map['quantitysold']
+          : 0, // Ensure quantitysold is an int
+      idHang: map['id_Hang'] ?? '', // Get id_Hang from Firebase
     );
   }
 
   // Thêm phương thức toMap
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'name': name,
       'describe': description,
       'imageUrl': imageUrl,
       'price': price,
       'evaluate': evaluate,
       'quantity': quantity,
+      'quantitysold': quantitysold,
       'id_Hang': idHang,
     };
   }
@@ -50,9 +62,10 @@ class Product {
     String? name,
     String? description,
     String? imageUrl,
-    String? price,
+    int? price,
     String? evaluate,
     int? quantity,
+    int? quantitysold,
     String? idHang,
   }) {
     return Product(
@@ -62,7 +75,8 @@ class Product {
       imageUrl: imageUrl ?? this.imageUrl,
       price: price ?? this.price,
       evaluate: evaluate ?? this.evaluate,
-      quantity: (quantity ?? this.quantity).toString(),
+      quantity: quantity ?? this.quantity,
+      quantitysold: quantitysold ?? this.quantitysold,
       idHang: idHang ?? this.idHang,
     );
   }

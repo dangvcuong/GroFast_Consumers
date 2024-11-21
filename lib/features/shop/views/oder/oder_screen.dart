@@ -58,7 +58,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   context,
                   icon: Icons.check_circle_outline,
                   label: "Đã nhận hàng",
-                  status: 'Đã nhận hàng',
+                  status: 'Thành công',
                 ),
               ],
             ),

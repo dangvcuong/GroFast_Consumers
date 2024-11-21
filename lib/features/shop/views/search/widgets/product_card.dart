@@ -65,7 +65,7 @@ class _ProductCardState extends State<ProductCard> {
   @override
   Widget build(BuildContext context) {
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
-    num priceValue = num.tryParse(widget.product.price) ?? 0;
+
     final favoritesProvider = Provider.of<FavoritesProvider>(context);
 
     return InkWell(
@@ -175,34 +175,45 @@ class _ProductCardState extends State<ProductCard> {
                       Text("${widget.product.evaluate}/5"),
                     ],
                   ),
-                  Text("${widget.product.quantity} Đã bán"),
+                  Text("Đã bán ${widget.product.quantitysold}"),
                 ],
               ),
               const SizedBox(height: 1),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(formatter.format(priceValue),
-                      style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFF44336))),
-                  Container(
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.add_circle_outline,
-                        color: Colors.red,
-                        size: 30,
-                      ),
-                      onPressed: () {
-                        showDialogs.showAddCartDialog(
-                            context, widget.product, userId);
-                      },
-                    ),
+                  Text(
+                    formatter.format(widget.product.price),
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFF44336)),
                   ),
+                  widget.product.quantity > 0
+                      ? Container(
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.add_circle_outline,
+                              color: Colors.red,
+                              size: 30,
+                            ),
+                            onPressed: () {
+                              showDialogs.showAddCartDialog(
+                                  context, widget.product, userId);
+                            },
+                          ),
+                        )
+                      : const Text(
+                          "Hết hàng !",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ],
               ),
             ],
