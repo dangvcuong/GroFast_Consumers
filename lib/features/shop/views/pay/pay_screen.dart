@@ -127,10 +127,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
         name: cartItem.name,
         description: cartItem.description,
         imageUrl: cartItem.imageUrl,
-        price: cartItem.price.toString(),
+        price: cartItem.price,
         evaluate: cartItem.evaluate.toString(),
-        quantity: soluong.toString(),
+        quantity: soluong,
         idHang: cartItem.idHang,
+        quantitysold: 0,
       );
     }).toList();
 
@@ -320,7 +321,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   Widget _buildOrderDetails() {
     totalAmount = widget.products.fold(0, (sum, item) {
-      return sum + (int.parse(item.price) * widget.quantity);
+      return sum + (int.parse(item.price.toString()) * widget.quantity);
     });
     return Card(
       child: Padding(

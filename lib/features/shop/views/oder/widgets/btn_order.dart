@@ -192,7 +192,8 @@ class ButtonRow extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             // Kiểm tra nếu trạng thái đơn hàng không phải "Đang giao hàng" thì mới hiển thị nút "Hủy đơn hàng"
-            if (orderStatus != 'Đang giao hàng') ...[
+            if (orderStatus != 'Đang giao hàng' &&
+                orderStatus != 'Thành công') ...[
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {

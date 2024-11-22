@@ -154,10 +154,11 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
         name: cartItem.name,
         description: cartItem.description,
         imageUrl: cartItem.imageUrl,
-        price: cartItem.price.toString(),
+        price: cartItem.price.toInt(),
         evaluate: cartItem.evaluate.toString(),
-        quantity: cartItem.quantity.toString(),
+        quantity: cartItem.quantity,
         idHang: cartItem.idHang,
+        quantitysold: 0,
       );
     }).toList();
 

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -14,7 +13,6 @@ import 'package:provider/provider.dart';
 
 import '../../../models/category_model.dart';
 import '../../cart/providers/cart_provider.dart';
-
 
 class ProductCardWidget extends StatelessWidget {
   final Product product;
@@ -37,7 +35,6 @@ class ProductCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
-    num priceValue = num.tryParse(product.price) ?? 0;
 
     return InkWell(
       onTap: () {
@@ -123,7 +120,7 @@ class ProductCardWidget extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style:
-                const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 2),
               Row(
@@ -142,7 +139,7 @@ class ProductCardWidget extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(formatter.format(priceValue),
+                  Text(formatter.format(product.price),
                       style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,

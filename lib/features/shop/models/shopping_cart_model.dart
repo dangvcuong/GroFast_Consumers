@@ -53,6 +53,7 @@ class CartItem {
   // Hàm chuyển CartItem object thành Map để lưu vào Firebase
   Map<String, dynamic> toMap() {
     return {
+      'productId': productId,
       'name': name,
       'description': description,
       'imageUrl': imageUrl,

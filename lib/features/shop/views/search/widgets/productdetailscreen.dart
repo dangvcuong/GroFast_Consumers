@@ -74,10 +74,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Login_Controller loginController = Login_Controller();
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
-    num priceValue = num.tryParse(widget.product.price) ?? 0;
+
     final favoritesProvider = Provider.of<FavoritesProvider>(context);
-    String gia = widget.product.price;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -116,14 +117,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ],
                   ),
                   Text(
-                    "${widget.product.quantity} sản phẩm đã bán",
+                    "${widget.product.quantitysold} sản phẩm đã bán",
                     style: const TextStyle(fontSize: 14),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               Text(
-                '${formatter.format(priceValue)}/${displayUnit(widget.product.idHang)}',
+                '${formatter.format(widget.product.price)}/${displayUnit(widget.product.idHang)}',
                 style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -238,14 +239,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               flex: 2,
               child: GestureDetector(
                 onTap: () {
-                  showdialog.showAddCartDialog(context, widget.product, userId);
-                  // addProductToUserCart(userId, widget.product, context);
+                  if (int.tryParse(widget.product.quantity.toString()) == 0) {
+                    // Hiển thị thông báo nếu số lượng là 0
+                    loginController.ThongBao(context, 'Sản phẩm đã hết hàng');
+                  } else {
+                    showdialog.showAddCartDialog(
+                        context, widget.product, userId);
+                  }
                 },
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.shopping_cart, color: Colors.black),
-                    SizedBox(width: 8),
+                    Icon(
+                      Icons.shopping_cart,
+                      color:
+                          int.tryParse(widget.product.quantity.toString()) == 0
+                              ? Colors.black // Nếu hết hàng, đặt màu xám
+                              : Colors.blue,
+                    ),
+                    const SizedBox(width: 8),
                   ],
                 ),
               ),
@@ -255,31 +267,39 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               flex: 4,
               child: GestureDetector(
                 onTap: () {
-                  showdialog.buyProductNow(userId, widget.product, context);
+                  if (int.tryParse(widget.product.quantity.toString()) == 0) {
+                    // Không cho phép mua ngay khi hết hàng
+                    loginController.ThongBao(context, 'Sản phẩm đã hết hàng');
+                  } else {
+                    showdialog.buyProductNow(userId, widget.product, context);
+                  }
                 },
                 child: Container(
-                  color: Colors.blue, // Đặt màu nền cho nút "Mua ngay"
+                  color: int.tryParse(widget.product.quantity.toString()) == 0
+                      ? Colors.grey // Nếu hết hàng, đặt màu xám
+                      : Colors.blue, // Đặt màu nền cho nút "Mua ngay"
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        'Mua ngay',
-                        style: TextStyle(
+                      Text(
+                        int.tryParse(widget.product.quantity.toString()) == 0
+                            ? "Hết hàng"
+                            : "Mua ngay",
+                        style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: Colors
-                              .white, // Đổi màu chữ thành trắng để dễ đọc trên nền xanh
+                          color: Colors.white, // Đổi màu chữ thành trắng
                         ),
                       ),
-                      Text(
-                        formatter.format(priceValue),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors
-                              .white, // Đổi màu chữ thành trắng để dễ đọc trên nền xanh
+                      if (int.tryParse(widget.product.quantity.toString()) != 0)
+                        Text(
+                          formatter.format(widget.product.price),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
