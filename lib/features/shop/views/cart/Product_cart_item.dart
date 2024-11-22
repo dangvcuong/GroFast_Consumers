@@ -317,23 +317,63 @@ class _CartScreenState extends State<CartScreen> {
                 onPressed: () {
                   final selectedProducts =
                   cartProvider.cartItems.where((item) => item.isChecked).toList();
-                  if (selectedProducts.isEmpty) return;
+                  if (selectedProducts.isEmpty) {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false, // Không cho phép đóng bằng cách nhấn ra ngoài
+                      barrierColor: Colors.transparent, // Màu nền mờ của background (nền đen trong)
+                      builder: (context) => Dialog(
+                        backgroundColor: Colors.black.withOpacity(0.6), // Nền của dialog trong suốt
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.warning_amber_rounded,
+                                color: Colors.amber,
+                                size: 40, // Kích thước icon
+                              ),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'Bạn vẫn chưa có sản phẩm nào để mua.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white, // Màu chữ trắng
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+
+                    // Tự động đóng popup sau 2 giây
+                    Future.delayed(const Duration(seconds: 2), () {
+                      Navigator.of(context, rootNavigator: true).pop();
+                    });
+                    return;
+                  }
+                  // Tiếp tục với việc xử lý nếu có sản phẩm được chọn
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          PaymentCartScreen(products: selectedProducts),
+                      builder: (context) => PaymentCartScreen(products: selectedProducts),
                     ),
                   ).then((_) {
                     String userId = FirebaseAuth.instance.currentUser!.uid;
-                    Provider.of<CartProvider>(context, listen: false)
-                        .fetchCartItems(userId);
+                    Provider.of<CartProvider>(context, listen: false).fetchCartItems(userId);
                   });
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
                 child: Text(
