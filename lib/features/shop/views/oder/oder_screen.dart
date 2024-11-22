@@ -40,6 +40,29 @@ class _OrderScreenState extends State<OrderScreen> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Đơn mua',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // Add functionality for viewing purchase history
+                  },
+                  child: Row(
+                    children: [
+                      Text('Xem lịch sử mua hàng'),
+                      Icon(Icons.arrow_forward_ios, size: 14),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 buildStatusIcon(
