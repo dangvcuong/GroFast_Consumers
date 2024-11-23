@@ -15,7 +15,7 @@ import 'package:grofast_consumers/features/shop/views/home/widget/category_menu.
 import 'package:grofast_consumers/features/shop/views/profile/widgets/profile_detail_screen.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
 import 'package:grofast_consumers/features/shop/views/chatbot/chat_screen.dart';
-import 'package:grofast_consumers/features/shop/views/chatbot/chat.dart';
+// import 'package:grofast_consumers/features/shop/views/chatbot/chat.dart';
 import 'package:grofast_consumers/constants/app_sizes.dart';
 import 'package:grofast_consumers/features/authentication/models/addressModel.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
