@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     currentUser = FirebaseAuth.instance.currentUser;
-
+    _fetchAddresses();
     _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
       if (_currentPage < _banners.length - 1) {
         _currentPage++;
@@ -287,21 +287,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(
-                        height: 170,
-                        child: GridView.count(
-                          crossAxisCount: 2,
-                          scrollDirection: Axis.horizontal,
-                          children:
-                              CategoryMenu.getCategoryList().map((category) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 1.0, vertical: 4.0),
-                              child: category,
-                            );
-                          }).toList(),
-                        ),
-                      ),
                       const SizedBox(height: 16),
                       SizedBox(
                         height: 130,

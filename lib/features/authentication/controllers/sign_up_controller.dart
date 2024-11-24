@@ -144,6 +144,7 @@ class SignUp__Controller {
             dateCreated: DateTime.now().toString(),
             status: "Hoạt động",
             balance: 0,
+            userDeviceToken: '',
           );
 
           await databaseRef.set(newUser.toJson()).then((_) {

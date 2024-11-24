@@ -10,6 +10,7 @@ class UserModel {
   String dateCreated;
   String status;
   int balance;
+  String userDeviceToken;
 
   UserModel({
     required this.id,
@@ -21,6 +22,7 @@ class UserModel {
     required this.dateCreated,
     required this.status,
     required this.balance,
+    required this.userDeviceToken,
   });
 
   // Tạo phương thức để chuyển đổi từ Map (dữ liệu từ Firebase) sang UserModel
@@ -38,6 +40,7 @@ class UserModel {
       balance: map['balance'] != null
           ? map['balance'] as int
           : 0, // Kiểm tra nếu 'balance' có dữ liệu hợp lệ
+      userDeviceToken: map['userDeviceToken'] ?? '',
     );
   }
 
@@ -53,6 +56,7 @@ class UserModel {
       'dateCreated': dateCreated,
       'status': status,
       'balance': balance,
+      'userDeviceToken': userDeviceToken,
     };
   }
 
@@ -71,6 +75,7 @@ class UserModel {
       balance: userData['balance'] != null
           ? userData['balance'] as int
           : 0, // Kiểm tra nếu 'balance' có dữ liệu hợp lệ
+      userDeviceToken: userData['userDeviceToken'] ?? '',
     );
   }
 
@@ -84,6 +89,6 @@ class UserModel {
         image: '',
         dateCreated: '',
         status: '',
-        balance: 0,
+        balance: 0, userDeviceToken: '',
       );
 }

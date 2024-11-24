@@ -290,8 +290,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
     if (result != null) {
       final bytes = await result.readAsBytes();
-      final message =
-          await _uploadImage(bytes, result.name);
+      final message = await _uploadImage(bytes, result.name);
     }
     return;
   }
@@ -371,11 +370,9 @@ class _ChatScreenState extends State<ChatScreen> {
               bubbleBuilder: _buildMessage,
               theme: DefaultChatTheme(
                 inputBackgroundColor: Colors.white,
-
                 inputTextDecoration: InputDecoration(
                   hintText: "Nhập văn bản...",
                   hintStyle: TextStyle(color: Colors.grey[600]),
-
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: const BorderSide(color: Colors.grey),
