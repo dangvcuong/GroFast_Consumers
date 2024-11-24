@@ -325,15 +325,26 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                       ),
                     ),
                     const Divider(thickness: 1, color: Colors.grey),
-                    const ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(Icons.person_add),
-                      title: Text('Giới thiệu với bạn bè'),
-                      trailing: Icon(
-                        Icons.arrow_forward_ios,
-                        size: 15,
+                    InkWell(
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Tính năng đang được phát triển!'),
+                            duration: Duration(seconds: 2), // Thời gian hiển thị thông báo
+                          ),
+                        );
+                      },
+                      child: const ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Icons.person_add),
+                        title: Text('Giới thiệu với bạn bè'),
+                        trailing: Icon(
+                          Icons.arrow_forward_ios,
+                          size: 15,
+                        ),
                       ),
                     ),
+
                     const Divider(
                       thickness: 1, // Độ dày của gạch ngang
                       color: Colors.grey, // Màu sắc của gạch ngang

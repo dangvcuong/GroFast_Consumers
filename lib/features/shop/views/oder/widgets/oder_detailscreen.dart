@@ -38,6 +38,7 @@ class _OrderDetailState extends State<OrderDetail> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
+
       body: StreamBuilder(
         stream: database.onValue,
         builder: (context, snapshot) {
@@ -52,9 +53,13 @@ class _OrderDetailState extends State<OrderDetail> {
 
           final data = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
 
+          // Kiểm tra trạng thái đơn hàng
+          String orderStatus = data['orderStatus'] ?? '';
+
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TileOrder(
                   orderId: widget.orderId,
@@ -67,13 +72,76 @@ class _OrderDetailState extends State<OrderDetail> {
                 Expanded(
                   child: ProductListOrder(
                       products:
-                          List<Map<dynamic, dynamic>>.from(data['products'])),
+                      List<Map<dynamic, dynamic>>.from(data['products'])),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 ButtonRow(
                   data: data,
                   orderId: widget.orderId,
                 ),
+                const SizedBox(height: 20),
+
+                // Kiểm tra trạng thái đơn hàng và chỉ hiển thị các nút khi "Thành công"
+                if (orderStatus == 'Thành công')
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // "Trả hàng/Hoàn tiền" button
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Tính năng trả hàng/hoàn tiền đang phát triển!'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red, // Red for "Trả hàng"
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text(
+                              'Trả hàng/Hoàn tiền',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        ),
+                      ),
+                      // "Mua lại" button
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Tính năng mua lại đang phát triển!'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green, // Green for "Mua lại"
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text(
+                              'Mua lại',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
           );

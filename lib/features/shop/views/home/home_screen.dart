@@ -6,7 +6,6 @@ import 'package:diacritic/diacritic.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:grofast_consumers/features/shop/controllers/search_controller.dart';
@@ -62,6 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     _fetchProducts();
+
     _searchController.addListener(_filterProducts);
     _pageController.addListener(() {
       setState(() {
@@ -70,7 +70,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     currentUser = FirebaseAuth.instance.currentUser;
-    _fetchAddresses();
 
     _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
       if (_currentPage < _banners.length - 1) {

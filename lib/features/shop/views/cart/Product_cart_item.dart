@@ -97,88 +97,141 @@ class _CartScreenState extends State<CartScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Checkbox(
-              value: cartItem.isChecked,
-              onChanged: (bool? value) {
-                cartItem.isChecked = value ?? false;
-                cartProvider.notifyListeners();
-              },
-            ),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                cartItem.imageUrl,
-                width: 75,
-                height: 75,
-                fit: BoxFit.cover,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    cartItem.name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(40, 12, 12, 12), // Left padding increased to make room for checkbox
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Product image
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    cartItem.imageUrl,
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    formatter.format(cartItem.price),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.redAccent,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
+                ),
+                SizedBox(width: 16),
+                // Product details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove, color: Colors.grey),
-                        onPressed: () {
-                          if (cartItem.quantity > 1) {
-                            cartItem.quantity--;
-                            cartProvider.updateQuantity(
-                              FirebaseAuth.instance.currentUser!.uid,
-                              cartItem,
-                            );
-                          }
-                        },
-                      ),
                       Text(
-                        cartItem.quantity.toString(),
+                        cartItem.name,
                         style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.bold),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.add, color: Colors.grey),
-                        onPressed: () {
-                          cartItem.quantity++;
-                          cartProvider.updateQuantity(
-                            FirebaseAuth.instance.currentUser!.uid,
-                            cartItem,
-                          );
-                        },
+                      SizedBox(height: 8),
+                      Text(
+                        formatter.format(cartItem.price),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      // Add/Subtract buttons (horizontal, at the bottom, Shopee style)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey[300]!),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              children: [
+                                _buildQuantityButton(
+                                  icon: Icons.remove,
+                                  onPressed: () {
+                                    if (cartItem.quantity > 1) {
+                                      cartItem.quantity--;
+                                      cartProvider.updateQuantity(
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                        cartItem,
+                                      );
+                                    }
+                                  },
+                                ),
+                                Container(
+                                  width: 40,
+                                  height: 30,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    border: Border.symmetric(
+                                      vertical: BorderSide(color: Colors.grey[300]!),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    cartItem.quantity.toString(),
+                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                _buildQuantityButton(
+                                  icon: Icons.add,
+                                  onPressed: () {
+                                    cartItem.quantity++;
+                                    cartProvider.updateQuantity(
+                                      FirebaseAuth.instance.currentUser!.uid,
+                                      cartItem,
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
+              ],
+            ),
+          ),
+          // Checkbox positioned absolutely
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: Checkbox(
+                value: cartItem.isChecked,
+                onChanged: (bool? value) {
+                  cartItem.isChecked = value ?? false;
+                  cartProvider.notifyListeners();
+                },
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
+
+  Widget _buildQuantityButton({required IconData icon, required VoidCallback onPressed}) {
+    return InkWell(
+      onTap: onPressed,
+      child: Container(
+        width: 30,
+        height: 30,
+        alignment: Alignment.center,
+        child: Icon(icon, size: 18, color: Colors.grey[600]),
+      ),
+    );
+  }
+
+
+
 
 
   Widget _buildEditActions(CartProvider cartProvider) {
@@ -273,7 +326,7 @@ class _CartScreenState extends State<CartScreen> {
               const Text(
                 'Tổng thanh toán:',
                 style: TextStyle(
-                  fontSize: 14,  // Giảm kích thước chữ
+                  fontSize: 18,  // Giảm kích thước chữ
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
@@ -282,7 +335,7 @@ class _CartScreenState extends State<CartScreen> {
               Text(
                 formatter.format(totalPrice),
                 style: const TextStyle(
-                    fontSize: 14, color: Colors.red, fontWeight: FontWeight.bold),
+                    fontSize: 20, color: Colors.red, fontWeight: FontWeight.bold),
               ),
             ],
           ),

@@ -65,11 +65,11 @@ class _OrderScreenState extends State<OrderScreen> {
           ),
           const Divider(),
           Expanded(
-            child: FutureBuilder<DatabaseEvent>(
-              future: _ordersRef
+            child: StreamBuilder<DatabaseEvent>(
+              stream: _ordersRef
                   .orderByChild('userId')
                   .equalTo(_currentUserId)
-                  .once(),
+                  .onValue,
               builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -85,22 +85,21 @@ class _OrderScreenState extends State<OrderScreen> {
                 }
 
                 final Map<dynamic, dynamic> ordersMap =
-                    snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
 
                 final List<Map<String, dynamic>> orders = ordersMap.entries
                     .map((entry) => {
-                          'id': entry.key.toString(),
-                          ...(entry.value as Map<dynamic, dynamic>).map(
-                            (key, value) => MapEntry(key.toString(), value),
-                          ),
-                        })
+                  'id': entry.key.toString(),
+                  ...(entry.value as Map<dynamic, dynamic>).map(
+                        (key, value) => MapEntry(key.toString(), value),
+                  ),
+                })
                     .where((order) => order['orderStatus'] == _currentStatus)
                     .toList();
 
                 if (orders.isEmpty) {
                   return Center(
-                    child:
-                        Text('Không có đơn hàng trạng thái "$_currentStatus".'),
+                    child: Text('Không có đơn hàng trạng thái "$_currentStatus".'),
                   );
                 }
 
@@ -108,13 +107,6 @@ class _OrderScreenState extends State<OrderScreen> {
                   itemCount: orders.length,
                   itemBuilder: (context, index) {
                     final order = orders[index];
-
-                    DateTime orderDate = DateTime.parse(
-                        order['orderDate'] ?? DateTime.now().toString());
-                    String formattedTime =
-                        DateFormat('HH:mm').format(orderDate);
-                    String formattedDate =
-                        DateFormat('dd/MM/yyyy').format(orderDate);
 
                     double totalAmount = 0;
                     if (order['totalAmount'] is String) {
@@ -127,7 +119,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       child: Card(
                         shape: RoundedRectangleBorder(
                           side:
-                              const BorderSide(color: Colors.white54, width: 2),
+                          const BorderSide(color: Colors.white54, width: 2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: ListTile(
@@ -142,23 +134,11 @@ class _OrderScreenState extends State<OrderScreen> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(width: 18),
-                              Text(
-                                formattedTime,
-                                style: const TextStyle(
-                                    color: Colors.grey, fontSize: 12),
-                              ),
                             ],
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                formattedDate,
-                                style: const TextStyle(
-                                    color: Colors.grey, fontSize: 12),
-                              ),
-                              const SizedBox(height: 5),
                               Text(
                                   "Số lượng: ${order['products']?.length ?? 0} sản phẩm"),
                               const SizedBox(height: 5),
@@ -168,26 +148,46 @@ class _OrderScreenState extends State<OrderScreen> {
                               ),
                             ],
                           ),
-                          trailing: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        OrderDetail(order['id'])),
-                              ).then((_) {
-                                setState(() {
-                                  _selectedStatus = _currentStatus;
-                                });
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.lightBlueAccent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
+                          trailing: Column(
+                            children: [
+                              if (order['orderStatus'] == 'Thành công')
+                                Text(
+                                  'Hoàn thành',
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              const SizedBox(height: 5),
+                              ElevatedButton(
+                                onPressed: () {
+                                  final orderId = order['id']?.toString();
+                                  if (orderId != null) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => OrderDetail(orderId),
+                                      ),
+                                    ).then((_) {
+                                      setState(() {
+                                        _selectedStatus = _currentStatus;
+                                      });
+                                    });
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Lỗi: Không có ID đơn hàng')),
+                                    );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.lightBlueAccent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                                child: const Text("Xem chi tiết"),
                               ),
-                            ),
-                            child: const Text("Xem chi tiết"),
+                            ],
                           ),
                         ),
                       ),
@@ -203,11 +203,11 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   Widget buildStatusIcon(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required String status,
-  }) {
+      BuildContext context, {
+        required IconData icon,
+        required String label,
+        required String status,
+      }) {
     // Kiểm tra nếu biểu tượng này được chọn
     bool isSelected = _selectedStatus == status;
     return GestureDetector(
