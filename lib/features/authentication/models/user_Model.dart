@@ -9,6 +9,7 @@ class UserModel {
   String image;
   String dateCreated;
   String status;
+  int balance;
 
   UserModel({
     required this.id,
@@ -19,6 +20,7 @@ class UserModel {
     required this.image,
     required this.dateCreated,
     required this.status,
+    required this.balance,
   });
 
   // Tạo phương thức để chuyển đổi từ Map (dữ liệu từ Firebase) sang UserModel
@@ -33,6 +35,9 @@ class UserModel {
       image: map['image'] ?? '',
       dateCreated: map['dateCreated'] ?? '',
       status: map['status'] ?? '',
+      balance: map['balance'] != null
+          ? map['balance'] as int
+          : 0, // Kiểm tra nếu 'balance' có dữ liệu hợp lệ
     );
   }
 
@@ -47,6 +52,7 @@ class UserModel {
       'image': image,
       'dateCreated': dateCreated,
       'status': status,
+      'balance': balance,
     };
   }
 
@@ -62,6 +68,9 @@ class UserModel {
       image: userData['image'] ?? '',
       dateCreated: userData['dateCreated'] ?? '',
       status: userData['status'] ?? '',
+      balance: userData['balance'] != null
+          ? userData['balance'] as int
+          : 0, // Kiểm tra nếu 'balance' có dữ liệu hợp lệ
     );
   }
 
@@ -75,5 +84,6 @@ class UserModel {
         image: '',
         dateCreated: '',
         status: '',
+        balance: 0,
       );
 }

@@ -18,13 +18,10 @@ import 'package:intl/intl.dart';
 
 class PaymentCartScreen extends StatefulWidget {
   final List<CartItem> products;
-final String? selectedVouchers;
+  final String? selectedVouchers;
 
-  const PaymentCartScreen({
-    super.key,
-    required this.products,
-    this.selectedVouchers
-  });
+  const PaymentCartScreen(
+      {super.key, required this.products, this.selectedVouchers});
 
   @override
   _PaymentCartScreenState createState() => _PaymentCartScreenState();
@@ -35,7 +32,7 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
   double totalAmount = 0;
   int _selectedShippingOption = 1;
   int _selectedPaymentMethod = 1;
-  int shippingFee = 10000; // Phí giao hàng ban đầu là 10.000đ cho "Ưu tiên"
+  int shippingFee = 0; // Phí giao hàng ban đầu là 10.000đ cho "Ưu tiên"
   DateTime? selectedDeliveryDate;
   User? currentUser;
   List<AddressModel> addresses = [];
@@ -45,11 +42,9 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
   final Login_Controller loginController = Login_Controller();
   String idProduct = '';
   String? selectedVoucher;
-  double discountValue=0;
-  List<String> vouchers=[];
-
-
-
+  double discountValue = 0;
+  List<String> vouchers = [];
+  double walletBalance = 0.0;
   @override
   void initState() {
     super.initState();
@@ -57,53 +52,216 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
         FirebaseAuth.instance.currentUser; // Lấy thông tin người dùng hiện tại
     _fetchAddresses(); // Gọi hàm để lấy địa chỉ
     _applyVoucher();
+    _getBalanceAndSet();
+    _updateTotal();
+    _updateShippingFee(1);
   }
 
   void _updateShippingFee(int option) {
     setState(() {
       switch (option) {
         case 1:
-          shippingFee = 100000; // Phí 10.000đ cho "Ưu tiên"
+          shippingFee = 10000; // Phí 10.000đ cho "Ưu tiên"
           break;
         case 2:
-          shippingFee = 200000; // Miễn phí cho "Tiêu chuẩn"
-          break;
-        case 3:
-          shippingFee = 200000; // Phí 20.000đ cho "Đặt lịch"
+          shippingFee = 20000; // Miễn phí cho "Tiêu chuẩn"
           break;
       }
-      _selectedShippingOption = option;
-    });
-  }
-  void _applyVoucher(){
-    if(widget.selectedVouchers!=null){
-      final voucher=widget.selectedVouchers!;
-      if(voucher =='freeship'){
-        shippingFee=0;
-      }else if(voucher.endsWith('%')){
-        final discount=int.parse(voucher.replaceAll('%', ''));
-        shippingFee=(shippingFee *(1-discount/100)).round();
-      }
-    }
-    setState(() {
-      totalAmount = widget.products
-          .fold(0.0, (sum, cartItem) => sum + (cartItem.price * cartItem.quantity))+shippingFee;
+      _selectedShippingOption =
+          option; // Cập nhật phương thức giao hàng đã chọn
+      _updateTotal(); // Cập nhật lại tổng sau khi thay đổi phương thức giao hàng
     });
   }
 
-  // Future<void> _selectDeliveryDate(BuildContext context) async {
-  //   final DateTime? picked = await showDatePicker(
-  //     context: context,
-  //     initialDate: selectedDeliveryDate ?? DateTime.now(),
-  //     firstDate: DateTime.now(),
-  //     lastDate: DateTime(2025),
-  //   );
-  //   if (picked != null && picked != selectedDeliveryDate) {
-  //     setState(() {
-  //       selectedDeliveryDate = picked;
-  //     });
-  //   }
-  // }
+  void _applyVoucher() {
+    if (widget.selectedVouchers != null) {
+      final voucher = widget.selectedVouchers!;
+      if (voucher == 'freeship') {
+        shippingFee = 0;
+      } else if (voucher.endsWith('%')) {
+        final discount = int.parse(voucher.replaceAll('%', ''));
+        shippingFee = (shippingFee * (1 - discount / 100)).round();
+      }
+    }
+    setState(() {
+      totalAmount = widget.products.fold(0.0,
+              (sum, cartItem) => sum + (cartItem.price * cartItem.quantity)) +
+          shippingFee;
+    });
+  }
+
+  Future<double> _geBalance() async {
+    final userId = FirebaseAuth.instance.currentUser!.uid;
+    final databaseRef = FirebaseDatabase.instance.ref('users/$userId/balance');
+    final snapshot = await databaseRef.get();
+
+    if (snapshot.exists) {
+      // Kiểm tra nếu giá trị là int, chuyển đổi thành double
+      if (snapshot.value is int) {
+        return (snapshot.value as int).toDouble();
+      } else if (snapshot.value is double) {
+        return snapshot.value as double;
+      } else {
+        return 0.0; // Trường hợp không phải int hoặc double
+      }
+    } else {
+      return 0.0; // Trả về 0 nếu không có số dư ví
+    }
+  }
+
+  void _getBalanceAndSet() async {
+    walletBalance = await _geBalance(); // Gọi _geBalance và chờ kết quả
+    setState(() {
+      // Cập nhật lại giao diện nếu cần thiết
+    });
+    print("Tièn ví $walletBalance"); // Hiển thị giá trị walletBalance
+  }
+
+  Future<void> _showPasswordBottomSheet(BuildContext context) async {
+    TextEditingController passwordController = TextEditingController();
+    bool isPasswordVisible = false; // Biến trạng thái ẩn/hiện mật khẩu
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // Không cho phép đóng khi nhấn ra ngoài
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0), // Bo tròn góc của dialog
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: SingleChildScrollView(
+              // Sử dụng SingleChildScrollView để cuộn
+              child: Column(
+                mainAxisSize: MainAxisSize.min, // Giới hạn chiều cao của Column
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Text(
+                    'Nhập mật khẩu',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue, // Màu tiêu đề
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    keyboardType: TextInputType.visiblePassword,
+                    controller: passwordController,
+                    obscureText:
+                        !isPasswordVisible, // Điều khiển hiển thị mật khẩu
+                    decoration: InputDecoration(
+                      labelText: "Nhập mật khẩu của bạn",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      floatingLabelBehavior: FloatingLabelBehavior.auto,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            isPasswordVisible = !isPasswordVisible;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      TextButton(
+                        child: const Text(
+                          'Hủy',
+                          style: TextStyle(
+                            color: Colors.red, // Màu cho nút Hủy
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Đóng hộp thoại
+                        },
+                      ),
+                      TextButton(
+                        child: const Text(
+                          'Xác nhận',
+                          style: TextStyle(
+                            color: Colors.blue, // Màu cho nút Xác nhận
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        onPressed: () async {
+                          String password = passwordController.text;
+
+                          // Kiểm tra mật khẩu hợp lệ
+                          bool isPasswordValid = await _checkPassword(password);
+
+                          if (isPasswordValid) {
+                            Navigator.of(context)
+                                .pop(); // Đóng hộp thoại khi mật khẩu đúng
+                            _updateTotal(); // Tiến hành cập nhật tổng tiền
+                          } else {
+                            // Thông báo sai mật khẩu
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Mật khẩu sai, vui lòng thử lại!',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<bool> _checkPassword(String password) async {
+    try {
+      // Kiểm tra mật khẩu thông qua Firebase Authentication (hoặc cơ sở dữ liệu khác)
+      final user = FirebaseAuth.instance.currentUser;
+      final credential = EmailAuthProvider.credential(
+        email: user!.email!,
+        password: password,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+      return true; // Nếu mật khẩu chính xác
+    } catch (e) {
+      return false; // Nếu mật khẩu sai
+    }
+  }
+
+  void _updateTotal() {
+    setState(() {
+      // Nếu phương thức thanh toán là Ví GroFast (giả sử phương thức này có giá trị 2)
+      if (_selectedPaymentMethod == 2) {
+        // Kiểm tra nếu ví đủ tiền (số dư ví + phí giao hàng)
+        if (walletBalance >= totalAmount + shippingFee) {
+          total = 0.0; // Nếu ví đủ tiền, tổng cộng là 0
+        } else {
+          loginController.ThongBao(context, "Số dư ví của bạn không đủ");
+        }
+      } else {
+        // Nếu thanh toán bằng tiền mặt
+        total = totalAmount + shippingFee;
+      }
+    });
+  }
 
   Future<void> _fetchAddresses() async {
     final userId = currentUser!.uid;
@@ -147,6 +305,13 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
       return;
     }
 
+    // Kiểm tra số dư ví trước khi đặt hàng
+    if (_selectedPaymentMethod == 2) {
+      if (walletBalance < totalAmount + shippingFee) {
+        return; // Nếu số dư ví không đủ, không cho phép đặt hàng
+      }
+    }
+
     // Chuyển đổi danh sách CartItem thành Product
     List<Product> products = widget.products.map((cartItem) {
       return Product(
@@ -171,6 +336,7 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
       orderStatus: 'Đang chờ xác nhận',
       orderDate: DateTime.now(),
       shippingAddress: defaultAddress!,
+      tong: (totalAmount + shippingFee).toString(),
     );
 
     DatabaseReference ordersRef = FirebaseDatabase.instance.ref('orders');
@@ -179,12 +345,20 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
       // Lưu đơn hàng vào Firebase
       await ordersRef.child(order.id).set(order.toMap());
       loginController.ThongBao(context, 'Vui lòng chờ xác nhận!');
+
+      // Cập nhật số dư ví của người dùng
+      if (_selectedPaymentMethod == 2) {
+        double newBalance = walletBalance - (totalAmount + shippingFee);
+        DatabaseReference balanceRef =
+            FirebaseDatabase.instance.ref('users/${currentUser!.uid}/balance');
+        await balanceRef.set(newBalance); // Cập nhật số dư ví mới
+      }
+
+      // Chuyển hướng đến màn hình thành công
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => OrderSuccessScreen(
-              orderId: order
-                  .id), // Truyền ID đơn hàng vào màn hình OrderSuccessScreen
+          builder: (context) => OrderSuccessScreen(orderId: order.id),
         ),
       );
 
@@ -199,6 +373,9 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
         errorMessage = error.message ?? 'Lỗi không xác định';
       }
       print('Error occurred: $errorMessage');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đặt hàng thất bại: $errorMessage')),
+      );
     }
   }
 
@@ -340,11 +517,15 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
               setState(() {
                 _selectedPaymentMethod = value!;
               });
+              if (_selectedPaymentMethod == 1) {
+                // Nếu số dư ví đủ, không cần thanh toán thêm
+                total = totalAmount + shippingFee;
+              }
             },
           ),
         ),
         ListTile(
-          title: const Text('VN_Pay'),
+          title: const Text('Ví GroFast'),
           leading: Radio(
             value: 2,
             groupValue: _selectedPaymentMethod,
@@ -352,6 +533,11 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
               setState(() {
                 _selectedPaymentMethod = value!;
               });
+              // Nếu chọn thanh toán bằng ví, gọi hàm cập nhật ví
+              if (_selectedPaymentMethod == 2) {
+                // Nếu số dư ví đủ, không cần thanh toán thêm
+                _showPasswordBottomSheet(context);
+              }
             },
           ),
         ),
@@ -360,8 +546,8 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
   }
 
   Widget _buildOrderDetails() {
-    totalAmount = widget.products
-        .fold(0.0, (sum, cartItem) => sum + (cartItem.price * cartItem.quantity))+shippingFee;
+    totalAmount = widget.products.fold(
+        0.0, (sum, cartItem) => sum + (cartItem.price * cartItem.quantity));
 
     return Card(
       child: Padding(
@@ -394,7 +580,7 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 Text(
                     NumberFormat.currency(locale: 'vi', symbol: 'đ')
-                        .format(totalAmount + shippingFee),
+                        .format(total),
                     style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
@@ -407,7 +593,10 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
   Widget _buildDiscountSection() {
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context)=> VoucherListScreen(vouchers: vouchers)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => VoucherListScreen(vouchers: vouchers)));
       },
       child: const Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -427,7 +616,6 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
 
   Widget _buildTotalAndCheckoutButton() {
     // Tính tổng tiền cho từng sản phẩm cộng với phí giao hàng
-    total = totalAmount + shippingFee;
 
     return Column(
       children: [

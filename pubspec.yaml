@@ -130,7 +130,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.1
   cached_network_image: ^3.2.0
   flutter_chat_bubble: ^2.0.2
-  
+  dio: ^5.5.0+1
 
 dev_dependencies:
   flutter_test:

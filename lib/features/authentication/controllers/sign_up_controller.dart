@@ -143,6 +143,7 @@ class SignUp__Controller {
             image: "",
             dateCreated: DateTime.now().toString(),
             status: "Hoạt động",
+            balance: 0,
           );
 
           await databaseRef.set(newUser.toJson()).then((_) {

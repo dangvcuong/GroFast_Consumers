@@ -8,6 +8,7 @@ class Order {
   final String userId; // ID người dùng
   final List<Product> products; // Danh sách sản phẩm trong đơn hàng
   final String totalAmount; // Tổng tiền của đơn hàng
+  final String tong;
   final String orderStatus; // Trạng thái đơn hàng
   final DateTime orderDate; // Ngày đặt hàng
   final AddressModel shippingAddress; // Địa chỉ giao hàng
@@ -17,6 +18,7 @@ class Order {
     required this.userId,
     required this.products,
     required this.totalAmount,
+    required this.tong,
     required this.orderStatus,
     required this.orderDate,
     required this.shippingAddress,
@@ -32,6 +34,7 @@ class Order {
               Product.fromMap(productMap as Map<String, dynamic>, ''))
           .toList(),
       totalAmount: map['totalAmount'] ?? '0',
+      tong: map['tong'] ?? '0',
       orderStatus: map['orderStatus'] ?? 'pending',
       orderDate: DateTime.parse(map['orderDate']),
       shippingAddress: AddressModel.fromMap(map['shippingAddress']),
@@ -44,6 +47,7 @@ class Order {
       'userId': userId,
       'products': products.map((product) => product.toMap()).toList(),
       'totalAmount': totalAmount,
+      'tong': tong,
       'orderStatus': orderStatus,
       'orderDate': orderDate.toIso8601String(),
       'shippingAddress': shippingAddress.toMap(),

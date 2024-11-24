@@ -20,10 +20,15 @@ import 'package:grofast_consumers/features/shop/views/chatbot/chat_screen.dart';
 import 'package:grofast_consumers/features/authentication/sigup/widgets/complete_create_account_screen.dart';
 import 'package:grofast_consumers/features/shop/views/cart/Product_cart_item.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
+import 'package:grofast_consumers/features/shop/views/profile/widgets/WalletTopUpScreen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/profile_detail_screen.dart';
 import 'package:grofast_consumers/features/shop/views/voucher/voucher_screen.dart';
 import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
 import 'package:grofast_consumers/ulits/theme/app_style.dart';
+import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../oder/oder_screen.dart';
 
@@ -39,7 +44,9 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
   final UserController userController = UserController();
   final ShowDialogs showDialog = ShowDialogs();
   bool isLoading = true; // Thêm biến trạng thái tải dữ liệu
-
+  bool isBalanceVisible = false; // Trạng thái hiển thị số dư
+  final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
+  // Tạo đối tượng user mẫu
   @override
   void initState() {
     super.initState();
@@ -56,6 +63,15 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
     });
   }
 
+  void openPaymentLink() async {
+    const url = 'https://buy.stripe.com/test_28o8ykaIO84n8kU4gh';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Không thể mở liên kết $url';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,14 +79,9 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
-        title: const Row(
+        title: Row(
           mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Text(
-              'GroFast',
-              style: HAppStyle.heading3Style,
-            ),
-          ],
+          children: const [],
         ),
         centerTitle: false,
       ),
@@ -139,19 +150,84 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                       'Tài khoản',
                       style: HAppStyle.heading4Style,
                     ),
+                    gapH20,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  isBalanceVisible =
+                                      !isBalanceVisible; // Đổi trạng thái
+                                });
+                              },
+                              child: Icon(
+                                isBalanceVisible
+                                    ? Icons.visibility
+                                    : Icons
+                                        .visibility_off, // Biểu tượng thay đổi
+                                color: Colors.grey,
+                              ),
+                            ),
+                            SizedBox(width: 15),
+                            Text(
+                              "Số dư ví: ",
+                              style: TextStyle(
+                                fontSize: 17,
+                              ),
+                            ),
+                            Text(
+                              isBalanceVisible
+                                  ? formatter.format(currentUser!.balance)
+                                  : '***', // Hiển thị số dư hoặc ***
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 15),
+                            ),
+                            // Khoảng cách giữa text và icon
+                          ],
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const WalletTopUpScreen(),
+                              ),
+                            ).then((_) {
+                              _getUserInfo();
+                            });
+                          },
+                          child: Text(
+                            'Nạp tiền',
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.red,
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.red // Gạch chân văn bản
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(thickness: 1, color: Colors.grey),
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const OrderScreen()),
-                        );
+                            builder: (context) => const OrderScreen(),
+                          ),
+                        ).then((_) {
+                          _getUserInfo();
+                        });
                       },
                       child: const ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: Icon(
                           Icons.shopping_bag,
-                          color: Colors.grey,
+                          color: Colors.green,
                         ),
                         title: Text('Đơn hàng'),
                         trailing: Icon(
@@ -264,7 +340,7 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                       height:
                           1, // Khoảng cách của gạch ngang so với các thành phần xung quanh
                     ),
-                    gapH100,
+                    gapH20,
                     Center(
                       child: GestureDetector(
                         onTap: () async {

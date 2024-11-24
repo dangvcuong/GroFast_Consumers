@@ -28,16 +28,16 @@ class PaymentScreen extends StatefulWidget {
 
 class _PaymentScreenState extends State<PaymentScreen> {
   final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
-  int totalAmount = 0;
+  double totalAmount = 0;
   int _selectedShippingOption = 1;
   int _selectedPaymentMethod = 1;
-  int shippingFee = 10000; // Phí giao hàng ban đầu là 10.000đ cho "Ưu tiên"
+  int shippingFee = 0; // Phí giao hàng ban đầu là 10.000đ cho "Ưu tiên"
   DateTime? selectedDeliveryDate;
   User? currentUser;
   List<AddressModel> addresses = [];
   AddressModel? defaultAddress;
   double total = 0;
-
+  double walletBalance = 0.0;
   final Login_Controller loginController = Login_Controller();
   late int soluong;
   @override
@@ -45,6 +45,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
     super.initState();
     currentUser = FirebaseAuth.instance.currentUser;
     _fetchAddresses();
+    _getBalanceAndSet();
+    _updateTotal();
+    _updateShippingFee(1);
   }
 
   void _updateShippingFee(int option) {
@@ -54,27 +57,187 @@ class _PaymentScreenState extends State<PaymentScreen> {
           shippingFee = 10000; // Ưu tiên
           break;
         case 2:
-          shippingFee = 0; // Tiêu chuẩn
-          break;
-        case 3:
           shippingFee = 20000; // Đặt lịch
           break;
       }
       _selectedShippingOption = option;
+      _updateTotal();
     });
   }
 
-  Future<void> _selectDeliveryDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDeliveryDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2025),
-    );
-    if (picked != null) {
-      setState(() {
-        selectedDeliveryDate = picked;
+  Future<double> _geBalance() async {
+    final userId = FirebaseAuth.instance.currentUser!.uid;
+    final databaseRef = FirebaseDatabase.instance.ref('users/$userId/balance');
+    final snapshot = await databaseRef.get();
+
+    if (snapshot.exists) {
+      // Kiểm tra nếu giá trị là int, chuyển đổi thành double
+      if (snapshot.value is int) {
+        return (snapshot.value as int).toDouble();
+      } else if (snapshot.value is double) {
+        return snapshot.value as double;
+      } else {
+        return 0.0; // Trường hợp không phải int hoặc double
+      }
+    } else {
+      return 0.0; // Trả về 0 nếu không có số dư ví
+    }
+  }
+
+  void _getBalanceAndSet() async {
+    walletBalance = await _geBalance(); // Gọi _geBalance và chờ kết quả
+    setState(() {
+      // Cập nhật lại giao diện nếu cần thiết
+    });
+    print("Tièn ví $walletBalance"); // Hiển thị giá trị walletBalance
+  }
+
+  void _updateTotal() {
+    setState(() {
+      // Nếu phương thức thanh toán là Ví GroFast (giả sử phương thức này có giá trị 2)
+      totalAmount = widget.products.fold(0, (sum, item) {
+        return sum + (int.parse(item.price.toString()) * widget.quantity);
       });
+      if (_selectedPaymentMethod == 2) {
+        // Kiểm tra nếu ví đủ tiền (số dư ví + phí giao hàng)
+        if (walletBalance >= totalAmount + shippingFee) {
+          total = 0.0; // Nếu ví đủ tiền, tổng cộng là 0
+        } else {
+          loginController.ThongBao(context, "Số dư ví của bạn không đủ");
+        }
+      } else {
+        // Nếu thanh toán bằng tiền mặt
+        total = totalAmount + shippingFee;
+      }
+    });
+  }
+
+  Future<void> _showPasswordBottomSheet(BuildContext context) async {
+    TextEditingController passwordController = TextEditingController();
+    bool isPasswordVisible = false; // Biến trạng thái ẩn/hiện mật khẩu
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // Không cho phép đóng khi nhấn ra ngoài
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0), // Bo tròn góc của dialog
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: SingleChildScrollView(
+              // Sử dụng SingleChildScrollView để cuộn
+              child: Column(
+                mainAxisSize: MainAxisSize.min, // Giới hạn chiều cao của Column
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Text(
+                    'Nhập mật khẩu',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue, // Màu tiêu đề
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    keyboardType: TextInputType.visiblePassword,
+                    controller: passwordController,
+                    obscureText:
+                        !isPasswordVisible, // Điều khiển hiển thị mật khẩu
+                    decoration: InputDecoration(
+                      labelText: "Nhập mật khẩu của bạn",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      floatingLabelBehavior: FloatingLabelBehavior.auto,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            isPasswordVisible = !isPasswordVisible;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      TextButton(
+                        child: const Text(
+                          'Hủy',
+                          style: TextStyle(
+                            color: Colors.red, // Màu cho nút Hủy
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Đóng hộp thoại
+                        },
+                      ),
+                      TextButton(
+                        child: const Text(
+                          'Xác nhận',
+                          style: TextStyle(
+                            color: Colors.blue, // Màu cho nút Xác nhận
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        onPressed: () async {
+                          String password = passwordController.text;
+
+                          // Kiểm tra mật khẩu hợp lệ
+                          bool isPasswordValid = await _checkPassword(password);
+
+                          if (isPasswordValid) {
+                            Navigator.of(context)
+                                .pop(); // Đóng hộp thoại khi mật khẩu đúng
+                            _updateTotal(); // Tiến hành cập nhật tổng tiền
+                          } else {
+                            // Thông báo sai mật khẩu
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Mật khẩu sai, vui lòng thử lại!',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<bool> _checkPassword(String password) async {
+    try {
+      // Kiểm tra mật khẩu thông qua Firebase Authentication (hoặc cơ sở dữ liệu khác)
+      final user = FirebaseAuth.instance.currentUser;
+      final credential = EmailAuthProvider.credential(
+        email: user!.email!,
+        password: password,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+      return true; // Nếu mật khẩu chính xác
+    } catch (e) {
+      return false; // Nếu mật khẩu sai
     }
   }
 
@@ -137,19 +300,25 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     // Tạo đơn hàng
     Order order = Order(
-      id: '${DateTime.now().millisecondsSinceEpoch}',
-      userId: currentUser!.uid,
-      products: products,
-      totalAmount: (totalAmount + shippingFee).toString(),
-      orderStatus: 'Đang chờ xác nhận',
-      orderDate: DateTime.now(),
-      shippingAddress: defaultAddress!,
-    );
+        id: '${DateTime.now().millisecondsSinceEpoch}',
+        userId: currentUser!.uid,
+        products: products,
+        totalAmount: total.toString(),
+        orderStatus: 'Đang chờ xác nhận',
+        orderDate: DateTime.now(),
+        shippingAddress: defaultAddress!,
+        tong: (totalAmount + shippingFee).toString());
 
     DatabaseReference ordersRef = FirebaseDatabase.instance.ref('orders');
 
     try {
       // Lưu đơn hàng vào Firebase
+      if (_selectedPaymentMethod == 2) {
+        double newBalance = walletBalance - (totalAmount + shippingFee);
+        DatabaseReference balanceRef =
+            FirebaseDatabase.instance.ref('users/${currentUser!.uid}/balance');
+        await balanceRef.set(newBalance); // Cập nhật số dư ví mới
+      }
       await ordersRef.child(order.id).set(order.toMap());
       loginController.ThongBao(context, 'Vui lòng chờ xác nhận!');
       Navigator.push(
@@ -267,8 +436,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Widget _buildShippingOptions() {
     return Column(
       children: [
-        _buildShippingOptionTile('Ưu tiên', 1, '(+10.000đ)'),
-        _buildShippingOptionTile('Tiêu chuẩn', 2, '(Miễn phí)'),
+        _buildShippingOptionTile('Tiết kiệm', 1, '(+10.000đ)'),
+        _buildShippingOptionTile('Nhanh', 2, '(+20.000đ)'),
       ],
     );
   }
@@ -284,9 +453,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
         onChanged: (int? option) {
           if (option != null) {
             _updateShippingFee(option);
-            if (showDatePicker) {
-              _selectDeliveryDate(context);
-            }
           }
         },
       ),
@@ -296,33 +462,44 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Widget _buildPaymentMethods() {
     return Column(
       children: [
-        _buildPaymentMethodTile('Tiền mặt', 1),
-        _buildPaymentMethodTile('Ví điện tử MoMo', 2),
+        ListTile(
+          title: const Text('Tiền mặt'),
+          leading: Radio(
+            value: 1,
+            groupValue: _selectedPaymentMethod,
+            onChanged: (int? value) {
+              setState(() {
+                _selectedPaymentMethod = value!;
+              });
+              if (_selectedPaymentMethod == 1) {
+                // Nếu số dư ví đủ, không cần thanh toán thêm
+                total = totalAmount + shippingFee;
+              }
+            },
+          ),
+        ),
+        ListTile(
+          title: const Text('Ví GroFast'),
+          leading: Radio(
+            value: 2,
+            groupValue: _selectedPaymentMethod,
+            onChanged: (int? value) {
+              setState(() {
+                _selectedPaymentMethod = value!;
+              });
+              // Nếu chọn thanh toán bằng ví, gọi hàm cập nhật ví
+              if (_selectedPaymentMethod == 2) {
+                // Nếu số dư ví đủ, không cần thanh toán thêm
+                _showPasswordBottomSheet(context);
+              }
+            },
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildPaymentMethodTile(String title, int value) {
-    return ListTile(
-      title: Text(title),
-      leading: Radio(
-        value: value,
-        groupValue: _selectedPaymentMethod,
-        onChanged: (int? option) {
-          if (option != null) {
-            setState(() {
-              _selectedPaymentMethod = option;
-            });
-          }
-        },
-      ),
-    );
-  }
-
   Widget _buildOrderDetails() {
-    totalAmount = widget.products.fold(0, (sum, item) {
-      return sum + (int.parse(item.price.toString()) * widget.quantity);
-    });
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -354,7 +531,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 Text(
                     NumberFormat.currency(locale: 'vi', symbol: 'đ')
-                        .format(totalAmount + shippingFee),
+                        .format(total),
                     style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
@@ -394,7 +571,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             children: [
               const Text('Tổng cộng:',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              Text(formatter.format(totalAmount + shippingFee),
+              Text(formatter.format(total),
                   style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
