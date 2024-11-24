@@ -1,11 +1,10 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_chat_bubble/chat_bubble.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:image_picker/image_picker.dart';
@@ -20,6 +19,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final List<types.Message> _messages = [];
+  XFile? _selectImage;
   final types.User _chatUser = types.User(
     id: FirebaseAuth.instance.currentUser?.uid ?? '',
     firstName: FirebaseAuth.instance.currentUser?.displayName ?? 'Anonymous',
@@ -96,21 +96,10 @@ class _ChatScreenState extends State<ChatScreen> {
         createdAt: createdAt,
         id: id,
         uri: messageData['imageUrl'],
-        name: messageData['name'],
-        size: messageData['size'],
-        height: messageData['height'],
-        width: messageData['width'],
-        metadata: {'status': status}, // Thêm trạng thái vào metadata
-      );
-    } else if (messageData['fileUrl'] != null) {
-      return types.FileMessage(
-        author: author,
-        createdAt: createdAt,
-        id: id,
-        mimeType: messageData['mimeType'],
-        name: messageData['name'],
-        size: messageData['size'],
-        uri: messageData['fileUrl'],
+        name: messageData['name'] ?? 'unknown',
+        size: messageData['size'] ?? 0,
+        height: messageData['height']?.toDouble() ?? 200.0,
+        width: messageData['width']?.toDouble() ?? 200.0,
         metadata: {'status': status}, // Thêm trạng thái vào metadata
       );
     }
@@ -203,6 +192,50 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Future<types.ImageMessage> _uploadImage(
+      List<int> bytes, String fileName) async {
+    try {
+      // Tải ảnh lên Firebase Storage
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('chat_images/${const Uuid().v4()}.png');
+      await storageRef.putData(Uint8List.fromList(bytes));
+      final imageUrl =
+          await storageRef.getDownloadURL(); // Lấy URL của ảnh đã tải lên
+
+      // Tạo message kiểu ImageMessage
+      final imageMessage = types.ImageMessage(
+        author: _chatUser,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+        height: 200.0,
+        id: const Uuid().v4(),
+        name: fileName,
+        size: bytes.length,
+        uri: imageUrl, // Lưu URL của ảnh
+        width: 200.0,
+      );
+
+      // Lưu tin nhắn vào Firebase Realtime Database
+      await _saveMessageToFirebase(imageMessage);
+
+      // Trả về imageMessage để có thể thêm vào giao diện nếu cần
+      return imageMessage;
+    } catch (e) {
+      print("Error uploading image: $e");
+      // Trả về đối tượng mặc định nếu có lỗi
+      return types.ImageMessage(
+        author: _chatUser,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+        height: 0.0,
+        id: const Uuid().v4(),
+        name: "error",
+        size: 0,
+        uri: "", // Không có URL nếu lỗi
+        width: 0.0,
+      );
+    }
+  }
+
   void _handleAttachmentPressed() {
     showModalBottomSheet<void>(
       context: context,
@@ -249,63 +282,18 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Future<types.ImageMessage> _uploadImage(
-      List<int> bytes, String fileName) async {
-    try {
-      // Tải ảnh lên Firebase Storage
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('chat_images/${const Uuid().v4()}.jpg');
-      await storageRef.putData(Uint8List.fromList(bytes));
-      final imageUrl =
-          await storageRef.getDownloadURL(); // Lấy URL của ảnh đã tải lên
-
-      // Tạo message kiểu ImageMessage
-      final imageMessage = types.ImageMessage(
-        author: _chatUser,
-        createdAt: DateTime.now().millisecondsSinceEpoch,
-        height: 200.0,
-        id: const Uuid().v4(),
-        name: fileName,
-        size: bytes.length,
-        uri: imageUrl, // Lưu URL của ảnh
-        width: 200.0,
-      );
-
-      // Lưu tin nhắn vào Firebase Realtime Database
-      await _saveMessageToFirebase(imageMessage);
-
-      // Trả về imageMessage để có thể thêm vào giao diện nếu cần
-      return imageMessage;
-    } catch (e) {
-      print("Error uploading image: $e");
-      // Trả về đối tượng mặc định nếu có lỗi
-      return types.ImageMessage(
-        author: _chatUser,
-        createdAt: DateTime.now().millisecondsSinceEpoch,
-        height: 0.0,
-        id: const Uuid().v4(),
-        name: "error",
-        size: 0,
-        uri: "", // Không có URL nếu lỗi
-        width: 0.0,
-      );
-    }
-  }
-
   void _handleImageSelection() async {
     final result = await ImagePicker().pickImage(
       imageQuality: 70,
       maxWidth: 1440,
       source: ImageSource.gallery,
     );
-
     if (result != null) {
       final bytes = await result.readAsBytes();
       final message =
-          await _uploadImage(bytes, result.name); // Tải ảnh và lưu tin nhắn
-      _addMessage(message); // Thêm tin nhắn vào UI
+          await _uploadImage(bytes, result.name);
     }
+    return;
   }
 
   void _handleFileSelection() async {
@@ -327,10 +315,51 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Widget _buildMessage(Widget previousBubble,
+      {required types.Message message, required bool nextMessageInGroup}) {
+    final status = message.metadata?['status'] ?? 1;
+    final isSender = status == 1;
+
+    return Align(
+      alignment: isSender ? Alignment.topRight : Alignment.topLeft,
+      child: ChatBubble(
+        clipper: isSender
+            ? ChatBubbleClipper1(type: BubbleType.sendBubble) // Bóng chat gửi
+            : ChatBubbleClipper1(type: BubbleType.receiverBubble),
+        // Bóng chat nhận
+        alignment: isSender ? Alignment.topRight : Alignment.topLeft,
+        backGroundColor: isSender ? Color(0xFFE3F2FD) : Color(0xFFFFFFFF),
+        child: message is types.TextMessage
+            ? Text(
+                message.text,
+                style: TextStyle(
+                  color: isSender ? Colors.black : Colors.black,
+                ),
+              )
+            : message is types.ImageMessage
+                ? Image.network(
+                    message.uri ?? "", // Lấy URL ảnh từ message
+                    fit: BoxFit.cover,
+                    width: 200,
+                    height: 200,
+                  )
+                : Text(
+                    "Hình ảnh hoặc file",
+                    style: TextStyle(
+                      color: isSender ? Colors.black : Colors.black54,
+                    ),
+                  ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Chat với cửa hàng")),
+      appBar: AppBar(
+        title: const Text("Chat với cửa hàng"),
+        backgroundColor: Colors.white,
+      ),
       body: Column(
         children: [
           Expanded(
@@ -339,11 +368,14 @@ class _ChatScreenState extends State<ChatScreen> {
               onAttachmentPressed: _handleAttachmentPressed,
               onSendPressed: _handleSendPressed,
               user: _chatUser,
+              bubbleBuilder: _buildMessage,
               theme: DefaultChatTheme(
                 inputBackgroundColor: Colors.white,
+
                 inputTextDecoration: InputDecoration(
                   hintText: "Nhập văn bản...",
-                  hintStyle: const TextStyle(color: Colors.grey),
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: const BorderSide(color: Colors.grey),
@@ -356,6 +388,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                 ),
                 inputTextColor: Colors.black,
+                inputTextCursorColor: Colors.blue,
                 inputTextStyle: const TextStyle(
                   fontSize: 16,
                   color: Colors.black,
