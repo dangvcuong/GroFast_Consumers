@@ -36,7 +36,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _loadMessages() async {
     final messagesRef =
-        _database.ref().child('chats').child(_chatUser.id).child('messages');
+        _database.ref().child('chats').child(_chatUser.id).child('messages/');
 
     final snapshot = await messagesRef.orderByChild('createdAt').get();
     final loadedMessages = <types.Message>[];
@@ -319,35 +319,39 @@ class _ChatScreenState extends State<ChatScreen> {
     final status = message.metadata?['status'] ?? 1;
     final isSender = status == 1;
 
-    return Align(
-      alignment: isSender ? Alignment.topRight : Alignment.topLeft,
-      child: ChatBubble(
-        clipper: isSender
-            ? ChatBubbleClipper1(type: BubbleType.sendBubble) // Bóng chat gửi
-            : ChatBubbleClipper1(type: BubbleType.receiverBubble),
-        // Bóng chat nhận
+    return Center(
+      child: Align(
         alignment: isSender ? Alignment.topRight : Alignment.topLeft,
-        backGroundColor: isSender ? Color(0xFFE3F2FD) : Color(0xFFFFFFFF),
-        child: message is types.TextMessage
-            ? Text(
-                message.text,
-                style: TextStyle(
-                  color: isSender ? Colors.black : Colors.black,
-                ),
-              )
-            : message is types.ImageMessage
-                ? Image.network(
-                    message.uri ?? "", // Lấy URL ảnh từ message
-                    fit: BoxFit.cover,
-                    width: 200,
-                    height: 200,
-                  )
-                : Text(
-                    "Hình ảnh hoặc file",
-                    style: TextStyle(
-                      color: isSender ? Colors.black : Colors.black54,
-                    ),
+        child: ChatBubble(
+          margin: const EdgeInsets.only(right: 10),
+          clipper: isSender
+              ? ChatBubbleClipper1(type: BubbleType.sendBubble) // Bóng chat gửi
+              : ChatBubbleClipper1(type: BubbleType.receiverBubble),
+          // Bóng chat nhận
+          alignment: isSender ? Alignment.topRight : Alignment.topLeft,
+          backGroundColor:
+              isSender ? const Color(0xFFE3F2FD) : const Color(0xFFFFFFFF),
+          child: message is types.TextMessage
+              ? Text(
+                  message.text,
+                  style: TextStyle(
+                    color: isSender ? Colors.black : Colors.black,
                   ),
+                )
+              : message is types.ImageMessage
+                  ? Image.network(
+                      message.uri ?? "", // Lấy URL ảnh từ message
+                      fit: BoxFit.cover,
+                      width: 200,
+                      height: 450,
+                    )
+                  : Text(
+                      "Hình ảnh hoặc file",
+                      style: TextStyle(
+                        color: isSender ? Colors.black : Colors.black54,
+                      ),
+                    ),
+        ),
       ),
     );
   }
@@ -359,10 +363,12 @@ class _ChatScreenState extends State<ChatScreen> {
         title: const Text("Chat với cửa hàng"),
         backgroundColor: Colors.white,
       ),
-      body: Column(
-        children: [
-          Expanded(
+      body: SizedBox(
+        child: Expanded(
+          child: Center(
+            widthFactor: double.infinity,
             child: Chat(
+              messageWidthRatio: 0.84,
               messages: _messages,
               onAttachmentPressed: _handleAttachmentPressed,
               onSendPressed: _handleSendPressed,
@@ -412,7 +418,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

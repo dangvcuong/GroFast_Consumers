@@ -98,7 +98,9 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         toolbarHeight: 80,
         leading: Align(
           alignment: Alignment.centerLeft,
@@ -158,112 +160,60 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                   )
                 ])),
             gapH24,
-            Container(
-              padding: const EdgeInsets.all(hAppDefaultPadding),
-              // width: HAppSize.deviceWidth,
-              decoration: BoxDecoration(
-                  color: HAppColor.hWhiteColor,
-                  borderRadius: BorderRadius.circular(10)),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Tên",
-                        style: HAppStyle.paragraph2Regular,
-                        textAlign: TextAlign.right,
-                      ),
-                      GestureDetector(
-                        onTap: () async => {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const Updata_Name()),
-                          ).then((_) {
-                            getUserInfo(); // Tải lại thông tin khi quay về
-                          })
-                        },
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 200, // Giới hạn chiều rộng
-                              child: Text(
-                                currentUser != null ? currentUser!.name : "",
-                                style: HAppStyle.paragraph2Bold.copyWith(
-                                    color: HAppColor.hGreyColorShade600),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.right,
-                              ),
-                            ),
-                            gapW20,
-                            const Icon(Icons.arrow_forward_ios, size: 15),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                  gapH6,
-                  Divider(
-                    color: HAppColor.hGreyColorShade300,
-                  ),
-                  gapH6,
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Id",
-                        style: HAppStyle.paragraph2Regular,
-                        textAlign: TextAlign.right,
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 200, // Giới hạn chiều rộng
-                            child: Text(
-                              currentUser != null ? currentUser!.id : "",
-                              style: HAppStyle.paragraph2Bold.copyWith(
-                                  color: HAppColor.hGreyColorShade600),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.right,
-                            ),
-                          ),
-                          gapW20,
-                          GestureDetector(
-                            onTap: () => userController.copyToClipboard(
-                                currentUser!.id, context),
-                            child: const Icon(
-                              Icons.copy,
-                              size: 15,
-                            ),
-                            // Gọi hàm copy
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                  gapH6,
-                  Divider(
-                    color: HAppColor.hGreyColorShade300,
-                  ),
-                  gapH6,
-                  GestureDetector(
-                    onTap: () => {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const Updata_Sdt()),
-                      ).then((_) {
-                        getUserInfo(); // Tải lại thông tin khi quay về
-                      })
-                    },
-                    child: Row(
+            Card(
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(hAppDefaultPadding),
+                child: Column(
+                  children: [
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          "Số điện thoại",
+                          "Tên",
+                          style: HAppStyle.paragraph2Regular,
+                          textAlign: TextAlign.right,
+                        ),
+                        GestureDetector(
+                          onTap: () async => {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const Updata_Name()),
+                            ).then((_) {
+                              getUserInfo(); // Tải lại thông tin khi quay về
+                            })
+                          },
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 200, // Giới hạn chiều rộng
+                                child: Text(
+                                  currentUser != null ? currentUser!.name : "",
+                                  style: HAppStyle.paragraph2Bold.copyWith(
+                                      color: HAppColor.hGreyColorShade600),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                              gapW20,
+                              const Icon(Icons.arrow_forward_ios, size: 15),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                    gapH6,
+                    Divider(
+                      color: HAppColor.hGreyColorShade300,
+                    ),
+                    gapH6,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Id",
                           style: HAppStyle.paragraph2Regular,
                           textAlign: TextAlign.right,
                         ),
@@ -272,9 +222,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                             SizedBox(
                               width: 200, // Giới hạn chiều rộng
                               child: Text(
-                                currentUser != null
-                                    ? currentUser!.phoneNumber
-                                    : "",
+                                currentUser != null ? currentUser!.id : "",
                                 style: HAppStyle.paragraph2Bold.copyWith(
                                     color: HAppColor.hGreyColorShade600),
                                 maxLines: 1,
@@ -283,75 +231,128 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                               ),
                             ),
                             gapW20,
-                            const Icon(Icons.arrow_forward_ios, size: 15),
+                            GestureDetector(
+                              onTap: () => userController.copyToClipboard(
+                                  currentUser!.id, context),
+                              child: const Icon(
+                                Icons.copy,
+                                size: 15,
+                              ),
+                              // Gọi hàm copy
+                            ),
                           ],
                         )
                       ],
                     ),
-                  ),
-                  gapH6,
-                  Divider(
-                    color: HAppColor.hGreyColorShade300,
-                  ),
-                  gapH6,
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Email",
-                        style: HAppStyle.paragraph2Regular,
-                        textAlign: TextAlign.right,
-                      ),
-                      Row(
+                    gapH6,
+                    Divider(
+                      color: HAppColor.hGreyColorShade300,
+                    ),
+                    gapH6,
+                    GestureDetector(
+                      onTap: () => {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const Updata_Sdt()),
+                        ).then((_) {
+                          getUserInfo(); // Tải lại thông tin khi quay về
+                        })
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          SizedBox(
-                            width: 200, // Giới hạn chiều rộng
-                            child: Text(
-                              currentUser != null ? currentUser!.email : "",
-                              style: HAppStyle.paragraph2Bold.copyWith(
-                                  color: HAppColor.hGreyColorShade600),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.right,
-                            ),
+                          const Text(
+                            "Số điện thoại",
+                            style: HAppStyle.paragraph2Regular,
+                            textAlign: TextAlign.right,
                           ),
-                          gapW20,
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 200, // Giới hạn chiều rộng
+                                child: Text(
+                                  currentUser != null
+                                      ? currentUser!.phoneNumber
+                                      : "",
+                                  style: HAppStyle.paragraph2Bold.copyWith(
+                                      color: HAppColor.hGreyColorShade600),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                              gapW20,
+                              const Icon(Icons.arrow_forward_ios, size: 15),
+                            ],
+                          )
                         ],
-                      )
-                    ],
-                  ),
-                  gapH6,
-                  Divider(
-                    color: HAppColor.hGreyColorShade300,
-                  ),
-                  gapH6,
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Ngày tạo",
-                        style: HAppStyle.paragraph2Regular,
-                        textAlign: TextAlign.right,
                       ),
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 200, // Giới hạn chiều rộng
-                            child: Text(
-                              "$ngay",
-                              style: HAppStyle.paragraph2Bold.copyWith(
-                                  color: HAppColor.hGreyColorShade600),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.right,
+                    ),
+                    gapH6,
+                    Divider(
+                      color: HAppColor.hGreyColorShade300,
+                    ),
+                    gapH6,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Email",
+                          style: HAppStyle.paragraph2Regular,
+                          textAlign: TextAlign.right,
+                        ),
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 200, // Giới hạn chiều rộng
+                              child: Text(
+                                currentUser != null ? currentUser!.email : "",
+                                style: HAppStyle.paragraph2Bold.copyWith(
+                                    color: HAppColor.hGreyColorShade600),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.right,
+                              ),
                             ),
-                          ),
-                          gapW20,
-                        ],
-                      )
-                    ],
-                  ),
-                ],
+                            gapW20,
+                          ],
+                        )
+                      ],
+                    ),
+                    gapH6,
+                    Divider(
+                      color: HAppColor.hGreyColorShade300,
+                    ),
+                    gapH6,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Ngày tạo",
+                          style: HAppStyle.paragraph2Regular,
+                          textAlign: TextAlign.right,
+                        ),
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 200, // Giới hạn chiều rộng
+                              child: Text(
+                                "$ngay",
+                                style: HAppStyle.paragraph2Bold.copyWith(
+                                    color: HAppColor.hGreyColorShade600),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.right,
+                              ),
+                            ),
+                            gapW20,
+                          ],
+                        )
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
             gapH40,
@@ -362,31 +363,30 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                     MaterialPageRoute(
                         builder: (context) => const Updata_PassWord())),
               },
-              child: Container(
-                padding: const EdgeInsets.all(hAppDefaultPadding),
-                // width: HAppSize.deviceWidth,
-                decoration: BoxDecoration(
-                    color: HAppColor.hWhiteColor,
-                    borderRadius: BorderRadius.circular(10)),
-                child: const Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Đổi mật khẩu",
-                          style: HAppStyle.paragraph2Regular,
-                          textAlign: TextAlign.right,
-                        ),
-                        Row(
-                          children: [
-                            gapW20,
-                            Icon(Icons.arrow_forward_ios, size: 15),
-                          ],
-                        )
-                      ],
-                    ),
-                  ],
+              child: const Card(
+                color: Colors.white,
+                child: Padding(
+                  padding: EdgeInsets.all(hAppDefaultPadding),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Đổi mật khẩu",
+                            style: HAppStyle.paragraph2Regular,
+                            textAlign: TextAlign.right,
+                          ),
+                          Row(
+                            children: [
+                              gapW20,
+                              Icon(Icons.arrow_forward_ios, size: 15),
+                            ],
+                          )
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -398,31 +398,31 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                     MaterialPageRoute(
                         builder: (context) => const Delete_User())),
               },
-              child: Container(
-                padding: const EdgeInsets.all(hAppDefaultPadding),
-                // width: HAppSize.deviceWidth,
-                decoration: BoxDecoration(
-                    color: HAppColor.hWhiteColor,
-                    borderRadius: BorderRadius.circular(10)),
-                child: const Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Xóa tài khoản",
-                          style: HAppStyle.paragraph2Regular,
-                          textAlign: TextAlign.right,
-                        ),
-                        Row(
-                          children: [
-                            gapW20,
-                            Icon(Icons.arrow_forward_ios, size: 15),
-                          ],
-                        )
-                      ],
-                    ),
-                  ],
+              child: const Card(
+                color: Colors.white,
+                child: Padding(
+                  padding: EdgeInsets.all(hAppDefaultPadding),
+                  // width: HAppSize.deviceWidth,
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Xóa tài khoản",
+                            style: HAppStyle.paragraph2Regular,
+                            textAlign: TextAlign.right,
+                          ),
+                          Row(
+                            children: [
+                              gapW20,
+                              Icon(Icons.arrow_forward_ios, size: 15),
+                            ],
+                          )
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
