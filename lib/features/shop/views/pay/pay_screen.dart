@@ -11,6 +11,7 @@ import 'package:grofast_consumers/features/shop/views/oder/oder_screen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../services/get_service_key.dart';
 import '../oder/OrderSuccessScreen.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -275,6 +276,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   void _placeOrder() async {
     soluong = widget.quantity;
+
+    // // Gọi hàm getServiceKeyToken
+    // String? accessToken;
+    // try {
+    //   GetServiceKey getServerKey = GetServiceKey(); // Tạo instance
+    //   accessToken = await getServerKey.getServiceKeyToken();
+    //   print('Access Token: $accessToken');
+    // } catch (e) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(content: Text('Không thể lấy token: $e')),
+    //   );
+    //   return; // Dừng nếu không lấy được token
+    // }
 
     if (defaultAddress == null) {
       ScaffoldMessenger.of(context).showSnackBar(

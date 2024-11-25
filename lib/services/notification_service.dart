@@ -38,10 +38,10 @@ class NotificationService{
           "Please allow notifications to recevice update.",
         snackPosition: SnackPosition.BOTTOM
       );
-// Future.delayed(Duration(seconds: 3),  (){
-//   AppSettings.openAppSettings(type: AppSettingsType.notification);
-// });
-//
+Future.delayed(Duration(seconds: 3),  (){
+  AppSettings.openAppSettings(type: AppSettingsType.notification);
+});
+
     }
   }
 
@@ -64,7 +64,7 @@ class NotificationService{
  //init
 void initLocalNotification(BuildContext context, RemoteMessage message) async{
     var androidInitSetting =
-    const AndroidInitializationSettings("@mimap/ic_laucher");
+    const AndroidInitializationSettings("@mipmap/ic_launcher");
     var isoInitSetting = const DarwinInitializationSettings();
     var initialaizationSetting = InitializationSettings(
       android: androidInitSetting,
@@ -118,7 +118,7 @@ void initLocalNotification(BuildContext context, RemoteMessage message) async{
       priority: Priority.high,
       playSound: true,
       sound: channel.sound,
-      icon: 'ic_notification',
+      icon: 'launch_background',
     );
 
     //iso setting

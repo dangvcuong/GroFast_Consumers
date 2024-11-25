@@ -6,6 +6,8 @@ import 'package:grofast_consumers/features/authentication/sigup/widgets/email_ve
 import 'package:grofast_consumers/validates/validate_Dk.dart';
 import 'package:firebase_database/firebase_database.dart';
 
+import '../../../services/notification_service.dart';
+
 class SignUp__Controller {
   static final SignUp__Controller _instance = SignUp__Controller._internal();
 
@@ -113,6 +115,7 @@ class SignUp__Controller {
   // }
 
   void signUp(BuildContext context) async {
+    NotificationService notificationService = NotificationService();
     bool? nameError = validateSignup.validateName(nameController.value.text);
     bool? phoneError = validateSignup.validatePhone(phoneController.value.text);
     bool? emailError = validateSignup.validateEmail(emailController.value.text);
@@ -120,6 +123,7 @@ class SignUp__Controller {
         validateSignup.validatePassword(passwordController.value.text);
     bool? passConficError = validateSignup.validatePasswordConfic(
         conficPasswordController.value.text, passwordController.value.text);
+    // String? userDeviceToken = await notificationService.getDeviceToken();
     late DatabaseReference _database;
     if (checkDK(context)) {
       try {
