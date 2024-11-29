@@ -39,23 +39,25 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late final NotifiApi _notifiApi;
   @override
-  void initState(){
+  void initState() {
     super.initState();
 
     _requestLocationPermission();
     _notifiApi = NotifiApi();
     _notifiApi.listenToOrderChanges();
+    _notifiApi.listenToChatBoxChanges();
   }
 
-  Future<void> _requestLocationPermission() async{
+  Future<void> _requestLocationPermission() async {
     LocationPermission permission = await Geolocator.checkPermission();
-    if(permission == LocationPermission.denied){
+    if (permission == LocationPermission.denied) {
       permission == await Geolocator.requestPermission();
-      if(permission == LocationPermission.denied){
+      if (permission == LocationPermission.denied) {
         print('Location permisson are denied');
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

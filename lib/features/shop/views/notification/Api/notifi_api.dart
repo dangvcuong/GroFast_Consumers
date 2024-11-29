@@ -14,7 +14,7 @@ class NotifiApi {
   Future<void> initNotifications(String userId) async {
     // Yêu cầu quyền gửi thông báo
     NotificationSettings settings =
-    await _firebaseMessaging.requestPermission();
+        await _firebaseMessaging.requestPermission();
 
     // Kiểm tra quyền của người dùng
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
@@ -40,9 +40,10 @@ class NotifiApi {
   }
 
   final DatabaseReference _ordersRef = FirebaseDatabase.instance.ref('orders');
+  final DatabaseReference _chatBoxRef = FirebaseDatabase.instance.ref('chats');
 
   final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   OrderNotificationService() {
     _initializeNotifications();
@@ -51,10 +52,10 @@ class NotifiApi {
   // Khởi tạo thông báo cục bộ
   void _initializeNotifications() {
     const AndroidInitializationSettings androidInitializationSettings =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/ic_launcher');
 
     const InitializationSettings initializationSettings =
-    InitializationSettings(android: androidInitializationSettings);
+        InitializationSettings(android: androidInitializationSettings);
 
     _localNotificationsPlugin.initialize(initializationSettings);
   }
@@ -69,7 +70,7 @@ class NotifiApi {
       _ordersRef
           .orderByChild('userId') // Sắp xếp theo userId
           .equalTo(currentUser
-          .uid) // Lọc ra các đơn hàng của người dùng này (uid là chuỗi)
+              .uid) // Lọc ra các đơn hàng của người dùng này (uid là chuỗi)
           .onChildChanged
           .listen((event) {
         print('Firebase event triggered: ${event.snapshot.key}');
@@ -79,7 +80,7 @@ class NotifiApi {
           try {
             // Trích xuất dữ liệu từ snapshot
             final orderData =
-            Map<String, dynamic>.from(event.snapshot.value as Map);
+                Map<String, dynamic>.from(event.snapshot.value as Map);
             final orderId = event.snapshot.key;
 
             print(
@@ -134,6 +135,80 @@ class NotifiApi {
     }
   }
 
+  void listenToChatBoxChanges() {
+    final Set<String> notifiedMessages = {}; // Lưu messageId đã thông báo
+    int lastProcessedTimestamp = 0; // Lưu thời gian xử lý cuối cùng
+
+    User? currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser != null) {
+      _chatBoxRef
+          .child(currentUser.uid)
+          .child('messages')
+          .onChildAdded
+          .listen((event) {
+        print('Firebase event triggered: ${event.snapshot.key}');
+        print('New data: ${event.snapshot.value}');
+
+        if (event.snapshot.exists && event.snapshot.value != null) {
+          try {
+            final messageData =
+                Map<String, dynamic>.from(event.snapshot.value as Map);
+            String? messageId = event.snapshot.key;
+            int? timestamp = messageData['createdAt'] as int?;
+
+            // Kiểm tra điều kiện tin nhắn mới thực sự
+            if (messageId != null &&
+                timestamp != null &&
+                timestamp > lastProcessedTimestamp &&
+                !notifiedMessages.contains(messageId)) {
+              if (messageData['status'] == 2) {
+                // Lấy nội dung tin nhắn
+                String messageContent =
+                    messageData['text'] ?? 'No content'; // Nội dung
+                String authorId = messageData['authorId'] ?? 'Unknown';
+
+                // Tạo thông báo
+                String notificationTitle = 'Tin nhắn mới từ cửa hàng';
+                String notificationBody = messageContent;
+
+                // Hiển thị thông báo
+                _showNotification(
+                  title: notificationTitle,
+                  body: notificationBody,
+                );
+
+                // Lưu thông báo vào Firebase nếu cần
+                _saveNotificationToDatabase(
+                  userId: currentUser.uid,
+                  title: notificationTitle,
+                  body: notificationBody,
+                );
+
+                print('Notification sent for message with status = 2');
+
+                // Cập nhật trạng thái
+                notifiedMessages.add(messageId);
+                lastProcessedTimestamp = timestamp;
+              } else {
+                print('Message status is not 2');
+              }
+            } else {
+              print(
+                  'Message already notified, not the latest, or no timestamp.');
+            }
+          } catch (e) {
+            print('Error processing message data: $e');
+          }
+        } else {
+          print('No valid data in event.');
+        }
+      });
+    } else {
+      print('User is not logged in');
+    }
+  }
+
 // Hàm lưu thông báo vào Firebase Realtime Database
   Future<void> _saveNotificationToDatabase({
     required String userId,
@@ -143,7 +218,7 @@ class NotifiApi {
     try {
       // Lưu thông báo vào node 'notifications' của Firebase Realtime Database
       final notificationsRef =
-      FirebaseDatabase.instance.ref('notifications/$userId');
+          FirebaseDatabase.instance.ref('notifications/$userId');
 
       // Tạo một thông báo mới
       final newNotification = {
@@ -166,7 +241,7 @@ class NotifiApi {
     required String body,
   }) async {
     const AndroidNotificationDetails androidDetails =
-    AndroidNotificationDetails(
+        AndroidNotificationDetails(
       'order_channel', // ID của kênh thông báo
       'Cập nhật đơn hàng',
       channelDescription: 'Thông báo khi đơn hàng được cập nhật',
@@ -176,7 +251,7 @@ class NotifiApi {
     );
 
     const NotificationDetails notificationDetails =
-    NotificationDetails(android: androidDetails);
+        NotificationDetails(android: androidDetails);
 
     await _localNotificationsPlugin.show(
       0, // ID thông báo (có thể thay đổi nếu cần quản lý nhiều thông báo)
