@@ -11,6 +11,8 @@ import 'package:grofast_consumers/features/Navigation/btn_navigation.dart';
 import 'package:grofast_consumers/features/authentication/models/user_Model.dart';
 import 'package:grofast_consumers/validates/vlidedate_dN.dart';
 
+import '../../shop/views/notification/Api/notifi_api.dart';
+
 class Login_Controller {
   static final Login_Controller _instance = Login_Controller._internal();
 
@@ -108,6 +110,9 @@ class Login_Controller {
               } else if (user.emailVerified) {
                 // Người dùng đã xác thực email và trạng thái hoạt động bình thường
                 errorMessage = 'Đăng nhập thành công.';
+                final notifi = NotifiApi();
+                User? user = FirebaseAuth.instance.currentUser;
+                notifi.initNotifications(user!.uid);
                 Navigator.push(
                   context,
                   MaterialPageRoute(

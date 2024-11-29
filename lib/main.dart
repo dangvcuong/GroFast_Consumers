@@ -3,13 +3,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:grofast_consumers/features/Navigation/btn_navigation.dart';
 import 'package:provider/provider.dart'; // Đảm bảo bạn có dòng này cho MultiProvider
 import 'features/authentication/login/widgets/man_chao.dart';
 import 'features/shop/views/cart/providers/cart_provider.dart';
 import 'features/shop/views/favorites/providers/favorites_provider.dart';
 import 'features/shop/views/home/home_screen.dart'; // Thêm HomeScreen vào import
-import 'features/shop/views/cart/providers/cart_provider.dart'; // Đảm bảo chỉ có một đường dẫn đúng cho CartProvider
+import 'features/shop/views/cart/providers/cart_provider.dart';
+import 'features/shop/views/notification/Api/notifi_api.dart'; // Đảm bảo chỉ có một đường dẫn đúng cho CartProvider
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,6 +37,25 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  late final NotifiApi _notifiApi;
+  @override
+  void initState(){
+    super.initState();
+
+    _requestLocationPermission();
+    _notifiApi = NotifiApi();
+    _notifiApi.listenToOrderChanges();
+  }
+
+  Future<void> _requestLocationPermission() async{
+    LocationPermission permission = await Geolocator.checkPermission();
+    if(permission == LocationPermission.denied){
+      permission == await Geolocator.requestPermission();
+      if(permission == LocationPermission.denied){
+        print('Location permisson are denied');
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
