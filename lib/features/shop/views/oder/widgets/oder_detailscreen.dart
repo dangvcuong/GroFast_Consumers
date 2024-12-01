@@ -121,7 +121,7 @@ class _OrderDetailState extends State<OrderDetail> {
                             onPressed: () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Tính năng mua lại đang phát triển!'),
+                                  content: Text('Vin đang làm nút này'),
                                   duration: Duration(seconds: 2),
                                 ),
                               );

@@ -29,38 +29,53 @@ class _OrderScreenState extends State<OrderScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Đơn hàng của tôi'),
+        title: const Text('Đơn hàng của tôi',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold)),
         centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                buildStatusIcon(
-                  context,
-                  icon: Icons.pending_actions,
-                  label: "Đang chờ xác nhận",
-                  status: 'Đang chờ xác nhận',
-                ),
-                buildStatusIcon(
-                  context,
-                  icon: Icons.local_shipping,
-                  label: "Đang giao hàng",
-                  status: 'Đang giao hàng',
-                ),
-                buildStatusIcon(
-                  context,
-                  icon: Icons.check_circle_outline,
-                  label: "Đã nhận hàng",
-                  status: 'Thành công',
-                ),
-              ],
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal, // Cuộn ngang
+              child: Row(
+                children: [
+                  buildStatusIcon(
+                    context,
+                    icon: Icons.pending_actions,
+                    label: "Đang chờ xác nhận",
+                    status: 'Đang chờ xác nhận',
+                  ),
+                  SizedBox(width: 20), // Khoảng cách giữa các tab
+                  buildStatusIcon(
+                    context,
+                    icon: Icons.local_shipping,
+                    label: "Đang giao hàng",
+                    status: 'Đang giao hàng',
+                  ),
+                  SizedBox(width: 20),
+                  buildStatusIcon(
+                    context,
+                    icon: Icons.check_circle_outline,
+                    label: "Đã nhận hàng",
+                    status: 'Thành công',
+                  ),
+                  SizedBox(width: 20),
+                  buildStatusIcon(
+                    context,
+                    icon: Icons.history,
+                    label: "Lịch sử",
+                    status: 'Lịch sử', // Tab Lịch sử
+                  ),
+                ],
+              ),
             ),
           ),
           const Divider(),
@@ -87,6 +102,7 @@ class _OrderScreenState extends State<OrderScreen> {
                 final Map<dynamic, dynamic> ordersMap =
                 snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
 
+                // Lọc đơn hàng theo trạng thái: Thành công hoặc Đã hủy khi chọn "Lịch sử"
                 final List<Map<String, dynamic>> orders = ordersMap.entries
                     .map((entry) => {
                   'id': entry.key.toString(),
@@ -94,12 +110,18 @@ class _OrderScreenState extends State<OrderScreen> {
                         (key, value) => MapEntry(key.toString(), value),
                   ),
                 })
-                    .where((order) => order['orderStatus'] == _currentStatus)
-                    .toList();
+                    .where((order) {
+                  if (_currentStatus == 'Lịch sử') {
+                    return order['orderStatus'] == 'Thành công' ||
+                        order['orderStatus'] == 'Đã hủy';
+                  }
+                  return order['orderStatus'] == _currentStatus; // Hiển thị theo trạng thái đã chọn
+                }).toList();
 
                 if (orders.isEmpty) {
                   return Center(
-                    child: Text('Không có đơn hàng trạng thái "$_currentStatus".'),
+                    child: Text(
+                        'Không có đơn hàng trạng thái "$_currentStatus".'),
                   );
                 }
 
@@ -117,9 +139,9 @@ class _OrderScreenState extends State<OrderScreen> {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Card(
+                        color: Colors.white, // Thêm màu nền trắng cho card
                         shape: RoundedRectangleBorder(
-                          side:
-                          const BorderSide(color: Colors.white54, width: 2),
+                          side: const BorderSide(color: Colors.white54, width: 2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: ListTile(
@@ -130,7 +152,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                 child: Text(
                                   '#${order['id']}',
                                   style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
+                                      fontWeight: FontWeight.bold, color: Colors.black), // Màu chữ đen
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
@@ -140,7 +162,8 @@ class _OrderScreenState extends State<OrderScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                  "Số lượng: ${order['products']?.length ?? 0} sản phẩm"),
+                                  "Số lượng: ${order['products']?.length ?? 0} sản phẩm",
+                                  style: const TextStyle(color: Colors.black)), // Màu chữ đen
                               const SizedBox(height: 5),
                               Text(
                                 formatter.format(totalAmount),
@@ -151,8 +174,16 @@ class _OrderScreenState extends State<OrderScreen> {
                           trailing: Column(
                             children: [
                               if (order['orderStatus'] == 'Thành công')
-                                Text(
+                                const Text(
                                   'Hoàn thành',
+                                  style: TextStyle(
+                                    color: Colors.blue,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              else if (order['orderStatus'] == 'Đã hủy')
+                                const Text(
+                                  'Đã hủy',
                                   style: TextStyle(
                                     color: Colors.red,
                                     fontWeight: FontWeight.bold,
@@ -166,7 +197,8 @@ class _OrderScreenState extends State<OrderScreen> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => OrderDetail(orderId),
+                                        builder: (context) =>
+                                            OrderDetail(orderId),
                                       ),
                                     ).then((_) {
                                       setState(() {
@@ -175,8 +207,9 @@ class _OrderScreenState extends State<OrderScreen> {
                                     });
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Lỗi: Không có ID đơn hàng')),
-                                    );
+                                        const SnackBar(
+                                            content: Text(
+                                                'Lỗi: Không có ID đơn hàng')));
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(
