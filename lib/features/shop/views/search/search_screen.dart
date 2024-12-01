@@ -95,39 +95,35 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.blue, // Màu nền của AppBar
+        title: const Text(
+          "Khám phá", // Tiêu đề
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        centerTitle: true, // Căn giữa tiêu đề
+        elevation: 4, // Độ đổ bóng của AppBar
+        actions: [
+          IconButton(
+            // Nút giỏ hàng
+            icon: const Icon(Icons.shopping_cart, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CartScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 30),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(
-                        width: 40,
-                        height: 40,
-                      ),
-                      const Text(
-                        "Khám phá",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.shopping_cart_outlined,
-                            color: Colors.black),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    CartScreen()), // Điều hướng đến màn hình giỏ hàng
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
                 Padding(
                   padding: const EdgeInsets.all(14.0),
                   child: TextField(
@@ -148,80 +144,11 @@ class _SearchScreenState extends State<SearchScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ChoiceChip(
-                          label: const Text("Tất cả"),
-                          selected: _selectedBrandId == null,
-                          onSelected: (isSelected) {
-                            setState(() {
-                              _selectedBrandId = null; // Không lọc theo hãng
-                              _filterProducts();
-                            });
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                        ChoiceChip(
-                          label: const Text("Hoa Quả"),
-                          selected: _selectedBrandId == "-OAILvF-j4bmiGDvVuid",
-                          onSelected: (isSelected) {
-                            setState(() {
-                              _selectedBrandId =
-                                  isSelected ? "-OAILvF-j4bmiGDvVuid" : null;
-                              _filterProducts();
-                            });
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                        ChoiceChip(
-                          label: const Text("Dầu ăn & gia vị"),
-                          selected: _selectedBrandId == "-OAW4dwvRnrhTQHPwXrr",
-                          onSelected: (isSelected) {
-                            setState(() {
-                              _selectedBrandId =
-                                  isSelected ? "-OAW4dwvRnrhTQHPwXrr" : null;
-                              _filterProducts();
-                            });
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                        ChoiceChip(
-                          label: const Text("Đồ uống"),
-                          selected: _selectedBrandId == "-OAILiSWs97veFGxZRR0",
-                          onSelected: (isSelected) {
-                            setState(() {
-                              _selectedBrandId =
-                                  isSelected ? "-OAILiSWs97veFGxZRR0" : null;
-                              _filterProducts();
-                            });
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                        ChoiceChip(
-                          label: const Text("Đồ ăn"),
-                          selected: _selectedBrandId == "-OAILnTvn0LS1XeKk7bs",
-                          onSelected: (isSelected) {
-                            setState(() {
-                              _selectedBrandId =
-                                  isSelected ? "-OAILnTvn0LS1XeKk7bs" : null;
-                              _filterProducts();
-                            });
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                        ChoiceChip(
-                          label: const Text("Đánh giá cao"),
-                          selected: _selectedBrandId == "highRating",
-                          onSelected: (isSelected) {
-                            setState(() {
-                              _selectedBrandId = "highRating";
-                              _filterProducts();
-                            });
-                          },
-                        ),
-                      ],
+                      children: _buildChoiceChips(),
                     ),
                   ),
                 ),
+                const SizedBox(height: 10),
                 Expanded(
                   child: _filteredProducts.isNotEmpty
                       ? GridView.builder(
@@ -249,5 +176,50 @@ class _SearchScreenState extends State<SearchScreen> {
               ],
             ),
     );
+  }
+
+  // Hàm xây dựng các `ChoiceChip`
+  List<Widget> _buildChoiceChips() {
+    final chipData = [
+      {"label": "Tất cả", "id": null},
+      {"label": "Hoa Quả", "id": "-OAILvF-j4bmiGDvVuid"},
+      {"label": "Dầu ăn & gia vị", "id": "-OAW4dwvRnrhTQHPwXrr"},
+      {"label": "Đồ uống", "id": "-OAILiSWs97veFGxZRR0"},
+      {"label": "Đồ ăn", "id": "-OAILnTvn0LS1XeKk7bs"},
+      {"label": "Đánh giá cao", "id": "highRating"},
+    ];
+
+    return chipData.map((chip) {
+      final isSelected = _selectedBrandId == chip['id'];
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: ChoiceChip(
+          label: Text(
+            chip['label'] as String,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isSelected ? Colors.white : Colors.black,
+            ),
+          ),
+          selected: isSelected,
+          selectedColor: Colors.blue,
+          backgroundColor: Colors.grey.shade200,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: BorderSide(
+              color: isSelected ? Colors.blue : Colors.transparent,
+              width: 1.5,
+            ),
+          ),
+          onSelected: (isSelected) {
+            setState(() {
+              _selectedBrandId = isSelected ? chip['id'] : null;
+              _filterProducts();
+            });
+          },
+        ),
+      );
+    }).toList();
   }
 }

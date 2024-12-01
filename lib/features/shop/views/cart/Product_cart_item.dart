@@ -34,14 +34,15 @@ class _CartScreenState extends State<CartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE8E2E2),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.blue,
         elevation: 1,
-        title: const Text(
-          'Giỏ hàng của tôi',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
+        title: const Text('Giỏ hàng của tôi',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: [
           TextButton(
@@ -52,11 +53,14 @@ class _CartScreenState extends State<CartScreen> {
             },
             child: Text(
               isEditing ? 'Xong' : 'Sửa',
-              style: const TextStyle(color: Colors.blue, fontSize: 16),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500),
             ),
           ),
         ],
-        iconTheme: const IconThemeData(color: Colors.black),
+        foregroundColor: Colors.white,
       ),
       body: Consumer<CartProvider>(
         builder: (context, cartProvider, child) {
@@ -68,7 +72,8 @@ class _CartScreenState extends State<CartScreen> {
             children: [
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.only(left: 16, right: 16, top: 16), // Thêm padding ở trên cùng
+                  padding: const EdgeInsets.only(
+                      left: 16, right: 16, top: 16), // Thêm padding ở trên cùng
                   itemCount: cartProvider.cartItems.length,
                   itemBuilder: (context, index) {
                     final cartItem = cartProvider.cartItems[index];
@@ -92,6 +97,7 @@ class _CartScreenState extends State<CartScreen> {
 
   Widget _buildCartItem(CartItem cartItem, CartProvider cartProvider) {
     return Card(
+      color: Colors.white,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -100,7 +106,8 @@ class _CartScreenState extends State<CartScreen> {
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(40, 12, 12, 12), // Left padding increased to make room for checkbox
+            padding: const EdgeInsetsDirectional.all(
+                10), // Left padding increased to make room for checkbox
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -109,12 +116,11 @@ class _CartScreenState extends State<CartScreen> {
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
                     cartItem.imageUrl,
-                    width: 100,
                     height: 100,
                     fit: BoxFit.cover,
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 // Product details
                 Expanded(
                   child: Column(
@@ -123,27 +129,42 @@ class _CartScreenState extends State<CartScreen> {
                       Text(
                         cartItem.name,
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         formatter.format(cartItem.price),
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           color: Colors.redAccent,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       // Add/Subtract buttons (horizontal, at the bottom, Shopee style)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
+                          // Checkbox positioned absolutely
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            child: Center(
+                              child: Checkbox(
+                                value: cartItem.isChecked,
+                                onChanged: (bool? value) {
+                                  cartItem.isChecked = value ?? false;
+                                  cartProvider.notifyListeners();
+                                },
+                              ),
+                            ),
+                          ),
                           Container(
                             decoration: BoxDecoration(
                               border: Border.all(color: Colors.grey[300]!),
@@ -169,12 +190,15 @@ class _CartScreenState extends State<CartScreen> {
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
                                     border: Border.symmetric(
-                                      vertical: BorderSide(color: Colors.grey[300]!),
+                                      vertical:
+                                          BorderSide(color: Colors.grey[300]!),
                                     ),
                                   ),
                                   child: Text(
                                     cartItem.quantity.toString(),
-                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 ),
                                 _buildQuantityButton(
@@ -198,27 +222,13 @@ class _CartScreenState extends State<CartScreen> {
               ],
             ),
           ),
-          // Checkbox positioned absolutely
-          Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: Checkbox(
-                value: cartItem.isChecked,
-                onChanged: (bool? value) {
-                  cartItem.isChecked = value ?? false;
-                  cartProvider.notifyListeners();
-                },
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildQuantityButton({required IconData icon, required VoidCallback onPressed}) {
+  Widget _buildQuantityButton(
+      {required IconData icon, required VoidCallback onPressed}) {
     return InkWell(
       onTap: onPressed,
       child: Container(
@@ -229,10 +239,6 @@ class _CartScreenState extends State<CartScreen> {
       ),
     );
   }
-
-
-
-
 
   Widget _buildEditActions(CartProvider cartProvider) {
     return Row(
@@ -260,7 +266,7 @@ class _CartScreenState extends State<CartScreen> {
         OutlinedButton.icon(
           onPressed: () async {
             final selectedItems =
-            cartProvider.cartItems.where((item) => item.isChecked).toList();
+                cartProvider.cartItems.where((item) => item.isChecked).toList();
             if (selectedItems.isEmpty) {
               // Hiển thị thông báo khi không có sản phẩm nào được chọn
               ScaffoldMessenger.of(context).showSnackBar(
@@ -274,22 +280,21 @@ class _CartScreenState extends State<CartScreen> {
             // Hiển thị hộp thoại xác nhận
             final confirm = await showDialog(
               context: context,
-              builder: (context) =>
-                  AlertDialog(
-                    title: const Text('Xác nhận'),
-                    content: const Text(
-                        'Bạn có chắc muốn xóa các sản phẩm đã chọn?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Hủy'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Đồng ý'),
-                      ),
-                    ],
+              builder: (context) => AlertDialog(
+                title: const Text('Xác nhận'),
+                content:
+                    const Text('Bạn có chắc muốn xóa các sản phẩm đã chọn?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Hủy'),
                   ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Đồng ý'),
+                  ),
+                ],
+              ),
             );
 
             if (confirm == true) {
@@ -326,7 +331,7 @@ class _CartScreenState extends State<CartScreen> {
               const Text(
                 'Tổng thanh toán:',
                 style: TextStyle(
-                  fontSize: 18,  // Giảm kích thước chữ
+                  fontSize: 18, // Giảm kích thước chữ
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
@@ -335,11 +340,15 @@ class _CartScreenState extends State<CartScreen> {
               Text(
                 formatter.format(totalPrice),
                 style: const TextStyle(
-                    fontSize: 20, color: Colors.red, fontWeight: FontWeight.bold),
+                    fontSize: 20,
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold),
               ),
             ],
           ),
-          const SizedBox(height: 8), // Khoảng cách giữa "Tổng thanh toán" và nút "Mua hàng"
+          const SizedBox(
+              height:
+                  8), // Khoảng cách giữa "Tổng thanh toán" và nút "Mua hàng"
 
           // Nút "Mua hàng" và tổng số sản phẩm đã chọn
           Row(
@@ -368,31 +377,35 @@ class _CartScreenState extends State<CartScreen> {
               // Hiển thị nút "Mua hàng" với tổng số sản phẩm đã chọn
               ElevatedButton(
                 onPressed: () {
-                  final selectedProducts =
-                  cartProvider.cartItems.where((item) => item.isChecked).toList();
+                  final selectedProducts = cartProvider.cartItems
+                      .where((item) => item.isChecked)
+                      .toList();
                   if (selectedProducts.isEmpty) {
                     showDialog(
                       context: context,
-                      barrierDismissible: false, // Không cho phép đóng bằng cách nhấn ra ngoài
-                      barrierColor: Colors.transparent, // Màu nền mờ của background (nền đen trong)
+                      barrierDismissible:
+                          false, // Không cho phép đóng bằng cách nhấn ra ngoài
+                      barrierColor: Colors
+                          .transparent, // Màu nền mờ của background (nền đen trong)
                       builder: (context) => Dialog(
-                        backgroundColor: Colors.black.withOpacity(0.6), // Nền của dialog trong suốt
+                        backgroundColor: Colors.black
+                            .withOpacity(0.6), // Nền của dialog trong suốt
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(10),
+                        child: const Padding(
+                          padding: EdgeInsets.all(10),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.warning_amber_rounded,
                                 color: Colors.amber,
                                 size: 40, // Kích thước icon
                               ),
-                              const SizedBox(height: 16),
-                              const Text(
+                              SizedBox(height: 16),
+                              Text(
                                 'Bạn vẫn chưa có sản phẩm nào để mua.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
@@ -417,17 +430,21 @@ class _CartScreenState extends State<CartScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PaymentCartScreen(products: selectedProducts),
+                      builder: (context) =>
+                          PaymentCartScreen(products: selectedProducts),
                     ),
                   ).then((_) {
                     String userId = FirebaseAuth.instance.currentUser!.uid;
-                    Provider.of<CartProvider>(context, listen: false).fetchCartItems(userId);
+                    Provider.of<CartProvider>(context, listen: false)
+                        .fetchCartItems(userId);
                   });
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
                 child: Text(
                   'Mua hàng ($totalQuantity)', // Hiển thị tổng số sản phẩm đã chọn
@@ -440,7 +457,4 @@ class _CartScreenState extends State<CartScreen> {
       ),
     );
   }
-
-
-
 }

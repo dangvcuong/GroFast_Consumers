@@ -19,57 +19,35 @@ class FavoriteProductsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.blue, // Màu nền của AppBar
+        title: const Text(
+          "Sản phẩm yêu thích", // Tiêu đề
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        centerTitle: true, // Căn giữa tiêu đề
+        elevation: 4, // Độ đổ bóng của AppBar
+        actions: [
+          IconButton(
+            // Nút giỏ hàng
+            icon: const Icon(Icons.shopping_cart, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CartScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: favoritesProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 30),
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding:
-                            const EdgeInsets.only(left: 10.0), // Cách trái 10dp
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const ProfileDetailScreen(),
-                              ),
-                            );
-                          },
-                          child: SizedBox(
-                            width: 35,
-                            height: 35,
-                            child: Image.asset("assets/logos/logo.png"),
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                      const Text(
-                        "Sản phẩm yêu thích",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.shopping_cart_outlined,
-                          color: Colors.black,
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const CartScreen()),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
                 const SizedBox(height: 10),
                 Expanded(
                   child: favoritesProvider.favorites.isNotEmpty

@@ -81,7 +81,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
       ),
       backgroundColor: Colors.white,
       body: Padding(

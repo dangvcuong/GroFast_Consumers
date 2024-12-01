@@ -89,24 +89,36 @@ class _AddressUserState extends State<AddressUser> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(
-            key == null ? 'Thêm địa chỉ mới' : 'Chỉnh sửa địa chỉ',
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.blueAccent,
-            ),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                key == null ? 'Thêm địa chỉ mới' : 'Chỉnh sửa địa chỉ',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.black),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
           ),
           content: SizedBox(
             width: 450,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Tên
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: TextField(
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Tên
+
+                  TextField(
                     decoration: InputDecoration(
                       labelText: "Tên",
                       labelStyle: const TextStyle(color: Colors.blueAccent),
@@ -118,12 +130,9 @@ class _AddressUserState extends State<AddressUser> {
                     ),
                     controller: nameController,
                   ),
-                ),
-
-                // Số điện thoại
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: TextField(
+                  gapH20,
+                  // Số điện thoại
+                  TextField(
                     decoration: InputDecoration(
                       labelText: "Số điện thoại",
                       labelStyle: const TextStyle(color: Colors.blueAccent),
@@ -136,29 +145,18 @@ class _AddressUserState extends State<AddressUser> {
                     keyboardType: TextInputType.phone,
                     controller: phoneController,
                   ),
-                ),
-
-                // Địa chỉ và Icon lấy vị trí
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            labelText: "Địa chỉ",
-                            labelStyle:
-                                const TextStyle(color: Colors.blueAccent),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey[200],
-                          ),
-                          controller: addressController,
-                        ),
+                  gapH20,
+                  // Địa chỉ và Icon lấy vị trí
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: "Địa chỉ",
+                      labelStyle: const TextStyle(color: Colors.blueAccent),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      IconButton(
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                      suffixIcon: IconButton(
                         icon: const Icon(Icons.location_on, color: Colors.blue),
                         onPressed: () async {
                           try {
@@ -183,56 +181,63 @@ class _AddressUserState extends State<AddressUser> {
                             print("Error: $e");
                           }
                         },
-                      )
-                    ],
+                      ),
+                    ),
+                    controller: addressController,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           actions: [
-            // Nút Hủy
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.redAccent,
-                textStyle: const TextStyle(fontSize: 16),
-              ),
-              child: const Text('Hủy'),
-            ),
-            // Nút Lưu
-            TextButton(
-              onPressed: () async {
-                if (nameController.text.isNotEmpty &&
-                    phoneController.text.isNotEmpty &&
-                    addressController.text.isNotEmpty &&
-                    currentUser != null) {
-                  if (key == null) {
-                    addRessController.addAddressToFirebase(
+            Center(
+              child: OutlinedButton(
+                onPressed: () async {
+                  if (nameController.text.isNotEmpty &&
+                      phoneController.text.isNotEmpty &&
+                      addressController.text.isNotEmpty &&
+                      currentUser != null) {
+                    if (key == null) {
+                      addRessController.addAddressToFirebase(
                         currentUser!.uid,
                         nameController.text,
                         phoneController.text,
-                        addressController.text);
-                  } else {
-                    addRessController.editAddressInFirebase(
+                        addressController.text,
+                      );
+                    } else {
+                      addRessController.editAddressInFirebase(
                         currentUser!.uid,
                         key,
                         nameController.text,
                         phoneController.text,
-                        addressController.text);
+                        addressController.text,
+                      );
+                    }
+                    Navigator.of(context).pop();
                   }
-                  Navigator.of(context).pop();
-                }
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.blueAccent,
-                textStyle: const TextStyle(fontSize: 16),
+                },
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white, // Màu chữ
+                  side: const BorderSide(color: Colors.blueAccent), // Viền nút
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12), // Bo góc
+                  ),
+                ),
+                child: const Text(
+                  'Lưu',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
-              child: const Text('Lưu'),
             ),
           ],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          contentPadding: const EdgeInsets.only(top: 20),
+          actionsPadding: const EdgeInsets.only(bottom: 20),
         );
       },
     );
@@ -260,21 +265,15 @@ class _AddressUserState extends State<AddressUser> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        toolbarHeight: 80,
-        leading: Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 20),
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: const Icon(Icons.arrow_back_ios, size: 20),
-            ),
-          ),
-        ),
-        title: const Text("Địa chỉ của tôi"),
+        title: const Text('Địa chỉ của tôi',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold)),
         centerTitle: true,
-        actions: const [],
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: addresses.isNotEmpty
           ? ListView.builder(
@@ -283,170 +282,102 @@ class _AddressUserState extends State<AddressUser> {
                 final address = addresses[index];
                 final addressKey = addressKeys[index];
 
-                // Kiểm tra trạng thái
-                Color buttonColor =
-                    address.status == 'on' ? Colors.green[300]! : Colors.grey;
-
-                return Container(
-                  margin:
-                      const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(10),
+                return Dismissible(
+                  key: Key(addressKey),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    color: Colors.red,
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: const Icon(
+                      Icons.delete,
+                      color: Colors.white,
+                    ),
                   ),
-                  child: ListTile(
-                    title: Text(address.nameAddresUser),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Số điện thoại: ${address.phoneAddresUser}'),
-                        Text('Địa chỉ: ${address.addressUser}'),
-                        ElevatedButton(
-                          onPressed: () async {
-                            _setDefaultAddress(addressKey);
-                            addRessController.editStatus(
-                              currentUser!.uid,
-                              addressKey,
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.all(5),
-                            backgroundColor: address.status == 'on'
-                                ? Colors.green[300]!
-                                : Colors.grey,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                  onDismissed: (direction) {
+                    addRessController.deleteAddressInFirebase(
+                        currentUser!.uid, addressKey);
+                    setState(() {
+                      addresses.removeAt(index);
+                      addressKeys.removeAt(index);
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Đã xóa địa chỉ!')),
+                    );
+                  },
+                  child: GestureDetector(
+                    onTap: () {
+                      // Khi click vào item, mở dialog để chỉnh sửa
+                      showAddOrEditAddressDialog(
+                        key: addressKey,
+                        name: address.nameAddresUser,
+                        phoneNumber: address.phoneAddresUser,
+                        address: address.addressUser,
+                      );
+                    },
+                    child: Card(
+                      elevation: 4,
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(
+                            address.nameAddresUser,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          child: const Text(
-                            'Mặc định',
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Text(
+                                'Số điện thoại: ${address.phoneAddresUser}',
+                                style: TextStyle(color: Colors.grey[700]),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Địa chỉ: ${address.addressUser}',
+                                style: TextStyle(color: Colors.grey[700]),
+                              ),
+                              const SizedBox(height: 10),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  _setDefaultAddress(addressKey);
+                                  addRessController.editStatus(
+                                    currentUser!.uid,
+                                    addressKey,
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 10),
+                                  backgroundColor: address.status == 'on'
+                                      ? Colors.green[300]
+                                      : Colors.grey,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Mặc định',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        GestureDetector(
-                          onTap: () => {
-                            showAddOrEditAddressDialog(
-                              key: addressKey,
-                              name: address.nameAddresUser,
-                              phoneNumber: address.phoneAddresUser,
-                              address: address.addressUser,
-                            )
-                          },
-                          child: const Icon(
-                            Icons.edit,
-                            color: Colors.blue,
-                            size: 25,
-                          ),
-                        ),
-                        gapH6,
-                        GestureDetector(
-                          onTap: () => {
-                            showModalBottomSheet(
-                              context: context,
-                              backgroundColor: Colors.transparent,
-                              builder: (BuildContext context) {
-                                return StatefulBuilder(
-                                  builder: (BuildContext context,
-                                      StateSetter setModalState) {
-                                    return Container(
-                                      padding: const EdgeInsets.all(16.0),
-                                      height: 200,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: const BorderRadius.only(
-                                          topLeft: Radius.circular(20),
-                                          topRight: Radius.circular(20),
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey.withOpacity(0.5),
-                                            spreadRadius: 5,
-                                            blurRadius: 10,
-                                            offset: const Offset(0, 3),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Container(
-                                            width: 50,
-                                            height: 5,
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey[300],
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 20),
-                                          const Text(
-                                            'Bạn có chắc chắn muốn xóa địa chỉ này?',
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.grey,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          const SizedBox(height: 20),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              // Nút Hủy
-                                              IconButton(
-                                                onPressed: () {
-                                                  Navigator.pop(context);
-                                                },
-                                                icon: const Icon(Icons.cancel,
-                                                    color: Colors.red),
-                                                iconSize: 30,
-                                              ),
-                                              const SizedBox(width: 30),
-                                              // Nút Xóa
-                                              IconButton(
-                                                onPressed: () {
-                                                  addRessController
-                                                      .deleteAddressInFirebase(
-                                                          currentUser!.uid,
-                                                          addressKey);
-                                                  setState(() {
-                                                    addresses.removeAt(index);
-                                                    addressKeys.removeAt(index);
-                                                  });
-                                                  Navigator.pop(context);
-                                                },
-                                                icon: const Icon(Icons.delete,
-                                                    color: Colors.blue),
-                                                iconSize: 30,
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
-                            )
-                          },
-                          child: const Icon(
-                            Icons.delete,
-                            color: Colors.red,
-                            size: 25,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 );

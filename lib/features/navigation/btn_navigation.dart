@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/features/shop/views/favorites/favorite_products_screen.dart';
 import 'package:grofast_consumers/features/shop/views/home/home_screen.dart';
+import 'package:grofast_consumers/features/shop/views/notification/widgets/notification_screen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/profile_management.dart';
 import 'package:grofast_consumers/features/shop/views/search/search_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -21,7 +22,7 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
     const Center(child: HomeScreen()),
     const Center(child: SearchScreen()),
     const Center(child: FavoriteProductsScreen()),
-    const Center(child: FavoriteProductsScreen()),
+    const Center(child: NotificationScreen()),
     const Center(child: ProFile_Management()),
   ];
 

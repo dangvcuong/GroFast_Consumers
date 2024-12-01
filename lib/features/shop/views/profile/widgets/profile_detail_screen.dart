@@ -46,9 +46,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     currentUser = await userController.getUserInfo();
     String ngayTaoString = currentUser!.dateCreated; // Giả sử đây là chuỗi ngày
     DateTime ngayTaoDateTime = DateTime.parse(ngayTaoString);
-    ngay = DateFormat(
-      'EEEE, d-M-y',
-    ).format(ngayTaoDateTime);
+    ngay = DateFormat('d-M-y').format(ngayTaoDateTime);
     setState(() {}); // Cập nhật lại giao diện sau khi có dữ liệu
   }
 
@@ -100,25 +98,15 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        toolbarHeight: 80,
-        leading: Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 20),
-            child: GestureDetector(
-                onTap: () async {
-                  await getUserInfo();
-                  Navigator.pop(context);
-                },
-                child: const Icon(
-                  Icons.arrow_back_ios,
-                  size: 20,
-                )),
-          ),
-        ),
-        title: const Text("Hồ sơ"),
+        title: const Text('Hồ sơ',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold)),
         centerTitle: true,
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(10),

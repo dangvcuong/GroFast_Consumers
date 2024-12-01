@@ -335,6 +335,8 @@ class _ChatScreenState extends State<ChatScreen> {
               ? Text(
                   message.text,
                   style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
                     color: isSender ? Colors.black : Colors.black,
                   ),
                 )
@@ -360,8 +362,15 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Chat với cửa hàng"),
-        backgroundColor: Colors.white,
+        title: const Text('Nhắn tin với cửa hàng',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: SizedBox(
         child: Expanded(
