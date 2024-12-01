@@ -259,7 +259,7 @@ class _ButtonRowState extends State<ButtonRow> {
               // Hiển thị thông báo hoặc thực hiện hành động "Mua lại"
               loginController.ThongBao(context, 'Vinh đang làm nút này');
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
             child: const Text(
               'Mua lại',
               style: TextStyle(color: Colors.white),
