@@ -10,7 +10,7 @@ import '../../pay/pay_cart_screen.dart';
 class OrderDetail extends StatefulWidget {
   final String orderId;
 
-  const OrderDetail(this.orderId, {Key? key}) : super(key: key);
+  const OrderDetail(this.orderId, {super.key});
 
   @override
   State<OrderDetail> createState() => _OrderDetailState();
@@ -45,7 +45,8 @@ class _OrderDetailState extends State<OrderDetail> {
           imageUrl: product['imageUrl'] ?? '',
           price: (product['price'] as num?)?.toDouble() ?? 0.0,
           quantity: product['quantity'] as int? ?? 1,
-          evaluate: double.tryParse(product['evaluate']?.toString() ?? '0') ?? 0.0,
+          evaluate:
+              double.tryParse(product['evaluate']?.toString() ?? '0') ?? 0.0,
           idHang: product['idHang'] ?? '',
         );
       }).toList();
@@ -87,12 +88,14 @@ class _OrderDetailState extends State<OrderDetail> {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Lỗi: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+          } else if (!snapshot.hasData ||
+              snapshot.data!.snapshot.value == null) {
             return const Center(child: Text('Không có dữ liệu.'));
           }
 
           final data = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
-          final products = List<Map<dynamic, dynamic>>.from(data['products'] ?? []);
+          final products =
+              List<Map<dynamic, dynamic>>.from(data['products'] ?? []);
           String orderStatus = data['orderStatus'] ?? '';
 
           return Padding(
@@ -121,7 +124,8 @@ class _OrderDetailState extends State<OrderDetail> {
                             onPressed: () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Tính năng trả hàng/hoàn tiền đang phát triển!'),
+                                  content: Text(
+                                      'Tính năng trả hàng/hoàn tiền đang phát triển!'),
                                   duration: Duration(seconds: 2),
                                 ),
                               );
