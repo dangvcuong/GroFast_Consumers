@@ -232,7 +232,7 @@ class _ButtonRowState extends State<ButtonRow> {
         ] else if (orderStatus == 'Đã hủy') ...[
           ElevatedButton(
             onPressed: () => _handleReorder(products),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
             child: const Text('Mua lại', style: TextStyle(color: Colors.white)),
           ),
         ],

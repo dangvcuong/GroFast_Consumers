@@ -6,10 +6,6 @@ import 'package:grofast_consumers/features/shop/views/oder/widgets/price_order.d
 import 'package:grofast_consumers/features/shop/views/oder/widgets/productorder.dart';
 import 'package:grofast_consumers/features/shop/views/oder/widgets/tileorder.dart';
 
-import '../../../models/order_model.dart';
-import '../../../models/shopping_cart_model.dart';
-import '../../pay/pay_cart_screen.dart';
-
 class OrderDetail extends StatefulWidget {
   final String orderId;
 
@@ -28,30 +24,6 @@ class _OrderDetailState extends State<OrderDetail> {
     database = FirebaseDatabase.instance.ref('orders/${widget.orderId}');
   }
 
-  void _handleReorder(List<Map<dynamic, dynamic>> products) {
-    // Chuyển đổi danh sách sản phẩm sang kiểu CartItem
-    List<CartItem> cartItems = products.map((product) {
-      return CartItem(
-        productId: product['id'],
-        name: product['name'],
-        description: product['description'],
-        imageUrl: product['imageUrl'],
-        price: (product['price'] as num).toDouble(),
-        quantity: product['quantity'] as int,
-        evaluate: double.tryParse(product['evaluate']?.toString() ?? '0') ?? 0.0,
-        idHang: product['idHang'],
-      );
-    }).toList();
-
-    // Chuyển sang màn hình thanh toán
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PaymentCartScreen(products: cartItems),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,6 +38,7 @@ class _OrderDetailState extends State<OrderDetail> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
+
       body: StreamBuilder(
         stream: database.onValue,
         builder: (context, snapshot) {
@@ -80,10 +53,6 @@ class _OrderDetailState extends State<OrderDetail> {
 
           final data = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
 
-          // Lấy danh sách sản phẩm từ dữ liệu
-          final products =
-          List<Map<dynamic, dynamic>>.from(data['products'] ?? []);
-
           // Kiểm tra trạng thái đơn hàng
           String orderStatus = data['orderStatus'] ?? '';
 
@@ -92,14 +61,18 @@ class _OrderDetailState extends State<OrderDetail> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TileOrder(orderId: widget.orderId),
+                TileOrder(
+                  orderId: widget.orderId,
+                ),
                 const SizedBox(height: 16),
                 OrderInfoAddRess(data: data),
                 const SizedBox(height: 16),
                 PriceOrder(data: data),
                 const SizedBox(height: 16),
                 Expanded(
-                  child: ProductListOrder(products: products),
+                  child: ProductListOrder(
+                      products:
+                      List<Map<dynamic, dynamic>>.from(data['products'])),
                 ),
                 const SizedBox(height: 20),
                 ButtonRow(
@@ -113,6 +86,7 @@ class _OrderDetailState extends State<OrderDetail> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      // "Trả hàng/Hoàn tiền" button
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.only(right: 8.0),
@@ -120,14 +94,13 @@ class _OrderDetailState extends State<OrderDetail> {
                             onPressed: () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content:
-                                  Text('Tính năng trả hàng/hoàn tiền đang phát triển!'),
+                                  content: Text('Tính năng trả hàng/hoàn tiền đang phát triển!'),
                                   duration: Duration(seconds: 2),
                                 ),
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
+                              backgroundColor: Colors.red, // Red for "Trả hàng"
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
@@ -140,13 +113,21 @@ class _OrderDetailState extends State<OrderDetail> {
                           ),
                         ),
                       ),
+                      // "Mua lại" button
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.only(left: 8.0),
                           child: ElevatedButton(
-                            onPressed: () => _handleReorder(products),
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Vin đang làm nút này'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
+                              backgroundColor: Colors.green, // Green for "Mua lại"
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
