@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../authentication/controllers/login_controller.dart';
+import '../../../models/shopping_cart_model.dart';
+import '../../pay/pay_cart_screen.dart';
 
 class ButtonRow extends StatefulWidget {
   final String orderId;
@@ -20,84 +22,116 @@ class _ButtonRowState extends State<ButtonRow> {
   final DatabaseReference databaseRef = FirebaseDatabase.instance.ref("orders");
   final Login_Controller loginController = Login_Controller();
   final User? user = FirebaseAuth.instance.currentUser;
-  String? tong;
-  String? tien;
+  String? totalAmount; // Tổng tiền từ Firebase
+  String? refundAmount; // Số tiền cần hoàn lại
 
   @override
   void initState() {
     super.initState();
-    fetchTotalAmount(widget.orderId); // Tải dữ liệu ngay khi widget được khởi tạo
-    fetchTotal(widget.orderId);
+    fetchTotalAmount(widget.orderId);
+    fetchRefundAmount(widget.orderId);
   }
+  void _handleReorder(List<Map<dynamic, dynamic>> products) {
+    if (products.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không có sản phẩm nào trong đơn hàng!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
 
-  Future<void> fetchTotalAmount(String orderId) async {
     try {
-      final snapshot = await databaseRef.child(orderId).child("tong").get();
-      if (snapshot.exists) {
-        setState(() {
-          tong = snapshot.value.toString(); // Gán dữ liệu vào biến `tong`
-          print("Tong $tong");
-        });
-      } else {
-        setState(() {
-          tong = "Không tìm thấy đơn hàng!";
-        });
-      }
+      List<CartItem> cartItems = products.map((product) {
+        return CartItem(
+          productId: product['id'],
+          name: product['name'],
+          description: product['description'] ?? '',
+          imageUrl: product['imageUrl'] ?? '',
+          price: (product['price'] as num?)?.toDouble() ?? 0.0,
+          quantity: product['quantity'] as int? ?? 1,
+          evaluate: double.tryParse(product['evaluate']?.toString() ?? '0') ?? 0.0,
+          idHang: product['idHang'] ?? '',
+        );
+      }).toList();
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PaymentCartScreen(products: cartItems),
+        ),
+      );
     } catch (e) {
-      setState(() {
-        tong = "Lỗi khi tải dữ liệu!";
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Đã xảy ra lỗi: $e'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
-
-  Future<void> fetchTotal(String orderId) async {
+  // Lấy tổng tiền đơn hàng từ Firebase
+  Future<void> fetchTotalAmount(String orderId) async {
     try {
       final snapshot = await databaseRef.child(orderId).child("totalAmount").get();
       if (snapshot.exists) {
         setState(() {
-          tien = snapshot.value.toString(); // Gán dữ liệu vào biến `tong`
-          print("Tien $tien");
+          totalAmount = snapshot.value.toString();
         });
       } else {
         setState(() {
-          tien = "Không tìm thấy đơn hàng!";
+          totalAmount = "Không tìm thấy đơn hàng!";
         });
       }
     } catch (e) {
       setState(() {
-        tien = "Lỗi khi tải dữ liệu!";
+        totalAmount = "Lỗi khi tải dữ liệu!";
       });
     }
   }
 
-  Future<void> cancelOrderAndUpdateStatus(String orderId, String userId) async {
+  // Lấy số tiền cần hoàn lại từ Firebase
+  Future<void> fetchRefundAmount(String orderId) async {
     try {
-      // Cập nhật trạng thái đơn hàng thành 'Đã hủy'
-      final orderRef = FirebaseDatabase.instance.ref().child('orders/$orderId');
-      await orderRef.update({'orderStatus': 'Đã hủy'});
-
-      // Tham chiếu đến ví tiền của người dùng
-      final userWalletRef = FirebaseDatabase.instance.ref().child('users/$userId/balance');
-
-      // Lấy số dư ví hiện tại
-      final walletSnapshot = await userWalletRef.get();
-      if (!walletSnapshot.exists) {
-        throw Exception("Ví tiền của người dùng không tồn tại.");
+      final snapshot = await databaseRef.child(orderId).child("refund").get();
+      if (snapshot.exists) {
+        setState(() {
+          refundAmount = snapshot.value.toString();
+        });
+      } else {
+        setState(() {
+          refundAmount = "Không tìm thấy thông tin hoàn tiền!";
+        });
       }
-
-      final double currentWallet = double.tryParse(walletSnapshot.value.toString()) ?? 0;
-      final double orderTien = double.tryParse(tien ?? '0') ?? 0;
-
-      // Cập nhật số dư ví
-      final double updatedWallet = currentWallet + orderTien;
-      await userWalletRef.set(updatedWallet);
-
-      print('Đơn hàng với ID $orderId đã được hủy và ví tiền của người dùng được cập nhật!');
     } catch (e) {
-      print('Lỗi khi cập nhật trạng thái đơn hàng hoặc ví: $e');
+      setState(() {
+        refundAmount = "Lỗi khi tải dữ liệu!";
+      });
     }
   }
 
+  // Hủy đơn hàng và cập nhật trạng thái + hoàn tiền
+  Future<void> cancelOrderAndUpdateStatus(String orderId, String userId) async {
+    try {
+      final orderRef = FirebaseDatabase.instance.ref().child('orders/$orderId');
+      await orderRef.update({'orderStatus': 'Đã hủy'});
+
+      final userWalletRef = FirebaseDatabase.instance.ref().child('users/$userId/balance');
+      final walletSnapshot = await userWalletRef.get();
+      if (!walletSnapshot.exists) throw Exception("Ví tiền của người dùng không tồn tại.");
+
+      final double currentWallet = double.tryParse(walletSnapshot.value.toString()) ?? 0;
+      final double orderRefund = double.tryParse(refundAmount ?? '0') ?? 0;
+
+      final double updatedWallet = currentWallet + orderRefund;
+      await userWalletRef.set(updatedWallet);
+    } catch (e) {
+      print('Lỗi khi hủy đơn hàng hoặc hoàn tiền: $e');
+    }
+  }
+
+  // Hiển thị thông báo xác nhận hủy đơn hàng
   void showDeleteConfirmationDialog(BuildContext context, String orderId) {
     showModalBottomSheet(
       context: context,
@@ -114,78 +148,39 @@ class _ButtonRowState extends State<ButtonRow> {
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
                 'Xác nhận hủy đơn hàng',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               const Text(
                 'Bạn có chắc chắn muốn hủy đơn hàng này?',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black54,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.black54),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Hủy',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                    child: const Text('Hủy', style: TextStyle(color: Colors.white)),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (user?.uid != null) {
-                          cancelOrderAndUpdateStatus(widget.orderId, user!.uid);
-
-                          Navigator.of(context).pop();
-
-                          // Hiển thị thông báo
-                          loginController.ThongBao(
-                              context, 'Đơn hàng của bạn đã được hủy.');
-                        } else {
-                          // Nếu user chưa đăng nhập, hiển thị thông báo lỗi
-                          loginController.ThongBao(context,
-                              'Vui lòng đăng nhập để thực hiện thao tác này.');
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Xác nhận',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (user?.uid != null) {
+                        cancelOrderAndUpdateStatus(orderId, user!.uid);
+                        Navigator.of(context).pop();
+                        loginController.ThongBao(context, 'Đơn hàng của bạn đã được hủy.');
+                      } else {
+                        loginController.ThongBao(context, 'Vui lòng đăng nhập!');
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    child: const Text('Xác nhận', style: TextStyle(color: Colors.white)),
                   ),
                 ],
               ),
@@ -201,15 +196,10 @@ class _ButtonRowState extends State<ButtonRow> {
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
     final List<Map<dynamic, dynamic>> products =
     List<Map<dynamic, dynamic>>.from(widget.data['products'] ?? []);
-    final int soluong = products.fold<int>(0, (sum, product) =>
-    sum + (int.tryParse(product['quantity'].toString()) ?? 0));
+    final int soluong = products.fold<int>(
+        0, (sum, product) => sum + (int.tryParse(product['quantity'].toString()) ?? 0));
 
-    double totalAmount = 0;
-    if (widget.data['totalAmount'] is String) {
-      totalAmount = double.tryParse(widget.data['totalAmount']) ?? 0;
-    } else if (widget.data['totalAmount'] is num) {
-      totalAmount = widget.data['totalAmount'].toDouble();
-    }
+    final double totalAmountValue = double.tryParse(totalAmount ?? '0') ?? 0;
 
     String orderStatus = widget.data['orderStatus'] ?? '';
 
@@ -223,58 +213,27 @@ class _ButtonRowState extends State<ButtonRow> {
             children: [
               Text(
                 'Số lượng: $soluong',
-                style: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16),
-                textAlign: TextAlign.left,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
-              Row(
-                children: [
-                  const Text(
-                    'Thành tiền: ',
-                    style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16),
-                    textAlign: TextAlign.left,
-                  ),
-                  Text(
-                    formatter.format(totalAmount),
-                    style: const TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16),
-                    textAlign: TextAlign.left,
-                  ),
-                ],
+              Text(
+                'Thành tiền: ${formatter.format(totalAmountValue)}',
+                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ],
           ),
         ),
         const SizedBox(height: 8),
-        if (orderStatus == 'Đã hủy') ...[
+        if (orderStatus == 'Đang chờ xác nhận') ...[
           ElevatedButton(
-            onPressed: () {
-              // Hiển thị thông báo hoặc thực hiện hành động "Mua lại"
-              loginController.ThongBao(context, 'Vinh đang làm nút nàyy');
-            },
+            onPressed: () => showDeleteConfirmationDialog(context, widget.orderId),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-            child: const Text(
-              'Mua lại',
-              style: TextStyle(color: Colors.white),
-            ),
+            child: const Text('Hủy đơn hàng', style: TextStyle(color: Colors.white)),
           ),
-        ] else if (orderStatus != 'Đang giao hàng' && orderStatus != 'Thành công') ...[
+        ] else if (orderStatus == 'Đã hủy') ...[
           ElevatedButton(
-            onPressed: () {
-              showDeleteConfirmationDialog(context, widget.orderId);
-            },
+            onPressed: () => _handleReorder(products),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-            child: const Text(
-              'Hủy đơn hàng',
-              style: TextStyle(color: Colors.white),
-            ),
+            child: const Text('Mua lại', style: TextStyle(color: Colors.white)),
           ),
         ],
       ],

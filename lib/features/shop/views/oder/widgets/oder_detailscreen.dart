@@ -1,11 +1,12 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
+import 'package:grofast_consumers/features/shop/views/oder/widgets/btn_order.dart';
 import 'package:grofast_consumers/features/shop/views/oder/widgets/orderaddress.dart';
 import 'package:grofast_consumers/features/shop/views/oder/widgets/price_order.dart';
 import 'package:grofast_consumers/features/shop/views/oder/widgets/productorder.dart';
 import 'package:grofast_consumers/features/shop/views/oder/widgets/tileorder.dart';
-import '../../../models/shopping_cart_model.dart';
-import '../../pay/pay_cart_screen.dart';
+import 'package:grofast_consumers/features/shop/views/pay/pay_cart_screen.dart';
 
 class OrderDetail extends StatefulWidget {
   final String orderId;
@@ -94,8 +95,10 @@ class _OrderDetailState extends State<OrderDetail> {
           }
 
           final data = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+
           final products =
               List<Map<dynamic, dynamic>>.from(data['products'] ?? []);
+
           String orderStatus = data['orderStatus'] ?? '';
 
           return Padding(
@@ -103,20 +106,32 @@ class _OrderDetailState extends State<OrderDetail> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TileOrder(orderId: widget.orderId),
+                TileOrder(
+                  orderId: widget.orderId,
+                ),
                 const SizedBox(height: 16),
                 OrderInfoAddRess(data: data),
                 const SizedBox(height: 16),
                 PriceOrder(data: data),
                 const SizedBox(height: 16),
                 Expanded(
-                  child: ProductListOrder(products: products),
+                  child: ProductListOrder(
+                      products:
+                          List<Map<dynamic, dynamic>>.from(data['products'])),
                 ),
                 const SizedBox(height: 20),
+                ButtonRow(
+                  data: data,
+                  orderId: widget.orderId,
+                ),
+                const SizedBox(height: 20),
+
+                // Kiểm tra trạng thái đơn hàng và chỉ hiển thị các nút khi "Thành công"
                 if (orderStatus == 'Thành công')
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      // "Trả hàng/Hoàn tiền" button
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.only(right: 8.0),
@@ -131,7 +146,7 @@ class _OrderDetailState extends State<OrderDetail> {
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
+                              backgroundColor: Colors.red, // Red for "Trả hàng"
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
@@ -144,13 +159,22 @@ class _OrderDetailState extends State<OrderDetail> {
                           ),
                         ),
                       ),
+                      // "Mua lại" button
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.only(left: 8.0),
                           child: ElevatedButton(
-                            onPressed: () => _handleReorder(products),
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Vin đang làm nút này'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
+                              backgroundColor:
+                                  Colors.green, // Green for "Mua lại"
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
