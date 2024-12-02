@@ -11,8 +11,7 @@ class ButtonRow extends StatefulWidget {
   final String orderId;
   final Map data;
 
-  const ButtonRow({Key? key, required this.orderId, required this.data})
-      : super(key: key);
+  const ButtonRow({super.key, required this.orderId, required this.data});
 
   @override
   _ButtonRowState createState() => _ButtonRowState();
@@ -24,13 +23,47 @@ class _ButtonRowState extends State<ButtonRow> {
   final User? user = FirebaseAuth.instance.currentUser;
   String? totalAmount; // Tổng tiền từ Firebase
   String? refundAmount; // Số tiền cần hoàn lại
-
+  String? tong;
   @override
   void initState() {
     super.initState();
     fetchTotalAmount(widget.orderId);
     fetchRefundAmount(widget.orderId);
   }
+
+  Future<void> deleteOrderAndUpdateWallet(
+      String orderId, String userId, double orderTotal) async {
+    try {
+      // Tham chiếu đến ví tiền của người dùng
+      final userWalletRef =
+          FirebaseDatabase.instance.ref().child('users/$userId/balance');
+      // Lấy số dư ví hiện tại
+      final walletSnapshot = await userWalletRef.get();
+      if (!walletSnapshot.exists) {
+        throw Exception("Ví tiền của người dùng không tồn tại.");
+      }
+      //Tien vi nguoi dung
+      final double currentWallet =
+          double.tryParse(walletSnapshot.value.toString()) ?? 0;
+      final double orderTien = double.tryParse(totalAmount ?? '0') ?? 0;
+      // Cập nhật số dư ví
+      if (orderTien == 0) {
+        final double updatedWallet = currentWallet + orderTotal;
+        await userWalletRef.set(updatedWallet);
+      } else {
+        final double updatedWallet = currentWallet + 0;
+        await userWalletRef.set(updatedWallet);
+      }
+      //Đổi trạng thái
+      final orderRef = FirebaseDatabase.instance.ref().child('orders/$orderId');
+      await orderRef.update({'orderStatus': 'Đã hủy'});
+      print(
+          'Đơn hàng với ID $orderId đã bị xóa và ví tiền của người dùng được cập nhật!');
+    } catch (e) {
+      print('Lỗi khi xóa đơn hàng hoặc cập nhật ví: $e');
+    }
+  }
+
   void _handleReorder(List<Map<dynamic, dynamic>> products) {
     if (products.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -51,7 +84,8 @@ class _ButtonRowState extends State<ButtonRow> {
           imageUrl: product['imageUrl'] ?? '',
           price: (product['price'] as num?)?.toDouble() ?? 0.0,
           quantity: product['quantity'] as int? ?? 1,
-          evaluate: double.tryParse(product['evaluate']?.toString() ?? '0') ?? 0.0,
+          evaluate:
+              double.tryParse(product['evaluate']?.toString() ?? '0') ?? 0.0,
           idHang: product['idHang'] ?? '',
         );
       }).toList();
@@ -71,13 +105,19 @@ class _ButtonRowState extends State<ButtonRow> {
       );
     }
   }
+
   // Lấy tổng tiền đơn hàng từ Firebase
   Future<void> fetchTotalAmount(String orderId) async {
     try {
-      final snapshot = await databaseRef.child(orderId).child("totalAmount").get();
+      final snapshot =
+          await databaseRef.child(orderId).child("totalAmount").get();
+      final snapshot1 = await databaseRef.child(orderId).child("tong").get();
       if (snapshot.exists) {
         setState(() {
           totalAmount = snapshot.value.toString();
+          print(totalAmount);
+          tong = snapshot1.value.toString();
+          print(tong);
         });
       } else {
         setState(() {
@@ -117,11 +157,14 @@ class _ButtonRowState extends State<ButtonRow> {
       final orderRef = FirebaseDatabase.instance.ref().child('orders/$orderId');
       await orderRef.update({'orderStatus': 'Đã hủy'});
 
-      final userWalletRef = FirebaseDatabase.instance.ref().child('users/$userId/balance');
+      final userWalletRef =
+          FirebaseDatabase.instance.ref().child('users/$userId/balance');
       final walletSnapshot = await userWalletRef.get();
-      if (!walletSnapshot.exists) throw Exception("Ví tiền của người dùng không tồn tại.");
+      if (!walletSnapshot.exists)
+        throw Exception("Ví tiền của người dùng không tồn tại.");
 
-      final double currentWallet = double.tryParse(walletSnapshot.value.toString()) ?? 0;
+      final double currentWallet =
+          double.tryParse(walletSnapshot.value.toString()) ?? 0;
       final double orderRefund = double.tryParse(refundAmount ?? '0') ?? 0;
 
       final double updatedWallet = currentWallet + orderRefund;
@@ -166,21 +209,32 @@ class _ButtonRowState extends State<ButtonRow> {
                 children: [
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-                    child: const Text('Hủy', style: TextStyle(color: Colors.white)),
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                    child: const Text('Hủy',
+                        style: TextStyle(color: Colors.white)),
                   ),
                   ElevatedButton(
                     onPressed: () {
                       if (user?.uid != null) {
-                        cancelOrderAndUpdateStatus(orderId, user!.uid);
+                        final double orderTotal =
+                            double.tryParse(tong ?? '0') ?? 0;
+
+                        deleteOrderAndUpdateWallet(
+                            orderId, user!.uid, orderTotal);
+
                         Navigator.of(context).pop();
-                        loginController.ThongBao(context, 'Đơn hàng của bạn đã được hủy.');
+                        loginController.ThongBao(
+                            context, 'Đơn hàng của bạn đã được hủy.');
                       } else {
-                        loginController.ThongBao(context, 'Vui lòng đăng nhập!');
+                        loginController.ThongBao(
+                            context, 'Vui lòng đăng nhập!');
                       }
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                    child: const Text('Xác nhận', style: TextStyle(color: Colors.white)),
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    child: const Text('Xác nhận',
+                        style: TextStyle(color: Colors.white)),
                   ),
                 ],
               ),
@@ -195,9 +249,11 @@ class _ButtonRowState extends State<ButtonRow> {
   Widget build(BuildContext context) {
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
     final List<Map<dynamic, dynamic>> products =
-    List<Map<dynamic, dynamic>>.from(widget.data['products'] ?? []);
+        List<Map<dynamic, dynamic>>.from(widget.data['products'] ?? []);
     final int soluong = products.fold<int>(
-        0, (sum, product) => sum + (int.tryParse(product['quantity'].toString()) ?? 0));
+        0,
+        (sum, product) =>
+            sum + (int.tryParse(product['quantity'].toString()) ?? 0));
 
     final double totalAmountValue = double.tryParse(totalAmount ?? '0') ?? 0;
 
@@ -213,11 +269,15 @@ class _ButtonRowState extends State<ButtonRow> {
             children: [
               Text(
                 'Số lượng: $soluong',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               Text(
                 'Thành tiền: ${formatter.format(totalAmountValue)}',
-                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16),
+                style: const TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16),
               ),
             ],
           ),
@@ -225,11 +285,13 @@ class _ButtonRowState extends State<ButtonRow> {
         const SizedBox(height: 8),
         if (orderStatus == 'Đang chờ xác nhận') ...[
           ElevatedButton(
-            onPressed: () => showDeleteConfirmationDialog(context, widget.orderId),
+            onPressed: () =>
+                showDeleteConfirmationDialog(context, widget.orderId),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-            child: const Text('Hủy đơn hàng', style: TextStyle(color: Colors.white)),
+            child: const Text('Hủy đơn hàng',
+                style: TextStyle(color: Colors.white)),
           ),
-        ] else if (orderStatus == 'Đã hủy') ...[
+        ] else if (orderStatus == 'Đã hủy' || orderStatus == "Thành công") ...[
           ElevatedButton(
             onPressed: () => _handleReorder(products),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),

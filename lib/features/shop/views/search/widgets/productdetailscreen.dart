@@ -268,33 +268,34 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               flex: 4,
               child: GestureDetector(
                 onTap: () {
-                  if (int.tryParse(widget.product.quantity.toString()) == 0) {
-                    // Không cho phép mua ngay khi hết hàng
+                  // Ngăn thao tác nếu số lượng <= 0
+                  if (widget.product.quantity <= 0) {
                     loginController.ThongBao(context, 'Sản phẩm đã hết hàng');
                   } else {
                     showdialog.buyProductNow(userId, widget.product, context);
                   }
                 },
                 child: Container(
-                  color: int.tryParse(widget.product.quantity.toString()) == 0
-                      ? Colors.grey // Nếu hết hàng, đặt màu xám
-                      : Colors.blue, // Đặt màu nền cho nút "Mua ngay"
+                  color: widget.product.quantity <= 0
+                      ? Colors.grey // Màu xám nếu số lượng <= 0
+                      : Colors.blue, // Màu xanh nếu số lượng > 0
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        int.tryParse(widget.product.quantity.toString()) == 0
-                            ? "Hết hàng"
-                            : "Mua ngay",
+                        widget.product.quantity > 0
+                            ? "Mua ngay"
+                            : "Hết hàng", // Hiển thị "Hết hàng" nếu số lượng <= 0
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white, // Đổi màu chữ thành trắng
+                          color: Colors.white,
                         ),
                       ),
-                      if (int.tryParse(widget.product.quantity.toString()) != 0)
+                      if (widget.product.quantity > 0)
                         Text(
-                          formatter.format(widget.product.price),
+                          formatter.format(widget
+                              .product.price), // Hiển thị giá nếu còn hàng
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

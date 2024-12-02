@@ -57,6 +57,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: SingleChildScrollView(

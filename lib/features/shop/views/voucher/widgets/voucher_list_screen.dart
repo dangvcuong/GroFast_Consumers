@@ -6,8 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class VoucherListScreen extends StatefulWidget {
   final List<String> vouchers;
 
-
-  VoucherListScreen({required this.vouchers});
+  const VoucherListScreen({super.key, required this.vouchers});
 
   @override
   _VoucherListScreenState createState() => _VoucherListScreenState();
@@ -15,7 +14,7 @@ class VoucherListScreen extends StatefulWidget {
 
 class _VoucherListScreenState extends State<VoucherListScreen> {
   late List<String> vouchers = [];
-  late List<CartItem> products=[];
+  late List<CartItem> products = [];
 
   @override
   void initState() {
@@ -46,7 +45,13 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
 
     await prefs.setStringList('voucherList', vouchers);
 
-   Navigator.pop(context, MaterialPageRoute(builder: (context)=> PaymentCartScreen(products: products,selectedVouchers: voucher,)));
+    Navigator.pop(
+        context,
+        MaterialPageRoute(
+            builder: (context) => PaymentCartScreen(
+                  products: products,
+                  selectedVouchers: voucher,
+                )));
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Voucher "$voucher" đã được sử dụng!')),
@@ -57,7 +62,15 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Voucher của tôi'),
+        title: const Text('Voucher của tôi',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: ListView.builder(
         itemCount: vouchers.length,
@@ -73,10 +86,10 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
             ),
             child: ListTile(
               contentPadding: const EdgeInsets.all(16),
-              title: Text(voucher, style: TextStyle(fontSize: 16)),
+              title: Text(voucher, style: const TextStyle(fontSize: 16)),
               trailing: TextButton(
                 onPressed: () => _useVoucher(voucher),
-                child: Text(
+                child: const Text(
                   'Sử dụng',
                   style: TextStyle(
                     color: Colors.blue,
