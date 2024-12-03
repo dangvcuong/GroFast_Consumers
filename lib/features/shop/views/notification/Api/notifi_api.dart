@@ -179,11 +179,11 @@ class NotifiApi {
                 );
 
                 // Lưu thông báo vào Firebase nếu cần
-                _saveNotificationToDatabase(
-                  userId: currentUser.uid,
-                  title: notificationTitle,
-                  body: notificationBody,
-                );
+                // _saveNotificationToDatabase(
+                //   userId: currentUser.uid,
+                //   title: notificationTitle,
+                //   body: notificationBody,
+                // );
 
                 print('Notification sent for message with status = 2');
 
