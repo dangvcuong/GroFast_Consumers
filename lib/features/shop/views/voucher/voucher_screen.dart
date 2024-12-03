@@ -128,6 +128,8 @@ class _VoucherScreenState extends State<VoucherScreen> {
                     child: IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: () {
+                        autoCloseDialog =
+                        false; // Hủy tự động đóng khi nhấn icon
                         Navigator.of(context)
                             .pop(); // Đóng popup khi nhấn vào icon
                       },

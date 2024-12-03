@@ -23,12 +23,18 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderStateMixin{
   bool _isImageTapped = false;
   bool _isImageVisible = true;
   double _imageTop = 100;
   double _imageLeft = 100;
   Timer? _imageTimer;
+
+  late double screenWidth;
+  late double screenHeight;
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
 
   String _currentLocation = "Đang lấy vị trí... ";
 
@@ -63,6 +69,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
+
+    _controller =AnimationController(vsync: this,duration: Duration(milliseconds: 300));
+
+
     _scheduleImageReappear();
 
     _fetchProducts();
@@ -90,6 +100,20 @@ class _HomeScreenState extends State<HomeScreen> {
         curve: Curves.easeInOut,
       );
     });
+  }
+
+  void _animateToEdge(bool moveToLeft) {
+    final screenWidth=MediaQuery.of(context).size.width;
+    final targetLeft = moveToLeft ? 0.0 : screenWidth - 100.0; // Lề trái hoặc phải
+    _animation = Tween<double>(begin: _imageLeft, end: targetLeft).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    )..addListener(() {
+      setState(() {
+        _imageLeft = _animation.value;
+      });
+    });
+
+    _controller.forward(from: 0.0);
   }
 
   void _scheduleImageReappear() {
@@ -191,6 +215,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _controller.dispose();
+
     _imageTimer?.cancel();
 
     _timer?.cancel();
@@ -454,17 +480,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: GestureDetector(
                   onPanUpdate: (details) {
                     setState(() {
-                      _imageTop += details.delta.dy;
-                      _imageLeft += details.delta.dx;
+                      // _imageTop += details.delta.dy;
+                      // _imageLeft += details.delta.dx;
 
-                      // _imageTop = (_imageTop + details.delta.dy)
-                      //     .clamp(0.0, screenHeight - imageSize);
-                      // _imageLeft = (_imageLeft + details.delta.dx)
-                      //     .clamp(0.0, screenWidth - imageSize);
+                      _imageTop = (_imageTop + details.delta.dy)
+                          .clamp(0.0, screenHeight - imageSize);
+                      _imageLeft = (_imageLeft + details.delta.dx)
+                          .clamp(0.0, screenWidth - imageSize);
                       _isImageTapped = true; // Làm đậm khi kéo
                     });
                   },
                   onPanEnd: (details) {
+
+                    final isLeftSide=_imageLeft <screenWidth/2;
+                    _animateToEdge(isLeftSide);
+
                     Future.delayed(const Duration(seconds: 3), () {
                       setState(() {
                         _isImageTapped = false; // Làm mờ sau 3 giây
