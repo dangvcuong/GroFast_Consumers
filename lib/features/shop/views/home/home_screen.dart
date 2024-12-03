@@ -1,22 +1,19 @@
-// ignore_for_file: library_private_types_in_public_api, prefer_final_fields, unused_field, avoid_print
-
 import 'dart:async';
 
 import 'package:diacritic/diacritic.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:grofast_consumers/features/shop/controllers/search_controller.dart';
-import 'package:grofast_consumers/features/shop/models/product_model.dart';
-import 'package:grofast_consumers/features/shop/views/home/widget/category_menu.dart';
-import 'package:grofast_consumers/features/shop/views/profile/widgets/profile_detail_screen.dart';
-import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
-import 'package:grofast_consumers/features/shop/views/chatbot/chat_screen.dart';
 import 'package:grofast_consumers/constants/app_sizes.dart';
 import 'package:grofast_consumers/features/authentication/models/addressModel.dart';
+import 'package:grofast_consumers/features/shop/controllers/search_controller.dart';
+import 'package:grofast_consumers/features/shop/models/product_model.dart';
+import 'package:grofast_consumers/features/shop/views/chatbot/chat_screen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
+import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
+import 'package:grofast_consumers/features/shop/views/voucher/voucher_screen.dart';
+
 import '../cart/Product_cart_item.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,10 +24,16 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool _isImageTapped = false;
+  bool _isImageVisible = true;
+  double _imageTop = 100;
+  double _imageLeft = 100;
+  Timer? _imageTimer;
+
   String _currentLocation = "Đang lấy vị trí... ";
 
   final DatabaseReference _databaseRef =
-      FirebaseDatabase.instance.ref('products');
+  FirebaseDatabase.instance.ref('products');
 
   final TextEditingController _searchController = TextEditingController();
   final searchProductController = Get.put(SearchProductController());
@@ -60,6 +63,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
+    _scheduleImageReappear();
+
     _fetchProducts();
 
     _searchController.addListener(_filterProducts);
@@ -84,6 +89,15 @@ class _HomeScreenState extends State<HomeScreen> {
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
       );
+    });
+  }
+
+  void _scheduleImageReappear() {
+    _imageTimer?.cancel();
+    _imageTimer = Timer(const Duration(minutes: 1), () {
+      setState(() {
+        _isImageVisible = true;
+      });
     });
   }
 
@@ -125,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _filteredProducts = _products.where((product) {
         final productName = removeDiacritics(product.name.toLowerCase());
         final productDescription =
-            removeDiacritics(product.description.toLowerCase());
+        removeDiacritics(product.description.toLowerCase());
         final productBrandId = product.idHang.toLowerCase();
 
         final matchesBrand = _selectedBrandId == null ||
@@ -146,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchAddresses() async {
     final userId = currentUser!.uid;
     final databaseRef =
-        FirebaseDatabase.instance.ref('users/$userId/addresses');
+    FirebaseDatabase.instance.ref('users/$userId/addresses');
     final DatabaseEvent event = await databaseRef.once();
     final DataSnapshot snapshot = event.snapshot;
 
@@ -164,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }).toList();
 
         defaultAddress = addresses.firstWhere(
-          (address) => address.status == 'on',
+              (address) => address.status == 'on',
           orElse: () => AddressModel(
               nameAddresUser: '',
               phoneAddresUser: '',
@@ -177,6 +191,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _imageTimer?.cancel();
+
     _timer?.cancel();
     _searchController.dispose();
     _pageController.dispose();
@@ -185,6 +201,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    const imageSize = 120.0;
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -228,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: TextStyle(color: Colors.grey, fontSize: 10)),
                     Text(
                       defaultAddress?.nameAddresUser != null &&
-                              defaultAddress?.addressUser != null
+                          defaultAddress?.addressUser != null
                           ? '${defaultAddress!.nameAddresUser} - ${defaultAddress!.addressUser}'
                           : 'Chưa có địa chỉ',
                       style: const TextStyle(color: Colors.black, fontSize: 14),
@@ -263,126 +283,247 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        body: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(14.0),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                    hintText: 'Bạn muốn tìm gì?',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                        vertical: 8.0, horizontal: 12.0)),
-              ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        height: 130,
-                        child: PageView.builder(
-                          controller: _pageController,
-                          itemCount: _banners.length,
-                          itemBuilder: (context, index) {
-                            return Container(
-                              width: 300,
-                              margin:
-                                  const EdgeInsets.symmetric(horizontal: 10),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                image: DecorationImage(
-                                  image: NetworkImage(_banners[index]),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            );
-                          },
+            Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(14.0),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                        hintText: 'Bạn muốn tìm gì?',
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(_banners.length, (index) {
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _currentPage =
-                                    index; // Cập nhật trang hiện tại khi nhấn vào chấm
-                              });
-                              _pageController.animateToPage(
-                                _currentPage,
-                                duration: const Duration(milliseconds: 500),
-                                // Hiệu ứng chuyển trang mượt mà
-                                curve: Curves
-                                    .easeInOut, // Dùng hiệu ứng curve cho chuyển trang
-                              );
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 3),
-                              height: 8,
-                              width: 8,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: _currentPage == index
-                                    ? Colors.blue
-                                    : Colors
-                                        .grey, // Màu của chấm thay đổi khi chọn
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
-                      const SizedBox(height: 16),
-                      const Padding(
-                        padding: EdgeInsets.only(left: 16.0),
-                        child: Text(
-                          "Sản phẩm mới nhất",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      _filteredProducts.isNotEmpty
-                          ? SizedBox(
-                              height: 265,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: _filteredProducts.length,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 4.0),
-                                    child: SizedBox(
-                                      width: 200,
-                                      child: ProductCard(
-                                        product: _filteredProducts[index],
-                                        userId: FirebaseAuth
-                                            .instance.currentUser!.uid,
-                                      ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 12.0)),
+                  ),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(3),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            height: 130,
+                            child: PageView.builder(
+                              controller: _pageController,
+                              itemCount: _banners.length,
+                              itemBuilder: (context, index) {
+                                return Container(
+                                  width: 300,
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 10),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    image: DecorationImage(
+                                      image: NetworkImage(_banners[index]),
+                                      fit: BoxFit.cover,
                                     ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(_banners.length, (index) {
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _currentPage =
+                                        index; // Cập nhật trang hiện tại khi nhấn vào chấm
+                                  });
+                                  _pageController.animateToPage(
+                                    _currentPage,
+                                    duration: const Duration(milliseconds: 500),
+                                    // Hiệu ứng chuyển trang mượt mà
+                                    curve: Curves
+                                        .easeInOut, // Dùng hiệu ứng curve cho chuyển trang
                                   );
                                 },
-                              ),
-                            )
-                          : const Center(
-                              child: Text("Không tìm thấy sản phẩm nào"),
+                                child: Container(
+                                  margin:
+                                  const EdgeInsets.symmetric(horizontal: 3),
+                                  height: 8,
+                                  width: 8,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _currentPage == index
+                                        ? Colors.blue
+                                        : Colors
+                                        .grey, // Màu của chấm thay đổi khi chọn
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                          const SizedBox(height: 16),
+                          const Padding(
+                            padding: EdgeInsets.only(left: 16.0),
+                            child: Text(
+                              "Sản phẩm mới nhất",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
                             ),
+                          ),
+                          const SizedBox(height: 8),
+                          _filteredProducts.isNotEmpty
+                              ? SizedBox(
+                            height: 265,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _filteredProducts.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 4.0),
+                                  child: SizedBox(
+                                    width: 200,
+                                    child: ProductCard(
+                                      product: _filteredProducts[index],
+                                      userId: FirebaseAuth
+                                          .instance.currentUser!.uid,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          )
+                              : const Center(
+                            child: Text("Không tìm thấy sản phẩm nào"),
+                          ),
+                          gapH20,
+                          const Padding(
+                            padding: EdgeInsets.only(left: 16.0),
+                            child: Text(
+                              "Sản phẩm đánh giá cao nhất",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          _filteredProducts.isNotEmpty
+                              ? SizedBox(
+                            height: 265,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _filteredProducts
+                                  .where((product) => (int.tryParse(product.evaluate) ?? 0) >= 4)
+                                  .length,
+                              itemBuilder: (context, index) {
+                                final highRatedProducts =
+                                _filteredProducts
+                                    .where((product) => (int.tryParse(product.evaluate) ?? 0) >= 4)
+                                    .toList();
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 4.0),
+                                  child: SizedBox(
+                                    width: 200,
+                                    child: ProductCard(
+                                      product: highRatedProducts[index],
+                                      userId: FirebaseAuth
+                                          .instance.currentUser!.uid,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          )
+                              : const Center(
+                            child: Text("Không tìm thấy sản phẩm nào"),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (_isImageVisible)
+              Positioned(
+                top: _imageTop,
+                left: _imageLeft,
+                child: GestureDetector(
+                  onPanUpdate: (details) {
+                    setState(() {
+                      _imageTop += details.delta.dy;
+                      _imageLeft += details.delta.dx;
+
+                      // _imageTop = (_imageTop + details.delta.dy)
+                      //     .clamp(0.0, screenHeight - imageSize);
+                      // _imageLeft = (_imageLeft + details.delta.dx)
+                      //     .clamp(0.0, screenWidth - imageSize);
+                      _isImageTapped = true; // Làm đậm khi kéo
+                    });
+                  },
+                  onPanEnd: (details) {
+                    Future.delayed(const Duration(seconds: 3), () {
+                      setState(() {
+                        _isImageTapped = false; // Làm mờ sau 3 giây
+                      });
+                    });
+                  },
+                  onTap: () {
+                    setState(() {
+                      _isImageTapped = true;
+                    });
+                    Future.delayed(Duration(milliseconds: 200), () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const VoucherScreen()));
+                    });
+                  },
+                  child: Stack(
+                    alignment: Alignment.topRight,
+                    children: [
+                      // Hình ảnh
+                      AnimatedOpacity(
+                        opacity: _isImageTapped ? 1.0 : 0.5,
+                        duration: const Duration(milliseconds: 300),
+                        child: Image.asset(
+                          'assets/logos/voucher.png',
+                          width: imageSize,
+                          height: imageSize,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      // Nút "X" để tắt hình ảnh
+                      Positioned(
+                        right: 0,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _isImageVisible = false;
+                            });
+                            _scheduleImageReappear(); // Hẹn giờ bật lại sau 1 phút
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            padding: const EdgeInsets.all(4.0),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 15,
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
-            ),
-            gapH20,
           ],
         ),
       ),
