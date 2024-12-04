@@ -25,11 +25,31 @@ class _SearchScreenState extends State<SearchScreen> {
   List<Product> _filteredProducts = [];
   bool _isLoading = true;
   String? _selectedBrandId;
+  List<Map<String, dynamic>> chipData = [
+    {"name": "Tất cả", "id": null},
+    {"name": "Đánh giá cao", "id": "highRating"},
+  ];
+  final DatabaseReference _companyRef =
+      FirebaseDatabase.instance.ref('companys');
   @override
   void initState() {
     super.initState();
     _fetchProducts();
     _searchController.addListener(_filterProducts);
+    _fetchCompanyData();
+    _filterProducts();
+  }
+
+  void _fetchCompanyData() async {
+    _companyRef.onChildAdded.listen((event) {
+      final data = event.snapshot.value as Map<dynamic, dynamic>;
+      setState(() {
+        chipData.add({
+          'name': data['name'], // Dữ liệu label từ Firebase
+          'id': data['id'], // Dữ liệu id từ Firebase
+        });
+      });
+    });
   }
 
   void _fetchProducts() async {
@@ -180,22 +200,13 @@ class _SearchScreenState extends State<SearchScreen> {
 
   // Hàm xây dựng các `ChoiceChip`
   List<Widget> _buildChoiceChips() {
-    final chipData = [
-      {"label": "Tất cả", "id": null},
-      {"label": "Hoa Quả", "id": "-OAILvF-j4bmiGDvVuid"},
-      {"label": "Dầu ăn & gia vị", "id": "-OAW4dwvRnrhTQHPwXrr"},
-      {"label": "Đồ uống", "id": "-OAILiSWs97veFGxZRR0"},
-      {"label": "Đồ ăn", "id": "-OAILnTvn0LS1XeKk7bs"},
-      {"label": "Đánh giá cao", "id": "highRating"},
-    ];
-
     return chipData.map((chip) {
       final isSelected = _selectedBrandId == chip['id'];
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: ChoiceChip(
           label: Text(
-            chip['label'] as String,
+            chip['name'] != null ? chip['name'] as String : 'Unknown',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
