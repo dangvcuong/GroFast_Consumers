@@ -63,9 +63,11 @@ class _VerifyScreenState extends State<VerifyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        backgroundColor: Colors.white,
         actions: [
           Container(
             padding: const EdgeInsets.all(20),

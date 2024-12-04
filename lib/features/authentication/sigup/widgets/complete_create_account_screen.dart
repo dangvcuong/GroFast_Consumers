@@ -17,6 +17,7 @@ class _CompleteCreateAccountScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
       body: Center(
         // Sử dụng Center để căn giữa toàn bộ nội dung

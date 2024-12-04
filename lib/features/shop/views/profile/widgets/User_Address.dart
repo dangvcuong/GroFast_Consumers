@@ -10,6 +10,8 @@ import 'package:grofast_consumers/features/authentication/models/addressModel.da
 import 'package:grofast_consumers/features/shop/views/pay/pay_cart_screen.dart';
 import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class AddressUser extends StatefulWidget {
   const AddressUser({super.key});
@@ -38,6 +40,45 @@ class _AddressUserState extends State<AddressUser> {
     _getCurrentUser();
     _requestLocationPermission();
   }
+
+  // Future<void> fetchAddressFromCoordinates(double latitude, double longitude,
+  //     TextEditingController addressController) async {
+  //   const String apiKey =
+  //       'AIzaSyDNxAxXj6JheBPM66aMpcG-FnI9zkLwobE'; // Thay bằng API Key của bạn
+  //   final String url =
+  //       'https://maps.googleapis.com/maps/api/geocode/json?latlng=$latitude,$longitude&key=$apiKey';
+
+  //   try {
+  //     // Gửi yêu cầu HTTP đến Google Maps API
+  //     final response = await http.get(Uri.parse(url));
+
+  //     // Kiểm tra mã trạng thái HTTP
+  //     if (response.statusCode == 200) {
+  //       final data = json.decode(response.body);
+
+  //       // In ra toàn bộ phản hồi từ API để kiểm tra thông tin chi tiết
+  //       print("Response from Google API: $data");
+
+  //       // Kiểm tra nếu có kết quả trả về
+  //       if (data['results'].isNotEmpty) {
+  //         // Lấy địa chỉ đầy đủ từ kết quả
+  //         String fullAddress = data['results'][0]['formatted_address'];
+
+  //         // In ra địa chỉ
+  //         print('Full Address: $fullAddress');
+
+  //         // Cập nhật ô input (TextField)
+  //         addressController.text = fullAddress;
+  //       } else {
+  //         print('No results found.');
+  //       }
+  //     } else {
+  //       print('Failed to fetch address. Status code: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     print('Error fetching address: $e');
+  //   }
+  // }
 
   Future<void> _requestLocationPermission() async {
     LocationPermission permission = await Geolocator.checkPermission();
@@ -160,10 +201,23 @@ class _AddressUserState extends State<AddressUser> {
                         icon: const Icon(Icons.location_on, color: Colors.blue),
                         onPressed: () async {
                           try {
+                            // Position position =
+                            //     await Geolocator.getCurrentPosition(
+                            //   desiredAccuracy: LocationAccuracy.high,
+                            // );
+
+                            // print(
+                            //     "Latitude: ${position.latitude}, Longitude: ${position.longitude}");
+
+                            // fetchAddressFromCoordinates(position.latitude,
+                            //     position.longitude, addressController);
+                            // Lấy vị trí hiện tại
                             Position position =
                                 await Geolocator.getCurrentPosition(
                               desiredAccuracy: LocationAccuracy.high,
                             );
+
+                            // Lấy thông tin địa điểm từ tọa độ
                             List<Placemark> placemarks =
                                 await placemarkFromCoordinates(
                               position.latitude,
@@ -171,10 +225,24 @@ class _AddressUserState extends State<AddressUser> {
                             );
                             if (placemarks.isNotEmpty) {
                               Placemark place = placemarks[0];
-                              String fullAddress =
-                                  '${place.street}, ${place.subLocality}, ${place.locality}, ${place.administrativeArea}, ${place.country}';
+
+                              // Xây dựng địa chỉ đầy đủ
+                              String fullAddress = [
+                                place.street, // Số nhà, tên đường
+                                place.subLocality, // Tên làng/xóm/thôn
+                                place
+                                    .locality, // Xã hoặc thành phố (nếu xã không có)
+                                place.subAdministrativeArea, // Huyện
+                                place.administrativeArea, // Tỉnh/Thành phố
+                                place.country, // Quốc gia
+                              ]
+                                  .where((element) =>
+                                      element != null && element.isNotEmpty)
+                                  .join(', ');
+
                               setState(() {
-                                addressController.text = fullAddress;
+                                addressController.text =
+                                    fullAddress; // Hiển thị địa chỉ
                               });
                             }
                           } catch (e) {

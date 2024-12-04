@@ -229,16 +229,48 @@ class Login_Controller {
         idToken: googleAuth?.idToken,
         accessToken: googleAuth?.accessToken,
       );
+
       // Bước 4: Đăng nhập Firebase với credential từ Google
       await _auth.signInWithCredential(credential);
-      errorMessage = "Đăng nhập thành công";
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => const Btn_Navigatin()));
+
+      // Bước 5: Lấy thông tin người dùng từ Google
+      final user = FirebaseAuth.instance.currentUser;
+
+      // Bước 6: Lưu thông tin người dùng vào Firestore
+      if (user != null) {
+        // Kiểm tra nếu tên người dùng (displayName) không có, dùng email làm tên
+        String userName = user.displayName ?? user.email?.split('@')[0] ?? '';
+
+        // Dữ liệu người dùng
+        UserModel newUser = UserModel(
+          id: user.uid, // Sử dụng UID của người dùng
+          name: userName, // Dùng tên từ email nếu không có displayName
+          phoneNumber: "", // Có thể để trống nếu không có số điện thoại
+          email: user.email ?? '',
+          address: [],
+          image: user.photoURL ?? '',
+          dateCreated: DateTime.now().toString(),
+          status: "Hoạt động",
+          balance: 0,
+          userDeviceToken: '',
+        );
+
+        // Lưu vào Firestore (hoặc Realtime Database)
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .set(newUser.toJson()); // Sử dụng toJson để lưu
+
+        errorMessage = "Đăng nhập thành công";
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const Btn_Navigatin()));
+      }
     } catch (e) {
       print("Lỗi khi đăng nhập bằng Google: $e");
       errorMessage = "Lỗi khi đăng nhập bằng Google";
       return null;
     }
+
     ThongBao(context, errorMessage);
   }
 
