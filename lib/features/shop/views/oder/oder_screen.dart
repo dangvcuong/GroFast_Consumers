@@ -124,7 +124,6 @@ class _OrderScreenState extends State<OrderScreen> {
                         'Không có đơn hàng trạng thái "$_currentStatus".'),
                   );
                 }
-
                 return ListView.builder(
                   itemCount: orders.length,
                   itemBuilder: (context, index) {
@@ -136,97 +135,85 @@ class _OrderScreenState extends State<OrderScreen> {
                     } else if (order['totalAmount'] is num) {
                       totalAmount = order['totalAmount'].toDouble();
                     }
+
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Card(
-                        color: Colors.white, // Thêm màu nền trắng cho card
+                        color: Colors.white, // Màu nền trắng cho card
                         shape: RoundedRectangleBorder(
                           side: const BorderSide(color: Colors.white54, width: 2),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: ListTile(
-                          title: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  '#${order['id']}',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold, color: Colors.black), // Màu chữ đen
-                                  overflow: TextOverflow.ellipsis,
+                        child: InkWell(
+                          onTap: () {
+                            final orderId = order['id']?.toString();
+                            if (orderId != null) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => OrderDetail(orderId),
                                 ),
-                              ),
-                            ],
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                  "Số lượng: ${order['products']?.length ?? 0} sản phẩm",
-                                  style: const TextStyle(color: Colors.black)), // Màu chữ đen
-                              const SizedBox(height: 5),
-                              Text(
-                                formatter.format(totalAmount),
-                                style: const TextStyle(color: Colors.blue),
-                              ),
-                            ],
-                          ),
-                          trailing: Column(
-                            children: [
-                              if (order['orderStatus'] == 'Thành công')
-                                const Text(
-                                  'Hoàn thành',
-                                  style: TextStyle(
-                                    color: Colors.blue,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                )
-                              else if (order['orderStatus'] == 'Đã hủy')
-                                const Text(
-                                  'Đã hủy',
-                                  style: TextStyle(
-                                    color: Colors.red,
-                                    fontWeight: FontWeight.bold,
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Lỗi: Không có ID đơn hàng')));
+                            }
+                          },
+                          child: ListTile(
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    '#${order['id']}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold, color: Colors.black),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                              const SizedBox(height: 5),
-                              ElevatedButton(
-                                onPressed: () {
-                                  final orderId = order['id']?.toString();
-                                  if (orderId != null) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            OrderDetail(orderId),
-                                      ),
-                                    ).then((_) {
-                                      setState(() {
-                                        _selectedStatus = _currentStatus;
-                                      });
-                                    });
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                            content: Text(
-                                                'Lỗi: Không có ID đơn hàng')));
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.lightBlueAccent,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
+                              ],
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                    "Số lượng: ${order['products']?.length ?? 0} sản phẩm",
+                                    style: const TextStyle(color: Colors.black)),
+                                const SizedBox(height: 5),
+                                Text(
+                                  formatter.format(totalAmount),
+                                  style: const TextStyle(color: Colors.blue),
                                 ),
-                                child: const Text("Xem chi tiết"),
-                              ),
-                            ],
+                              ],
+                            ),
+                            trailing: Column(
+                              children: [
+                                if (order['orderStatus'] == 'Thành công')
+                                  const Text(
+                                    'Hoàn thành',
+                                    style: TextStyle(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                else if (order['orderStatus'] == 'Đã hủy')
+                                  const Text(
+                                    'Đã hủy',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                const SizedBox(height: 5),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     );
                   },
                 );
+
               },
             ),
           ),
