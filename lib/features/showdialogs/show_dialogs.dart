@@ -356,7 +356,7 @@ class ShowDialogs {
       if (event.snapshot.value != null) {
         final currentQuantity = (event.snapshot.value as Map)['quantity'] ?? 0;
         await cartRef.child(product.id).update({
-          "quantity": currentQuantity + 1,
+          "quantity": currentQuantity + quantity,
         });
         errorMessage = "Đã tăng số lượng sản phẩm trong giỏ hàng!";
       } else {
