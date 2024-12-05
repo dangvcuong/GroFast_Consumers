@@ -32,6 +32,41 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
     _loadMessages();
     _listenForNewMessages(); // Lắng nghe tin nhắn mới
+    // updateMessageStatus();
+    print("CHat_ID: $_chatUser.id");
+    updateMessageStatus(_chatUser.id);
+  }
+
+  Future<void> updateMessageStatus(String userId) async {
+    final DatabaseReference chatMessagesRef =
+        FirebaseDatabase.instance.ref('chats/$userId/messages');
+
+    try {
+      final DatabaseEvent event = await chatMessagesRef.once();
+      final Map<dynamic, dynamic>? data =
+          event.snapshot.value as Map<dynamic, dynamic>?;
+
+      if (data != null) {
+        final Map<String, dynamic> updates = {};
+
+        data.forEach((key, value) {
+          if (value['status'] == 2) {
+            updates[key] = {
+              ...value,
+              // 'status': 2, // Cập nhật trạng thái số nếu cần
+              'trangThai': 'Đã xem', // Thay đổi trạng thái nếu cần
+            };
+          }
+        });
+
+        if (updates.isNotEmpty) {
+          await chatMessagesRef.update(updates);
+          print('Cập nhật trạng thái thành công!');
+        }
+      }
+    } catch (e) {
+      print('Lỗi khi cập nhật trạng thái tin nhắn: $e');
+    }
   }
 
   void _loadMessages() async {
@@ -164,6 +199,7 @@ class _ChatScreenState extends State<ChatScreen> {
         'createdAt': message.createdAt,
         'id': message.id,
         'status': 1,
+        'trangThai': 'Chưa xem',
         'nameUser': userMap['name'] ?? 'Unknown',
         'imageUser': userMap['image'] ?? 'default_image_url',
       };
