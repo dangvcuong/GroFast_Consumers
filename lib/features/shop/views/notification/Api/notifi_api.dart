@@ -162,7 +162,8 @@ class NotifiApi {
                 timestamp != null &&
                 timestamp > lastProcessedTimestamp &&
                 !notifiedMessages.contains(messageId)) {
-              if (messageData['status'] == 2) {
+              if (messageData['status'] == 2 &&
+                  messageData['trangThai'] == "Chưa xem") {
                 // Lấy nội dung tin nhắn
                 String messageContent =
                     messageData['text'] ?? 'No content'; // Nội dung
