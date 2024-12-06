@@ -1,40 +1,79 @@
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:grofast_consumers/constants/app_sizes.dart';
 import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
-import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
 import 'package:grofast_consumers/features/shop/views/favorites/providers/favorites_provider.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/productdetailscreen.dart';
 import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
-import 'package:grofast_consumers/ulits/theme/app_style.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/category_model.dart';
-import '../../cart/providers/cart_provider.dart';
 
-class ProductCardWidget extends StatelessWidget {
+class ProductCard extends StatefulWidget {
   final Product product;
   final String userId;
-  final String companyName;
-  final Function onAddToCart;
-  final Function onFavoriteToggle;
-  final bool isFavorite;
 
-  const ProductCardWidget({
+  const ProductCard({
     super.key,
     required this.product,
     required this.userId,
-    required this.companyName,
-    required this.onAddToCart,
-    required this.onFavoriteToggle,
-    required this.isFavorite,
   });
+
+  @override
+  _ProductCardState createState() => _ProductCardState();
+}
+
+class _ProductCardState extends State<ProductCard> {
+  final DatabaseReference _database = FirebaseDatabase.instance.ref();
+  final Login_Controller loginController = Login_Controller();
+  final ShowDialogs showDialogs = ShowDialogs();
+  String userId = FirebaseAuth.instance.currentUser!.uid;
+  String companyName = "Đang tải...";
+  Map<String, String> companyNames = {};
+  @override
+  void initState() {
+    super.initState();
+    _loadCompanyNames();
+  }
+
+  void _loadCompanyNames() async {
+    final data = await fetchAllCompanies();
+    setState(() {
+      companyNames = data;
+    });
+  }
+
+  Future<Map<String, String>> fetchAllCompanies() async {
+    final Map<String, String> companies = {};
+    try {
+      final DatabaseEvent event = await _database.child('companys').once();
+      final DataSnapshot snapshot = event.snapshot;
+
+      if (snapshot.value != null) {
+        final data = snapshot.value as Map<dynamic, dynamic>;
+        data.forEach((key, value) {
+          companies[key] = value['name'] ?? "Không xác định";
+        });
+      }
+    } catch (error) {
+      print("Lỗi khi tải tất cả hãng: $error");
+    }
+    return companies;
+  }
+
+  String getCompanyName(String idHang) {
+    return companyNames[idHang] ?? "Đang tải...";
+  }
 
   @override
   Widget build(BuildContext context) {
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
+    final favoritesProvider = Provider.of<FavoritesProvider>(context);
 
     return InkWell(
       onTap: () {
@@ -42,18 +81,18 @@ class ProductCardWidget extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => ProductDetailScreen(
-              product: product,
+              product: widget.product,
             ),
           ),
         );
       },
       child: Card(
         color: Colors.white,
-        elevation: 5,
+        elevation: 1,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(8.0),
         ),
-        margin: const EdgeInsets.all(8.0),
+        margin: const EdgeInsets.symmetric(horizontal: 4),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
@@ -65,7 +104,7 @@ class ProductCardWidget extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12.0),
                       child: Image.network(
-                        product.imageUrl,
+                        widget.product.imageUrl,
                         height: 110,
                         fit: BoxFit.cover,
                       ),
@@ -86,41 +125,44 @@ class ProductCardWidget extends StatelessWidget {
                         icon: Icon(
                           Icons.favorite,
                           size: 18,
-                          color: isFavorite ? Colors.red : Colors.grey.shade300,
+                          color: favoritesProvider.isFavorite(widget.product)
+                              ? Colors.red
+                              : Colors.grey.shade300,
                         ),
-                        onPressed: () => onFavoriteToggle(),
+                        onPressed: () async {
+                          if (favoritesProvider.isFavorite(widget.product)) {
+                            showDialogs.showDeleteFavoriteDialog(
+                                context, widget.product);
+                          } else {
+                            await favoritesProvider.addProductToUserHeart(
+                                userId, widget.product, context);
+                          }
+                        },
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 7),
+              gapH8,
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    companyName,
+                    getCompanyName(widget.product.idHang),
                     style: TextStyle(
                         color: Colors.black.withOpacity(0.6),
                         fontWeight: FontWeight.bold,
-                        fontSize: 10),
-                  ),
-                  Text(
-                    displayUnit(product.idHang),
-                    style: TextStyle(
-                        color: Colors.black.withOpacity(0.6),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 10),
+                        fontSize: 12),
                   ),
                 ],
               ),
               const SizedBox(height: 2),
               Text(
-                product.name,
+                widget.product.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 2),
               Row(
@@ -128,37 +170,49 @@ class ProductCardWidget extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.star, color: Colors.orange, size: 16),
-                      Text("${product.evaluate}/5"),
+                      const Icon(Icons.star, color: Colors.orange, size: 18),
+                      Text("${widget.product.evaluate}/5"),
                     ],
                   ),
-                  Text("${product.quantity} Đã bán"),
+                  Text("Đã bán ${widget.product.quantitysold}"),
                 ],
               ),
               const SizedBox(height: 1),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(formatter.format(product.price),
-                      style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue)),
-                  Container(
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.add_circle,
-                        color: Colors.blue,
-                        size: 35,
-                      ),
-                      onPressed: () {
-                        onAddToCart(userId, product);
-                      },
-                    ),
+                  Text(
+                    formatter.format(widget.product.price),
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFF44336)),
                   ),
+                  widget.product.quantity > 0
+                      ? Container(
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.add_circle_outline,
+                              color: Colors.red,
+                              size: 30,
+                            ),
+                            onPressed: () {
+                              showDialogs.showAddCartDialog(
+                                  context, widget.product, userId);
+                            },
+                          ),
+                        )
+                      : const Text(
+                          "Hết hàng !",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ],
               ),
             ],

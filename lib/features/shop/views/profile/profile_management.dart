@@ -19,6 +19,7 @@ import 'package:grofast_consumers/features/authentication/models/user_Model.dart
 import 'package:grofast_consumers/features/shop/views/chatbot/chat_screen.dart';
 import 'package:grofast_consumers/features/authentication/sigup/widgets/complete_create_account_screen.dart';
 import 'package:grofast_consumers/features/shop/views/cart/Product_cart_item.dart';
+import 'package:grofast_consumers/features/shop/views/profile/widgets/EvaluateScreen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/WalletTopUpScreen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/profile_detail_screen.dart';
@@ -273,6 +274,35 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                           ),
                           title: Text(
                             'Giỏ hàng',
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w400),
+                          ),
+                          trailing: Icon(
+                            Icons.arrow_forward_ios,
+                            size: 15,
+                            // Màu cho icon
+                          ),
+                        ),
+                      ),
+                      const Divider(thickness: 1, color: Colors.grey),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const EvaluateScreen()),
+                          );
+                        },
+                        child: const ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(
+                            Icons.star,
+                            color: Colors.orange, // Màu cho icon
+                          ),
+                          title: Text(
+                            'Đánh giá',
                             style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 18,

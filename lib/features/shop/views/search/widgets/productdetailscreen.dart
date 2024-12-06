@@ -33,6 +33,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   final Login_Controller loginController = Login_Controller();
   String userId = FirebaseAuth.instance.currentUser!.uid;
   String errorMessage = "";
+  List<Map> reviews = []; // Danh sách lưu trữ đánh giá sản phẩm
+  bool showAllReviews =
+      false; // Biến để kiểm tra xem có hiển thị tất cả đánh giá không
 
   bool isDescriptionExpanded = false;
   final ShowDialogs showdialog = ShowDialogs();
@@ -40,6 +43,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void initState() {
     super.initState();
     _fetchOtherProducts();
+    _getReviews();
   }
 
   void _fetchOtherProducts() async {
@@ -67,6 +71,36 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       }
     } catch (error) {
       print("Lỗi khi tải sản phẩm khác: $error");
+    }
+  }
+
+  // Hàm lấy đánh giá từ Firebase Realtime Database
+  Future<void> _getReviews() async {
+    DatabaseReference reviewRef =
+        FirebaseDatabase.instance.ref('reviews/${widget.product.id}');
+
+    // Lấy dữ liệu đánh giá từ Firebase
+    DataSnapshot snapshot = await reviewRef.get();
+
+    if (snapshot.exists) {
+      List<Map> fetchedReviews = [];
+      Map<dynamic, dynamic> reviewsData =
+          snapshot.value as Map<dynamic, dynamic>;
+
+      reviewsData.forEach((key, value) {
+        fetchedReviews.add({
+          'rating': value['rating'],
+          'review': value['review'],
+          'userName': value['userName'],
+          'userPhotoURL': value['userPhotoURL'],
+          'userId': value['userId'],
+          'timestamp': value['timestamp'],
+        });
+      });
+
+      setState(() {
+        reviews = fetchedReviews;
+      });
     }
   }
 
@@ -125,7 +159,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                '${formatter.format(widget.product.price)}/${displayUnit(widget.product.idHang)}',
+                formatter.format(widget.product.price),
                 style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -137,7 +171,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 children: [
                   const Text(
                     "Mô tả",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   TextButton(
                     onPressed: () {
@@ -153,7 +187,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ],
               ),
               // Phần mô tả sản phẩm với nút toggle
-
               const SizedBox(height: 8),
               AnimatedCrossFade(
                 firstChild: Text(
@@ -171,11 +204,101 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     : CrossFadeState.showFirst,
                 duration: const Duration(milliseconds: 300),
               ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Đánh giá sản phẩm",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        showAllReviews =
+                            !showAllReviews; // Thay đổi trạng thái khi nhấn "Xem thêm"
+                      });
+                    },
+                    child: Text(
+                      showAllReviews
+                          ? "Ẩn bớt"
+                          : "Xem thêm", // Thay đổi tên nút tùy vào trạng thái
+                      style: const TextStyle(color: Colors.blue),
+                    ),
+                  ),
+                ],
+              ),
+              ...reviews
+                  .take(showAllReviews
+                      ? reviews.length
+                      : 2) // Nếu showAllReviews là true, hiển thị tất cả đánh giá
+                  .map((review) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: Card(
+                    color: Colors.white,
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(10), // Bo tròn các góc
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Hàng hiển thị ảnh người dùng và tên người dùng
+                          Row(
+                            children: [
+                              ClipOval(
+                                child: Image.network(
+                                  review['userPhotoURL'] ??
+                                      '', // Lấy ảnh người dùng từ Firebase
+                                  width: 40,
+                                  height: 40,
+                                  fit: BoxFit.cover, // Cắt ảnh thành hình tròn
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(Icons.account_circle,
+                                        size:
+                                            40); // Nếu có lỗi tải ảnh, hiển thị icon mặc định
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                review['userName'] ?? 'Tên người dùng',
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Hiển thị sao đánh giá
+                          Row(
+                            children: [
+                              const Icon(Icons.star, color: Colors.amber),
+                              Text(' ${review['rating']}'),
+                            ],
+                          ),
+                          const SizedBox(height: 5),
+
+                          // Hiển thị nội dung đánh giá
+                          Text(
+                            "Nội dung: ${review['review']}",
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }),
 
               const SizedBox(height: 16),
               const Text(
                 "Sản phẩm khác",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               GridView(

@@ -307,8 +307,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
         orderStatus: 'Đang chờ xác nhận',
         orderDate: DateTime.now(),
         shippingAddress: defaultAddress!,
-        tong: (totalAmount + shippingFee).toString());
-
+        tong: (totalAmount + shippingFee).toString(),
+        review: '');
     DatabaseReference ordersRef = FirebaseDatabase.instance.ref('orders');
 
     try {
