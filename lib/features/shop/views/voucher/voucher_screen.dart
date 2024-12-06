@@ -1,11 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
 import 'package:grofast_consumers/features/navigation/btn_navigation.dart';
 import 'package:grofast_consumers/features/shop/views/home/home_screen.dart';
 import 'package:grofast_consumers/features/shop/views/voucher/widgets/voucher_list_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:grofast_consumers/features/shop/views/voucher/widgets/voucher.dart';
+
 
 class VoucherScreen extends StatefulWidget {
   const VoucherScreen({super.key});
@@ -16,15 +20,7 @@ class VoucherScreen extends StatefulWidget {
 
 class _VoucherScreenState extends State<VoucherScreen> {
   StreamController<int> selected = StreamController<int>.broadcast();
-
-  final List<String> rewards = [
-    "Mã giảm giá 10%",
-    "Mã giảm giá 20%",
-    "Mất lượt",
-    "Mã giảm giá 15%",
-    "Mã giảm giá 10%",
-    "FreeShip Extra"
-  ];
+  List<String> rewards = [];
   List<String> voucherList = [];
   bool isSpinning = false;
 
@@ -32,7 +28,30 @@ class _VoucherScreenState extends State<VoucherScreen> {
   void initState() {
     super.initState();
     isSpinning = false;
+    fetchVouchers(); // Lấy dữ liệu vouchers từ Firebase
   }
+
+  Future<void> fetchVouchers() async {
+    DatabaseReference ref = FirebaseDatabase.instance.ref().child('vouchers');
+    DatabaseEvent event = await ref.once();  // Lấy đối tượng DatabaseEvent
+    DataSnapshot snapshot = event.snapshot;  // Lấy DataSnapshot từ DatabaseEvent
+
+    if (snapshot.exists) {
+      // Kiểm tra nếu snapshot.value là kiểu Map
+      if (snapshot.value is Map) {
+        // Ép kiểu snapshot.value thành Map nếu đúng
+        Map<dynamic, dynamic> vouchersData = Map.from(snapshot.value as Map);
+        setState(() {
+          // Lấy danh sách tên voucher từ dữ liệu
+          rewards = vouchersData.values.map((voucher) => voucher['name'].toString()).toList();
+        });
+      } else {
+        // Xử lý nếu dữ liệu không phải kiểu Map (có thể là danh sách, chuỗi, v.v.)
+        print("Dữ liệu không phải kiểu Map");
+      }
+    }
+  }
+
 
   void spinWheel() async {
     if (isSpinning) return;
@@ -84,10 +103,8 @@ class _VoucherScreenState extends State<VoucherScreen> {
                     child: IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: () {
-                        autoCloseDialog =
-                            false; // Hủy tự động đóng khi nhấn icon
-                        Navigator.of(context)
-                            .pop(); // Đóng popup khi nhấn vào icon
+                        autoCloseDialog = false; // Hủy tự động đóng khi nhấn icon
+                        Navigator.of(context).pop(); // Đóng popup khi nhấn vào icon
                       },
                     ),
                   ),
@@ -101,8 +118,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
         // Đóng popup sau 3 giây nếu không nhấn icon đóng
         Future.delayed(const Duration(seconds: 3), () {
           if (autoCloseDialog) {
-            Navigator.of(context)
-                .pop(); // Đóng popup tự động nếu không nhấn icon đóng
+            Navigator.of(context).pop(); // Đóng popup tự động nếu không nhấn icon đóng
           }
         });
       } else {
@@ -128,10 +144,8 @@ class _VoucherScreenState extends State<VoucherScreen> {
                     child: IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: () {
-                        autoCloseDialog =
-                        false; // Hủy tự động đóng khi nhấn icon
-                        Navigator.of(context)
-                            .pop(); // Đóng popup khi nhấn vào icon
+                        autoCloseDialog = false; // Hủy tự động đóng khi nhấn icon
+                        Navigator.of(context).pop(); // Đóng popup khi nhấn vào icon
                       },
                     ),
                   ),
@@ -158,8 +172,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
         );
         Future.delayed(const Duration(seconds: 3), () {
           if (autoCloseDialog) {
-            Navigator.of(context)
-                .pop(); // Đóng popup tự động nếu không nhấn icon đóng
+            Navigator.of(context).pop(); // Đóng popup tự động nếu không nhấn icon đóng
           }
         });
       }
@@ -189,9 +202,8 @@ class _VoucherScreenState extends State<VoucherScreen> {
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(
-                'assets/images/category/banner.jpg'), // Thay thế bằng URL ảnh của bạn
-            fit: BoxFit.cover, // Điều chỉnh ảnh để bao phủ toàn bộ nền
+            image: AssetImage('assets/images/category/banner.jpg'),
+            fit: BoxFit.cover,
           ),
         ),
         child: Column(
@@ -207,7 +219,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
                         MaterialPageRoute(
                           builder: (context) => const Btn_Navigatin(),
                         ),
-                        (Route<dynamic> route) => false,
+                            (Route<dynamic> route) => false,
                       );
                     },
                     style: ElevatedButton.styleFrom(
@@ -219,8 +231,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
                       ),
                       elevation: 5,
                     ).copyWith(
-                      backgroundColor:
-                          WidgetStateProperty.resolveWith((states) {
+                      backgroundColor: WidgetStateProperty.resolveWith((states) {
                         if (states.contains(WidgetState.pressed)) {
                           return Colors.red;
                         }
@@ -248,8 +259,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
                       ),
                       elevation: 5,
                     ).copyWith(
-                      backgroundColor:
-                          WidgetStateProperty.resolveWith((states) {
+                      backgroundColor: WidgetStateProperty.resolveWith((states) {
                         if (states.contains(WidgetState.pressed)) {
                           return Colors.red;
                         }
@@ -281,30 +291,17 @@ class _VoucherScreenState extends State<VoucherScreen> {
                             child: FortuneWheel(
                               animateFirst: false,
                               selected: selected.stream,
-                              items: [
-                                for (var it in rewards)
-                                  FortuneItem(
-                                    child: Container(
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: Colors.primaries[
-                                            rewards.indexOf(it) %
-                                                Colors.primaries.length],
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      padding: const EdgeInsets.all(30),
-                                      child: Text(
-                                        it,
-                                        textAlign: TextAlign.center,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 13,
-                                        ),
-                                        maxLines: 2,
-                                      ),
+                              items: List.generate(
+                                rewards.length,
+                                    (index) => FortuneItem(
+                                  child: Text(
+                                    rewards[index],
+                                    style: const TextStyle(
+                                      color: Colors.white,
                                     ),
                                   ),
-                              ],
+                                ),
+                              ),
                             ),
                           ),
                         ),

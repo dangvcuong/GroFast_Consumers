@@ -325,8 +325,8 @@ class _ChatScreenState extends State<ChatScreen> {
         child: ChatBubble(
           margin: const EdgeInsets.only(right: 10),
           clipper: isSender
-              ? ChatBubbleClipper1(type: BubbleType.sendBubble) // Bóng chat gửi
-              : ChatBubbleClipper1(type: BubbleType.receiverBubble),
+              ? ChatBubbleClipper4(type: BubbleType.sendBubble) // Bóng chat gửi
+              : ChatBubbleClipper4(type: BubbleType.receiverBubble),
           // Bóng chat nhận
           alignment: isSender ? Alignment.topRight : Alignment.topLeft,
           backGroundColor:
