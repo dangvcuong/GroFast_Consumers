@@ -109,7 +109,10 @@ class _EvaluateScreenState extends State<EvaluateScreen> {
                         subtitle: Text(
                           "Giá: ${product["price"]} VNĐ\nSố lượng: ${product["quantity"]}",
                         ),
-                        trailing: Text("Đánh giá: ${product["evaluate"]}"),
+                        trailing: const Text(
+                          "Đánh giá",
+                          style: TextStyle(color: Colors.blue),
+                        ),
                         onTap: () {
                           // Chuyển sang trang đánh giá và truyền id sản phẩm
                           final orderId = product['orderId'];
