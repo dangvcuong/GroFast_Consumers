@@ -34,16 +34,3 @@ class CategoryModel {
     return CategoryModel.empty();
   }
 }
-
-String displayUnit(String idHang) {
-  switch (idHang) {
-    case "-OAILvF-j4bmiGDvVuid":
-      return "kg";
-    case "-OAW4dwvRnrhTQHPwXrr":
-      return "chai";
-    case "-OAILiSWs97veFGxZRR0":
-      return "chai/hộp";
-    default:
-      return "cái";
-  }
-}

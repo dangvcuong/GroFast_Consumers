@@ -178,6 +178,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
+        automaticallyImplyLeading: false, // Ẩn nút quay lại
         backgroundColor: Colors.blueAccent,
         title: const Text(
           'Thông báo',

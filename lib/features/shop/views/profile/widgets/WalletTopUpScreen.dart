@@ -3,6 +3,7 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:grofast_consumers/features/authentication/controllers/user_controller.dart';
 import 'package:grofast_consumers/features/authentication/models/user_Model.dart';
 import 'package:grofast_consumers/features/shop/views/profile/servers/stripe_server.dart';
+import 'package:grofast_consumers/features/shop/views/profile/widgets/paymenthistory_screen.dart';
 import 'package:intl/intl.dart';
 
 class WalletTopUpScreen extends StatefulWidget {
@@ -104,30 +105,54 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
-                prefixText: "đ ",
-                hintText: "0",
+                hintText: "0đ",
               ),
               onChanged: (value) {
-                String formattedValue = _formatInput(value);
+                // Lúc người dùng đang nhập, chúng ta chỉ cập nhật giá trị không định dạng
+                String rawValue = value.replaceAll('.', '').replaceAll(',', '');
+                setState(() {
+                  totalAmount = int.tryParse(rawValue) ?? 0;
+                });
+              },
+              onEditingComplete: () {
+                // Khi người dùng rời khỏi TextField, áp dụng định dạng
+                String formattedValue = _formatInput(_amountController.text);
                 _amountController.value = TextEditingValue(
                   text: formattedValue,
                   selection:
                       TextSelection.collapsed(offset: formattedValue.length),
                 );
-                setState(() {
-                  totalAmount = int.tryParse(formattedValue
-                          .replaceAll('.', '')
-                          .replaceAll(',', '')) ??
-                      0;
-                });
               },
             ),
 
             const SizedBox(height: 20),
-            Text(
-              "Số dư Ví hiện tại: ${formatter.format(currentUser?.balance ?? 0)}",
-              style: const TextStyle(color: Colors.grey),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Số dư Ví hiện tại: ${formatter.format(currentUser?.balance ?? 0)}",
+                  style: const TextStyle(color: Colors.grey),
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.history, // Biểu tượng lịch sử
+                    size: 25, // Kích thước biểu tượng
+                    color: Colors.blue, // Màu sắc biểu tượng
+                  ),
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PaymenthistoryScreen(
+                            userId: currentUser!
+                                .id), // Thay thế YourCurrentPage bằng widget hiện tại của bạn
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
+
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -178,15 +203,25 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                StripeServer.instance.makePayment(
+                if (totalAmount >= 10000) {
+                  // Tiến hành thanh toán nếu số tiền >= 10,000
+                  StripeServer.instance.makePayment(
                     userId: currentUser!.id,
                     amount: totalAmount,
-                    context: context);
+                    context: context,
+                  );
+                } else {
+                  // Hiển thị thông báo lỗi nếu số tiền nhỏ hơn 10,000
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Số tiền nạp phải từ 10,000đ trở lên!')),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
                 backgroundColor:
-                    totalAmount > 0 ? Colors.blue : Colors.grey.shade300,
+                    totalAmount >= 10000 ? Colors.blue : Colors.grey.shade300,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8), // Bo tròn nhẹ
                 ),
@@ -208,13 +243,6 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  void _onTopUpPressed() {
-    // Thực hiện hành động khi nhấn "Nạp tiền ngay"
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Nạp số tiền: $formatter.format(totalAmount)')),
     );
   }
 

@@ -53,21 +53,21 @@ class _OrderScreenState extends State<OrderScreen> {
                     label: "Đang chờ xác nhận",
                     status: 'Đang chờ xác nhận',
                   ),
-                  SizedBox(width: 20), // Khoảng cách giữa các tab
+                  const SizedBox(width: 20), // Khoảng cách giữa các tab
                   buildStatusIcon(
                     context,
                     icon: Icons.local_shipping,
                     label: "Đang giao hàng",
                     status: 'Đang giao hàng',
                   ),
-                  SizedBox(width: 20),
+                  const SizedBox(width: 20),
                   buildStatusIcon(
                     context,
                     icon: Icons.check_circle_outline,
                     label: "Đã nhận hàng",
                     status: 'Thành công',
                   ),
-                  SizedBox(width: 20),
+                  const SizedBox(width: 20),
                   buildStatusIcon(
                     context,
                     icon: Icons.history,
@@ -100,28 +100,29 @@ class _OrderScreenState extends State<OrderScreen> {
                 }
 
                 final Map<dynamic, dynamic> ordersMap =
-                snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                    snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
 
                 // Lọc đơn hàng theo trạng thái: Thành công hoặc Đã hủy khi chọn "Lịch sử"
                 final List<Map<String, dynamic>> orders = ordersMap.entries
                     .map((entry) => {
-                  'id': entry.key.toString(),
-                  ...(entry.value as Map<dynamic, dynamic>).map(
-                        (key, value) => MapEntry(key.toString(), value),
-                  ),
-                })
+                          'id': entry.key.toString(),
+                          ...(entry.value as Map<dynamic, dynamic>).map(
+                            (key, value) => MapEntry(key.toString(), value),
+                          ),
+                        })
                     .where((order) {
                   if (_currentStatus == 'Lịch sử') {
                     return order['orderStatus'] == 'Thành công' ||
                         order['orderStatus'] == 'Đã hủy';
                   }
-                  return order['orderStatus'] == _currentStatus; // Hiển thị theo trạng thái đã chọn
+                  return order['orderStatus'] ==
+                      _currentStatus; // Hiển thị theo trạng thái đã chọn
                 }).toList();
 
                 if (orders.isEmpty) {
                   return Center(
-                    child: Text(
-                        'Không có đơn hàng trạng thái "$_currentStatus".'),
+                    child:
+                        Text('Không có đơn hàng trạng thái "$_currentStatus".'),
                   );
                 }
                 return ListView.builder(
@@ -141,7 +142,8 @@ class _OrderScreenState extends State<OrderScreen> {
                       child: Card(
                         color: Colors.white, // Màu nền trắng cho card
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(color: Colors.white54, width: 2),
+                          side:
+                              const BorderSide(color: Colors.white54, width: 2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: InkWell(
@@ -156,7 +158,9 @@ class _OrderScreenState extends State<OrderScreen> {
                               );
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Lỗi: Không có ID đơn hàng')));
+                                  const SnackBar(
+                                      content:
+                                          Text('Lỗi: Không có ID đơn hàng')));
                             }
                           },
                           child: ListTile(
@@ -167,7 +171,8 @@ class _OrderScreenState extends State<OrderScreen> {
                                   child: Text(
                                     '#${order['id']}',
                                     style: const TextStyle(
-                                        fontWeight: FontWeight.bold, color: Colors.black),
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -178,7 +183,8 @@ class _OrderScreenState extends State<OrderScreen> {
                               children: [
                                 Text(
                                     "Số lượng: ${order['products']?.length ?? 0} sản phẩm",
-                                    style: const TextStyle(color: Colors.black)),
+                                    style:
+                                        const TextStyle(color: Colors.black)),
                                 const SizedBox(height: 5),
                                 Text(
                                   formatter.format(totalAmount),
@@ -213,7 +219,6 @@ class _OrderScreenState extends State<OrderScreen> {
                     );
                   },
                 );
-
               },
             ),
           ),
@@ -223,11 +228,11 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   Widget buildStatusIcon(
-      BuildContext context, {
-        required IconData icon,
-        required String label,
-        required String status,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String status,
+  }) {
     // Kiểm tra nếu biểu tượng này được chọn
     bool isSelected = _selectedStatus == status;
     return GestureDetector(

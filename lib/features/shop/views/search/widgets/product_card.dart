@@ -34,38 +34,45 @@ class _ProductCardState extends State<ProductCard> {
   final ShowDialogs showDialogs = ShowDialogs();
   String userId = FirebaseAuth.instance.currentUser!.uid;
   String companyName = "Đang tải...";
-
+  Map<String, String> companyNames = {};
   @override
   void initState() {
     super.initState();
-    _fetchCompanyName(widget.product.idHang);
+    _loadCompanyNames();
   }
 
-  void _fetchCompanyName(String idHang) async {
+  void _loadCompanyNames() async {
+    final data = await fetchAllCompanies();
+    setState(() {
+      companyNames = data;
+    });
+  }
+
+  Future<Map<String, String>> fetchAllCompanies() async {
+    final Map<String, String> companies = {};
     try {
-      final DatabaseEvent event =
-          await _database.child('companys/$idHang').once();
+      final DatabaseEvent event = await _database.child('companys').once();
       final DataSnapshot snapshot = event.snapshot;
 
       if (snapshot.value != null) {
         final data = snapshot.value as Map<dynamic, dynamic>;
-        setState(() {
-          companyName = data['name'] ?? "Không xác định";
-        });
-      } else {
-        setState(() {
-          companyName = "Không tìm thấy hãng";
+        data.forEach((key, value) {
+          companies[key] = value['name'] ?? "Không xác định";
         });
       }
     } catch (error) {
-      print("Lỗi khi tải tên hãng: $error");
+      print("Lỗi khi tải tất cả hãng: $error");
     }
+    return companies;
+  }
+
+  String getCompanyName(String idHang) {
+    return companyNames[idHang] ?? "Đang tải...";
   }
 
   @override
   Widget build(BuildContext context) {
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
-
     final favoritesProvider = Provider.of<FavoritesProvider>(context);
 
     return InkWell(
@@ -124,7 +131,6 @@ class _ProductCardState extends State<ProductCard> {
                         ),
                         onPressed: () async {
                           if (favoritesProvider.isFavorite(widget.product)) {
-                            // favoritesProvider.removeFavorite(widget.product);
                             showDialogs.showDeleteFavoriteDialog(
                                 context, widget.product);
                           } else {
@@ -142,14 +148,7 @@ class _ProductCardState extends State<ProductCard> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    companyName,
-                    style: TextStyle(
-                        color: Colors.black.withOpacity(0.6),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12),
-                  ),
-                  Text(
-                    displayUnit(widget.product.idHang),
+                    getCompanyName(widget.product.idHang),
                     style: TextStyle(
                         color: Colors.black.withOpacity(0.6),
                         fontWeight: FontWeight.bold,

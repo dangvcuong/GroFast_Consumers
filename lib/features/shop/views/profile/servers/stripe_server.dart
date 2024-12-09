@@ -4,6 +4,7 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
 import 'package:grofast_consumers/features/shop/views/profile/keys.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:grofast_consumers/features/shop/views/profile/widgets/WalletTopUpScreen.dart';
 
 class StripeServer {
   StripeServer._();
@@ -11,10 +12,11 @@ class StripeServer {
   static final StripeServer instance = StripeServer._();
   final Login_Controller login_controller = Login_Controller();
 
-  Future<void> makePayment(
-      {required String userId,
-      required int amount,
-      required BuildContext context}) async {
+  Future<void> makePayment({
+    required String userId,
+    required int amount,
+    required BuildContext context,
+  }) async {
     try {
       String? paymentIntentClientSecret =
           await _createPaymentIntent(amount, "vnd");
@@ -27,10 +29,48 @@ class StripeServer {
         ),
       );
 
-      // Gọi _processPayment và truyền context
-      await _processPayment(userId: userId, amount: amount, context: context);
+      // Hiển thị thanh toán sheet
+      await Stripe.instance.presentPaymentSheet();
+
+      // Sau khi thanh toán thành công, lưu thông tin vào Firebase
+      await _savePaymentInfo(userId, paymentIntentClientSecret,
+          amount); // Lưu thông tin thanh toán
+
+      // Cập nhật số dư người dùng
+      await _updateBalance(userId, amount);
+
+      // Hiển thị thông báo thanh toán thành công
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Thanh toán thành công!',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Sau khi thanh toán thành công, load lại trang bằng Navigator.pushReplacement
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              const WalletTopUpScreen(), // Thay thế YourCurrentPage bằng widget hiện tại của bạn
+        ),
+      );
     } catch (e) {
       print(e);
+
+      // Hiển thị thông báo lỗi nếu có sự cố trong quá trình thanh toán
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Có lỗi xảy ra trong quá trình thanh toán.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -63,35 +103,29 @@ class StripeServer {
     }
   }
 
-  Future<void> _processPayment(
-      {required String userId,
-      required int amount,
-      required BuildContext context}) async {
+  Future<void> _savePaymentInfo(
+      String userId, String paymentIntentClientSecret, int amount) async {
     try {
-      await Stripe.instance.presentPaymentSheet();
+      final databaseRef =
+          FirebaseDatabase.instance.ref("paymentinfo/$userId/paymenthistory");
 
-      // Nếu thanh toán thành công, cập nhật số dư
-      await _updateBalance(userId, amount);
+      // Tạo ID duy nhất cho mỗi giao dịch
+      String transactionId = DateTime.now().millisecondsSinceEpoch.toString();
 
-      // Hiển thị thông báo thanh toán thành công
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Thanh toán thành công!',
-              style: TextStyle(color: Colors.white)),
-          backgroundColor: Colors.green,
-        ),
-      );
+      // Lưu thông tin thanh toán vào Firebase dưới dạng một giao dịch mới
+      Map<String, dynamic> paymentData = {
+        "amount": _calculateAmount(amount), // Số tiền thanh toán
+        "status": "Thành công", // Trạng thái thanh toán
+        "created_at": DateTime.now().toIso8601String(), // Thời gian thanh toán
+        "paymentIntentClientSecret":
+            paymentIntentClientSecret, // Lưu client secret của payment intent
+      };
+
+      // Lưu vào Firebase dưới transactionId duy nhất
+      await databaseRef.child(transactionId).set(paymentData);
+      print("Payment information saved successfully.");
     } catch (e) {
-      print(e);
-
-      // Hiển thị thông báo lỗi nếu có sự cố trong quá trình thanh toán
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Có lỗi xảy ra trong quá trình thanh toán.',
-              style: TextStyle(color: Colors.white)),
-          backgroundColor: Colors.red,
-        ),
-      );
+      print("Failed to save payment information: $e");
     }
   }
 

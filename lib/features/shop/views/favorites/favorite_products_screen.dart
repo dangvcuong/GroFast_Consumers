@@ -20,6 +20,7 @@ class FavoriteProductsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        automaticallyImplyLeading: false, // Ẩn nút quay lại
         backgroundColor: Colors.blue, // Màu nền của AppBar
         title: const Text(
           "Sản phẩm yêu thích", // Tiêu đề
