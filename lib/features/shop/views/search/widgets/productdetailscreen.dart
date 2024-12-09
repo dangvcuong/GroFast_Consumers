@@ -74,7 +74,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
-  // Hàm lấy đánh giá từ Firebase Realtime Database
   Future<void> _getReviews() async {
     DatabaseReference reviewRef =
         FirebaseDatabase.instance.ref('reviews/${widget.product.id}');
@@ -88,14 +87,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           snapshot.value as Map<dynamic, dynamic>;
 
       reviewsData.forEach((key, value) {
-        fetchedReviews.add({
-          'rating': value['rating'],
-          'review': value['review'],
-          'userName': value['userName'],
-          'userPhotoURL': value['userPhotoURL'],
-          'userId': value['userId'],
-          'timestamp': value['timestamp'],
-        });
+        // Kiểm tra trạng thái 'status' là "đã xác nhận"
+        if (value['status'] == 'đã xác nhận') {
+          fetchedReviews.add({
+            'rating': value['rating'],
+            'review': value['review'],
+            'userName': value['userName'],
+            'userPhotoURL': value['userPhotoURL'],
+            'userId': value['userId'],
+            'timestamp': value['timestamp'],
+          });
+        }
       });
 
       setState(() {
