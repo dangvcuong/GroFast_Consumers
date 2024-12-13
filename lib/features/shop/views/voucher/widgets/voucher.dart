@@ -1,32 +1,43 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class Voucher {
-  final String discount;
-  final String name;
-  final String ngayHetHan;
-  final String ngayTao;
-  final String soluong;
-  final String status;
+  String name;
+  String discount;
+  String ngayHetHan;
+  String ngayTao;
+  String soluong;
+  String status;
 
   Voucher({
-    required this.discount,
     required this.name,
+    required this.discount,
     required this.ngayHetHan,
     required this.ngayTao,
     required this.soluong,
     required this.status,
   });
 
-  // Sử dụng DocumentSnapshot để lấy dữ liệu từ Firestore
-  factory Voucher.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  // Convert Voucher object to a map (for Firestore or API purposes)
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'discount': discount,
+      'ngayHetHan': ngayHetHan,
+      'ngayTao': ngayTao,
+      'soluong': soluong,
+      'status': status,
+    };
+  }
+
+  // Factory constructor to create Voucher object from Firestore data (or JSON)
+  factory Voucher.fromMap(Map<String, dynamic> map) {
     return Voucher(
-      discount: data['discount'] ?? '',
-      name: data['name'] ?? '',
-      ngayHetHan: data['ngayHetHan'] ?? '',
-      ngayTao: data['ngayTao'] ?? '',
-      soluong: data['soluong'] ?? '',
-      status: data['status'] ?? '',
+      name: map['name'] ?? '',
+      discount: map['discount'] ?? '',
+      ngayHetHan: map['ngayHetHan'] ?? '',
+      ngayTao: map['ngayTao'] ?? '',
+      soluong: map['soluong'] ?? '',
+      status: map['status'] ?? '',
     );
   }
+
+
 }

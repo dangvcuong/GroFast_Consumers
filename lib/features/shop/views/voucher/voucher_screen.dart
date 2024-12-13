@@ -1,14 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
 import 'package:grofast_consumers/features/navigation/btn_navigation.dart';
-import 'package:grofast_consumers/features/shop/views/home/home_screen.dart';
+import 'package:grofast_consumers/features/shop/views/voucher/widgets/voucher.dart';
 import 'package:grofast_consumers/features/shop/views/voucher/widgets/voucher_list_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:grofast_consumers/features/shop/views/voucher/widgets/voucher.dart';
 
 
 class VoucherScreen extends StatefulWidget {
@@ -21,40 +19,97 @@ class VoucherScreen extends StatefulWidget {
 class _VoucherScreenState extends State<VoucherScreen> {
   StreamController<int> selected = StreamController<int>.broadcast();
   List<String> rewards = [];
-  List<String> voucherList = [];
+  List<Voucher> voucherList = [];
   bool isSpinning = false;
 
   @override
   void initState() {
     super.initState();
     isSpinning = false;
-    fetchVouchers(); // Lấy dữ liệu vouchers từ Firebase
+    fetchVouchers();
   }
 
   Future<void> fetchVouchers() async {
     DatabaseReference ref = FirebaseDatabase.instance.ref().child('vouchers');
-    DatabaseEvent event = await ref.once();  // Lấy đối tượng DatabaseEvent
-    DataSnapshot snapshot = event.snapshot;  // Lấy DataSnapshot từ DatabaseEvent
+    DatabaseEvent event = await ref.once();
+    DataSnapshot snapshot = event.snapshot;
 
     if (snapshot.exists) {
-      // Kiểm tra nếu snapshot.value là kiểu Map
+      print("Snapshot value: ${snapshot.value}"); // Kiểm tra dữ liệu từ Firebase
+
       if (snapshot.value is Map) {
-        // Ép kiểu snapshot.value thành Map nếu đúng
         Map<dynamic, dynamic> vouchersData = Map.from(snapshot.value as Map);
         setState(() {
-          // Lấy danh sách tên voucher từ dữ liệu
-          rewards = vouchersData.values.map((voucher) => voucher['name'].toString()).toList();
+          voucherList = vouchersData.values
+              .where((voucherData) => voucherData is Map) // Chỉ xử lý nếu voucherData là Map
+              .map((voucherData) => Voucher.fromMap(Map.from(voucherData)))
+              .toList();
+          rewards = voucherList.map((voucher) => voucher.name).toList();
         });
       } else {
-        // Xử lý nếu dữ liệu không phải kiểu Map (có thể là danh sách, chuỗi, v.v.)
         print("Dữ liệu không phải kiểu Map");
       }
+    } else {
+      print("Snapshot không có dữ liệu");
     }
   }
 
 
   void spinWheel() async {
     if (isSpinning) return;
+
+    bool autoCloseDialog = true; // Biến để kiểm tra tự động đóng popup
+
+    // String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    //
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    // String? lastSpindate = prefs.getString('lastSpinDate');
+    //
+    // // Kiểm tra nếu đã quay trong ngày hôm nay
+    // if (lastSpindate != null && lastSpindate == today) {
+    //   // Hiển thị popup thông báo
+    //   showDialog(
+    //     context: context,
+    //     barrierDismissible: false,
+    //     // Không cho phép đóng bằng cách nhấn ngoài popup
+    //     builder: (BuildContext context) {
+    //       // Khởi tạo một Timer để tự động đóng popup sau 3 giây
+    //       Timer? autoCloseTimer;
+    //
+    //       autoCloseTimer = Timer(Duration(seconds: 3), () {
+    //         if (autoCloseDialog) {
+    //           Navigator.of(context)
+    //               .pop(); // Đóng popup sau 3 giây nếu không có hành động từ người dùng
+    //         }
+    //       });
+    //
+    //       return AlertDialog(
+    //         title: Row(
+    //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //           children: [
+    //             Text("Thông báo!",style: TextStyle(color: Colors.red,fontSize: 20,fontWeight: FontWeight.bold),),
+    //             Positioned(
+    //               top: -10,
+    //               right: -17,
+    //               child: IconButton(
+    //                 icon: const Icon(Icons.close),
+    //                 onPressed: () {
+    //                   autoCloseDialog = false; // Hủy tự động đóng khi nhấn icon
+    //                   Navigator.of(context)
+    //                       .pop(); // Đóng popup khi nhấn vào icon
+    //                   autoCloseTimer?.cancel();
+    //                 },
+    //               ),
+    //             ),
+    //           ],
+    //         ),
+    //         content: Text("Bạn đã hết lượt quay. Hãy đợi đến ngày mai!",style: TextStyle(fontSize: 15),),
+    //       );
+    //     },
+    //   );
+    //   return;
+    // }
+    // await prefs.setString('lastSpinDate', today);
 
     setState(() {
       isSpinning = true;
@@ -63,17 +118,35 @@ class _VoucherScreenState extends State<VoucherScreen> {
     int randomIndex = Fortune.randomInt(0, rewards.length);
     selected.add(randomIndex);
 
-    String wonReward = rewards[randomIndex];
+    Voucher wonVoucher = voucherList[randomIndex];
+    String wonReward = wonVoucher.name;
 
     if (wonReward != "Mất lượt") {
-      // Thêm phần thưởng vào danh sách voucher
-      voucherList.add(wonReward);
-      // Lưu voucher vào SharedPreferences
+
+      int soluongInt = int.parse(wonVoucher.soluong);  // Chuyển chuỗi thành số
+      soluongInt -= 1;  // Thực hiện phép trừ
+
+      wonVoucher.soluong = soluongInt.toString();  // Chuyển số thành chuỗi và gán lại
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setStringList('voucherList', voucherList);
+      await prefs.setString(
+          'wonVoucher',
+          '${wonVoucher.name},${wonVoucher.discount},${wonVoucher.ngayHetHan},${wonVoucher.ngayTao},${wonVoucher.soluong},${wonVoucher.status}'
+      );
+
+
+      // Cập nhật dữ liệu vào Firebase
+      DatabaseReference ref = FirebaseDatabase.instance.ref().child('vouchers');
+      await ref.child(wonVoucher.name).update({
+        'soluong': wonVoucher.soluong,  // Cập nhật soluong dưới dạng String
+      });
     }
 
-    bool autoCloseDialog = true; // Biến để kiểm tra tự động đóng popup
+
+    setState(() {
+      isSpinning = false;
+    });
+    bool isNavigating =
+        false; // Trạng thái để kiểm tra xem có đang điều hướng hay không
 
     Future.delayed(const Duration(seconds: 4), () {
       setState(() {
@@ -117,7 +190,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
 
         // Đóng popup sau 3 giây nếu không nhấn icon đóng
         Future.delayed(const Duration(seconds: 3), () {
-          if (autoCloseDialog) {
+          if (autoCloseDialog && !isNavigating) {
             Navigator.of(context).pop(); // Đóng popup tự động nếu không nhấn icon đóng
           }
         });
@@ -156,7 +229,10 @@ class _VoucherScreenState extends State<VoucherScreen> {
                 TextButton(
                   child: const Text("Xem Voucher"),
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    isNavigating =
+                        true; // Đánh dấu bắt đầu quá trình điều hướng
+                    Navigator.of(context)
+                        .pop(); // Đóng popup trước khi chuyển màn hình
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -170,8 +246,10 @@ class _VoucherScreenState extends State<VoucherScreen> {
             );
           },
         );
+
+        // Đóng popup sau 3 giây nếu không nhấn icon đóng
         Future.delayed(const Duration(seconds: 3), () {
-          if (autoCloseDialog) {
+          if (autoCloseDialog && !isNavigating) {
             Navigator.of(context).pop(); // Đóng popup tự động nếu không nhấn icon đóng
           }
         });
@@ -213,60 +291,71 @@ class _VoucherScreenState extends State<VoucherScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (context) => const Btn_Navigatin(),
-                        ),
+                  AbsorbPointer(
+                    absorbing: isSpinning,
+                    // Vô hiệu hóa khi vòng quay đang diễn ra
+                    child: SizedBox(
+                      width: 130, // Đặt chiều rộng của nút tại đây (ví dụ 200)
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(
+                              builder: (context) => const Btn_Navigatin(),
+                            ),
                             (Route<dynamic> route) => false,
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.green, width: 2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      elevation: 5,
-                    ).copyWith(
-                      backgroundColor: WidgetStateProperty.resolveWith((states) {
-                        if (states.contains(WidgetState.pressed)) {
-                          return Colors.red;
-                        }
-                        return Colors.blue;
-                      }),
-                    ),
-                    child: const Text("Trang chủ"),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              VoucherListScreen(vouchers: voucherList),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.green, width: 2),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ).copyWith(
+                          backgroundColor:
+                              WidgetStateProperty.resolveWith((states) {
+                            if (states.contains(WidgetState.pressed)) {
+                              return Colors.red;
+                            }
+                            return Colors.blue;
+                          }),
                         ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.green, width: 2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        child: const Text("Trang chủ"),
                       ),
-                      elevation: 5,
-                    ).copyWith(
-                      backgroundColor: WidgetStateProperty.resolveWith((states) {
-                        if (states.contains(WidgetState.pressed)) {
-                          return Colors.red;
-                        }
-                        return Colors.blue;
-                      }),
                     ),
-                    child: const Text("Xem Voucher"),
+                  ),
+                  AbsorbPointer(
+                    absorbing: isSpinning,
+                    // Vô hiệu hóa khi vòng quay đang diễn ra
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                VoucherListScreen(vouchers: voucherList),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.green, width: 2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ).copyWith(
+                        backgroundColor:
+                            WidgetStateProperty.resolveWith((states) {
+                          if (states.contains(WidgetState.pressed)) {
+                            return Colors.red;
+                          }
+                          return Colors.blue;
+                        }),
+                      ),
+                      child: const Text("Xem Voucher"),
+                    ),
                   ),
                 ],
               ),
@@ -284,25 +373,56 @@ class _VoucherScreenState extends State<VoucherScreen> {
                             width: 300,
                             decoration: BoxDecoration(
                               border: Border.all(
-                                  color: Colors.amber,
-                                  width: 8), // Border color and width
+                                color: Colors.amber,
+                                width: 8, // Border color and width
+                              ),
                               shape: BoxShape.circle,
                             ),
-                            child: FortuneWheel(
-                              animateFirst: false,
-                              selected: selected.stream,
+                            child: rewards.length > 1
+                                ? FortuneWheel(
+                                    animateFirst: false,
+                                    selected: selected.stream,
                               items: List.generate(
-                                rewards.length,
-                                    (index) => FortuneItem(
-                                  child: Text(
-                                    rewards[index],
-                                    style: const TextStyle(
-                                      color: Colors.white,
+                                      rewards.length + 1, // Thêm 1 ô
+                                      (index) {
+                                        if (index == rewards.length) {
+                                          // Ô cuối cùng là "Mất lượt"
+                                          return FortuneItem(
+                                            child: Text(
+                                              "Mất lượt",
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            style: FortuneItemStyle(
+                                              color: Color(
+                                                  0xFFFF1744), // Màu nền ô "Mất lượt"
+                                            ),
+                                          );
+                                        }
+                                        return FortuneItem(
+                                          style: FortuneItemStyle(
+                                            color: Colors.primaries[index %
+                                                Colors.primaries
+                                                    .length], // Màu sắc ngẫu nhiên
+                                          ),
+                                          child: Text(
+                                            rewards[index],
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  )
+                                : Center(
+                                    child: Text(
+                                      "Danh sách phần thưởng không đủ!",
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.red),
                                     ),
                                   ),
-                                ),
-                              ),
-                            ),
                           ),
                         ),
                       ),
@@ -331,7 +451,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
                               "Quay",
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 14,
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

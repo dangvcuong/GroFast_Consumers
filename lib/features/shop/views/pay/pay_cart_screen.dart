@@ -12,6 +12,7 @@ import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart'
 import 'package:grofast_consumers/features/shop/views/cart/providers/cart_provider.dart';
 import 'package:grofast_consumers/features/shop/views/oder/OrderSuccessScreen.dart';
 import 'package:grofast_consumers/features/shop/views/oder/oder_screen.dart';
+import 'package:grofast_consumers/features/shop/views/voucher/widgets/voucher.dart';
 import 'package:grofast_consumers/features/shop/views/voucher/widgets/voucher_list_screen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
 import 'package:intl/intl.dart';
@@ -43,7 +44,7 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
   String idProduct = '';
   String? selectedVoucher;
   double discountValue = 0;
-  List<String> vouchers = [];
+  List<Voucher> vouchers = [];
   double walletBalance = 0.0;
   @override
   void initState() {
