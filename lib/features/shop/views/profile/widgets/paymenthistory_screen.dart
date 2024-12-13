@@ -94,6 +94,13 @@ class _PaymenthistoryScreenState extends State<PaymenthistoryScreen> {
     }
   }
 
+  String maskPaymentCode(String? code) {
+    if (code == null || code.length <= 9) {
+      return code ?? ''; // Trả về chính nó nếu chuỗi nhỏ hơn hoặc bằng 8 ký tự
+    }
+    return code.substring(code.length - 9);
+  }
+
   @override
   Widget build(BuildContext context) {
     final String userId = widget.userId;
@@ -104,7 +111,7 @@ class _PaymenthistoryScreenState extends State<PaymenthistoryScreen> {
         foregroundColor: Colors.white,
         backgroundColor: Colors.blue,
         title: const Text(
-          "Lịch sử giao dịch",
+          "Lịch sử nạp tiền",
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -151,29 +158,42 @@ class _PaymenthistoryScreenState extends State<PaymenthistoryScreen> {
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16.0, vertical: 12.0),
-                  title: Text(
-                    'Số tiền: ${_formatAmount(payment["amount"])}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Thời gian: ${_formatDate(payment["created_at"])}', // Sử dụng hàm định dạng ngày giờ
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  trailing: Text(
-                    'Trạng thái: ${payment["status"]}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: payment["status"] == "Completed"
-                          ? Colors.green
-                          : Colors.red,
-                    ),
+                  title: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Mã giao dịch: ${maskPaymentCode(payment["paymentIntentClientSecret"])}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Số tiền: ${_formatAmount(payment["amount"])}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Thời gian: ${_formatDate(payment["created_at"])}', // Sử dụng hàm định dạng ngày giờ
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      Text(
+                        'Trạng thái: ${payment["status"]}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: payment["status"] == "Completed"
+                              ? Colors.green
+                              : Colors.red,
+                        ),
+                      ),
+                    ],
                   ),
                   onTap: () {
                     // You could navigate to a detail screen or perform other actions

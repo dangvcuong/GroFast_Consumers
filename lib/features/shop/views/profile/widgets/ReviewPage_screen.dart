@@ -166,6 +166,7 @@ class _ReviewPageState extends State<ReviewPage> {
       'userId': userId,
       'userName': userName,
       'userPhotoURL': userPhotoURL,
+      'status': 'Chưa xác nhận',
       'timestamp': DateTime.now().toString(),
     };
 
