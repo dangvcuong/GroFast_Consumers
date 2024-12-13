@@ -129,17 +129,24 @@ class _VoucherScreenState extends State<VoucherScreen> {
     String wonReward = wonVoucher.name;
 
     if (wonReward != "Mất lượt") {
+      int initialQuantity = int.parse(wonVoucher.soluong);
 
-      int soluongInt = int.parse(wonVoucher.soluong);  // Chuyển chuỗi thành số
-      soluongInt -= 1;  // Thực hiện phép trừ
+      int soLuong = initialQuantity - 1;
 
-      wonVoucher.soluong = soluongInt.toString();  // Chuyển số thành chuỗi và gán lại
+      int useQuanlity = initialQuantity - soLuong;
+
+      // int soluongInt = int.parse(wonVoucher.soluong);  // Chuyển chuỗi thành số
+      // soluongInt -= 1;  // Thực hiện phép trừ
+
+      wonVoucher.soluong =
+          soLuong.toString(); // Chuyển số thành chuỗi và gán lại
+
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString(
           'wonVoucher',
-          '${wonVoucher.name},${wonVoucher.discount},${wonVoucher.ngayHetHan},${wonVoucher.ngayTao},${wonVoucher.soluong},${wonVoucher.status}'
-      );
-
+          '${wonVoucher.name},${wonVoucher.discount},${wonVoucher.ngayHetHan},${wonVoucher.ngayTao},${useQuanlity},${wonVoucher.status}');
+      String? savedVoucher = prefs.getString('wonVoucher');
+      print("Vouchersave: $savedVoucher");
 
       // Cập nhật dữ liệu vào Firebase
       DatabaseReference ref = FirebaseDatabase.instance.ref().child('vouchers');

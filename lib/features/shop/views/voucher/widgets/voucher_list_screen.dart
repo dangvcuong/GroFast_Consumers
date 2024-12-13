@@ -12,41 +12,55 @@ class VoucherListScreen extends StatefulWidget {
 }
 
 class _VoucherListScreenState extends State<VoucherListScreen> {
-  late List<String> voucher=[];
-
+  late String usedQuantity = "0"; // Biến lưu số lượng đã trừ
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-
+    _loadUsedQuantity(); // Tải số lượng đã trừ từ SharedPreferences khi vào màn hình
   }
 
+  // Hàm để tải số lượng đã trừ từ SharedPreferences
+  Future<void> _loadUsedQuantity() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedUsedQuantity = prefs.getString('usedQuantity');
+    if (savedUsedQuantity != null) {
+      setState(() {
+        usedQuantity = savedUsedQuantity;
+      });
+    }
+    print('Số lượng đã trừ: $usedQuantity');
+  }
 
-  // Hàm xóa voucher khỏi danh sách
-  void _useVoucher(Voucher voucher) {
-    // Hiển thị popup thông báo
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Sử dụng thành công!"),
-          content: Text("Voucher '${voucher.name}' đã được sử dụng."),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("OK"),
-              onPressed: () {
-                // Xóa voucher khỏi danh sách và cập nhật giao diện
-                setState(() {
-                  widget.vouchers.remove(voucher);
-                });
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        );
-      },
+  // Hàm sử dụng voucher
+  void _useVoucher(Voucher voucher) async {
+    // Hiển thị SnackBar thông báo voucher đã được sử dụng
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Voucher '${voucher.name}' đã được sử dụng thành công!"),
+        duration: const Duration(seconds: 2),
+      ),
     );
+
+    // Cập nhật lại số lượng đã trừ (ví dụ: tăng giảm số lượng hoặc lưu lại số lượng đã trừ)
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int currentUsedQuantity = int.parse(usedQuantity);
+    currentUsedQuantity++; // Tăng số lượng đã trừ
+    await prefs.setString('usedQuantity', currentUsedQuantity.toString());
+
+    // Cập nhật lại số lượng đã trừ
+    setState(() {
+      usedQuantity = currentUsedQuantity.toString();
+    });
+
+    // Xóa voucher khỏi danh sách và cập nhật giao diện
+    setState(() {
+      widget.vouchers.remove(voucher);
+    });
+
+    // Cập nhật dữ liệu vào Firebase (nếu cần)
+    // DatabaseReference ref = FirebaseDatabase.instance.ref().child('vouchers');
+    // await ref.child(voucher.id).update({'soluong': voucher.soluong});
   }
 
   @override
@@ -82,6 +96,8 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
                   Text('Ngày tạo: ${voucher.ngayTao}'),
                   Text('Số lượng: ${voucher.soluong}'),
                   Text('Trạng thái: ${voucher.status}'),
+                  // Hiển thị số lượng đã trừ
+                  Text('Số lượng đã trừ: $usedQuantity'),
                 ],
               ),
               isThreeLine: true,
