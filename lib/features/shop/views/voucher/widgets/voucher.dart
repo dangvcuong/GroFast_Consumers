@@ -1,4 +1,5 @@
 class Voucher {
+  String id = "";
   String name;
   String discount;
   String ngayHetHan;

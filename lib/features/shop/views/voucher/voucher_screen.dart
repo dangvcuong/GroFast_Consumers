@@ -40,10 +40,17 @@ class _VoucherScreenState extends State<VoucherScreen> {
       if (snapshot.value is Map) {
         Map<dynamic, dynamic> vouchersData = Map.from(snapshot.value as Map);
         setState(() {
+          print(vouchersData);
           voucherList = vouchersData.values
               .where((voucherData) => voucherData is Map) // Chỉ xử lý nếu voucherData là Map
               .map((voucherData) => Voucher.fromMap(Map.from(voucherData)))
               .toList();
+          voucherList = voucherList.asMap().entries.map((entry){
+            var index = entry.key;
+            Voucher voucher = entry.value;
+            voucher.id = vouchersData.entries.toList()[index].key;
+            return voucher;
+          }).toList();
           rewards = voucherList.map((voucher) => voucher.name).toList();
         });
       } else {
@@ -136,9 +143,10 @@ class _VoucherScreenState extends State<VoucherScreen> {
 
       // Cập nhật dữ liệu vào Firebase
       DatabaseReference ref = FirebaseDatabase.instance.ref().child('vouchers');
-      await ref.child(wonVoucher.name).update({
+      await ref.child(wonVoucher.id).update({
         'soluong': wonVoucher.soluong,  // Cập nhật soluong dưới dạng String
       });
+      print("idddd: ${wonVoucher.id}");
     }
 
 
