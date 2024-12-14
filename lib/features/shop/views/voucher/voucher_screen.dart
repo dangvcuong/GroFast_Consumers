@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
@@ -7,7 +8,6 @@ import 'package:grofast_consumers/features/navigation/btn_navigation.dart';
 import 'package:grofast_consumers/features/shop/views/voucher/widgets/voucher.dart';
 import 'package:grofast_consumers/features/shop/views/voucher/widgets/voucher_list_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 
 class VoucherScreen extends StatefulWidget {
   const VoucherScreen({super.key});
@@ -35,17 +35,18 @@ class _VoucherScreenState extends State<VoucherScreen> {
     DataSnapshot snapshot = event.snapshot;
 
     if (snapshot.exists) {
-      print("Snapshot value: ${snapshot.value}"); // Kiểm tra dữ liệu từ Firebase
+      print(
+          "Snapshot value: ${snapshot.value}"); // Kiểm tra dữ liệu từ Firebase
 
       if (snapshot.value is Map) {
         Map<dynamic, dynamic> vouchersData = Map.from(snapshot.value as Map);
         setState(() {
           print(vouchersData);
           voucherList = vouchersData.values
-              .where((voucherData) => voucherData is Map) // Chỉ xử lý nếu voucherData là Map
+              .whereType<Map>() // Chỉ xử lý nếu voucherData là Map
               .map((voucherData) => Voucher.fromMap(Map.from(voucherData)))
               .toList();
-          voucherList = voucherList.asMap().entries.map((entry){
+          voucherList = voucherList.asMap().entries.map((entry) {
             var index = entry.key;
             Voucher voucher = entry.value;
             voucher.id = vouchersData.entries.toList()[index].key;
@@ -61,62 +62,35 @@ class _VoucherScreenState extends State<VoucherScreen> {
     }
   }
 
+  void saveVoucherForUser(Voucher wonVoucher) async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      String uid = user.uid; // Lấy uid của user hiện tại
+
+      // Tạo reference đến vị trí lưu voucher cho user
+      DatabaseReference ref = FirebaseDatabase.instance.ref();
+
+      // Tạo một key duy nhất cho mỗi voucher mới
+      await ref.child('voucherUser/$uid/').push().set({
+        'name': wonVoucher.name,
+        'discount': wonVoucher.discount,
+        'ngayHetHan': wonVoucher.ngayHetHan,
+        'ngayTao': wonVoucher.ngayTao,
+        'status': wonVoucher.status,
+        'quantity': 1, // Số lượng mặc định khi quay được
+      });
+
+      print("Voucher mới đã được thêm thành công cho user: $uid");
+    } else {
+      print("User chưa đăng nhập.");
+    }
+  }
 
   void spinWheel() async {
     if (isSpinning) return;
 
     bool autoCloseDialog = true; // Biến để kiểm tra tự động đóng popup
-
-    // String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    //
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
-    // String? lastSpindate = prefs.getString('lastSpinDate');
-    //
-    // // Kiểm tra nếu đã quay trong ngày hôm nay
-    // if (lastSpindate != null && lastSpindate == today) {
-    //   // Hiển thị popup thông báo
-    //   showDialog(
-    //     context: context,
-    //     barrierDismissible: false,
-    //     // Không cho phép đóng bằng cách nhấn ngoài popup
-    //     builder: (BuildContext context) {
-    //       // Khởi tạo một Timer để tự động đóng popup sau 3 giây
-    //       Timer? autoCloseTimer;
-    //
-    //       autoCloseTimer = Timer(Duration(seconds: 3), () {
-    //         if (autoCloseDialog) {
-    //           Navigator.of(context)
-    //               .pop(); // Đóng popup sau 3 giây nếu không có hành động từ người dùng
-    //         }
-    //       });
-    //
-    //       return AlertDialog(
-    //         title: Row(
-    //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    //           children: [
-    //             Text("Thông báo!",style: TextStyle(color: Colors.red,fontSize: 20,fontWeight: FontWeight.bold),),
-    //             Positioned(
-    //               top: -10,
-    //               right: -17,
-    //               child: IconButton(
-    //                 icon: const Icon(Icons.close),
-    //                 onPressed: () {
-    //                   autoCloseDialog = false; // Hủy tự động đóng khi nhấn icon
-    //                   Navigator.of(context)
-    //                       .pop(); // Đóng popup khi nhấn vào icon
-    //                   autoCloseTimer?.cancel();
-    //                 },
-    //               ),
-    //             ),
-    //           ],
-    //         ),
-    //         content: Text("Bạn đã hết lượt quay. Hãy đợi đến ngày mai!",style: TextStyle(fontSize: 15),),
-    //       );
-    //     },
-    //   );
-    //   return;
-    // }
-    // await prefs.setString('lastSpinDate', today);
 
     setState(() {
       isSpinning = true;
@@ -142,20 +116,19 @@ class _VoucherScreenState extends State<VoucherScreen> {
           soLuong.toString(); // Chuyển số thành chuỗi và gán lại
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-          'wonVoucher',
-          '${wonVoucher.name},${wonVoucher.discount},${wonVoucher.ngayHetHan},${wonVoucher.ngayTao},${useQuanlity},${wonVoucher.status}');
+      await prefs.setString('wonVoucher',
+          '${wonVoucher.name},${wonVoucher.discount},${wonVoucher.ngayHetHan},${wonVoucher.ngayTao},$useQuanlity,${wonVoucher.status}');
       String? savedVoucher = prefs.getString('wonVoucher');
       print("Vouchersave: $savedVoucher");
 
       // Cập nhật dữ liệu vào Firebase
       DatabaseReference ref = FirebaseDatabase.instance.ref().child('vouchers');
       await ref.child(wonVoucher.id).update({
-        'soluong': wonVoucher.soluong,  // Cập nhật soluong dưới dạng String
+        'soluong': wonVoucher.soluong, // Cập nhật soluong dưới dạng String
       });
+      saveVoucherForUser(wonVoucher);
       print("idddd: ${wonVoucher.id}");
     }
-
 
     setState(() {
       isSpinning = false;
@@ -191,8 +164,10 @@ class _VoucherScreenState extends State<VoucherScreen> {
                     child: IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: () {
-                        autoCloseDialog = false; // Hủy tự động đóng khi nhấn icon
-                        Navigator.of(context).pop(); // Đóng popup khi nhấn vào icon
+                        autoCloseDialog =
+                            false; // Hủy tự động đóng khi nhấn icon
+                        Navigator.of(context)
+                            .pop(); // Đóng popup khi nhấn vào icon
                       },
                     ),
                   ),
@@ -206,7 +181,8 @@ class _VoucherScreenState extends State<VoucherScreen> {
         // Đóng popup sau 3 giây nếu không nhấn icon đóng
         Future.delayed(const Duration(seconds: 3), () {
           if (autoCloseDialog && !isNavigating) {
-            Navigator.of(context).pop(); // Đóng popup tự động nếu không nhấn icon đóng
+            Navigator.of(context)
+                .pop(); // Đóng popup tự động nếu không nhấn icon đóng
           }
         });
       } else {
@@ -232,8 +208,10 @@ class _VoucherScreenState extends State<VoucherScreen> {
                     child: IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: () {
-                        autoCloseDialog = false; // Hủy tự động đóng khi nhấn icon
-                        Navigator.of(context).pop(); // Đóng popup khi nhấn vào icon
+                        autoCloseDialog =
+                            false; // Hủy tự động đóng khi nhấn icon
+                        Navigator.of(context)
+                            .pop(); // Đóng popup khi nhấn vào icon
                       },
                     ),
                   ),
@@ -251,8 +229,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            VoucherListScreen(vouchers: voucherList),
+                        builder: (context) => const VoucherListScreen(),
                       ),
                     );
                   },
@@ -265,7 +242,8 @@ class _VoucherScreenState extends State<VoucherScreen> {
         // Đóng popup sau 3 giây nếu không nhấn icon đóng
         Future.delayed(const Duration(seconds: 3), () {
           if (autoCloseDialog && !isNavigating) {
-            Navigator.of(context).pop(); // Đóng popup tự động nếu không nhấn icon đóng
+            Navigator.of(context)
+                .pop(); // Đóng popup tự động nếu không nhấn icon đóng
           }
         });
       }
@@ -348,8 +326,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                VoucherListScreen(vouchers: voucherList),
+                            builder: (context) => const VoucherListScreen(),
                           ),
                         );
                       },
@@ -397,15 +374,15 @@ class _VoucherScreenState extends State<VoucherScreen> {
                                 ? FortuneWheel(
                                     animateFirst: false,
                                     selected: selected.stream,
-                              items: List.generate(
+                                    items: List.generate(
                                       rewards.length + 1, // Thêm 1 ô
                                       (index) {
                                         if (index == rewards.length) {
                                           // Ô cuối cùng là "Mất lượt"
-                                          return FortuneItem(
+                                          return const FortuneItem(
                                             child: Text(
                                               "Mất lượt",
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 color: Colors.white,
                                               ),
                                             ),
@@ -431,7 +408,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
                                       },
                                     ),
                                   )
-                                : Center(
+                                : const Center(
                                     child: Text(
                                       "Danh sách phần thưởng không đủ!",
                                       style: TextStyle(

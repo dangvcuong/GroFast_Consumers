@@ -9,6 +9,7 @@ import 'package:grofast_consumers/features/shop/models/order_model.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/views/oder/oder_screen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
+import 'package:grofast_consumers/features/shop/views/voucher/widgets/voucher_list_screen.dart';
 import 'package:intl/intl.dart';
 
 import '../oder/OrderSuccessScreen.dart';
@@ -40,6 +41,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
   double walletBalance = 0.0;
   final Login_Controller loginController = Login_Controller();
   late int soluong;
+  String? selectedVoucher;
+  String? nameVoucher;
+  String? giamgia;
   @override
   void initState() {
     super.initState();
@@ -63,6 +67,54 @@ class _PaymentScreenState extends State<PaymentScreen> {
       _selectedShippingOption = option;
       _updateTotal();
     });
+  }
+
+  Future<void> _selectVoucher() async {
+    final selectedVoucherData = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const VoucherListScreen()),
+    );
+
+    print("Voucher đã chọn: $selectedVoucherData");
+
+    if (selectedVoucherData != null && selectedVoucherData is Map) {
+      // Kiểm tra chắc chắn rằng selectedVoucherData là một Map
+      print("Tên Voucher: ${selectedVoucherData['name']}");
+      nameVoucher = selectedVoucherData['name'];
+      var discount = selectedVoucherData['discount'];
+      giamgia = selectedVoucherData['discount'];
+      print("Kiểu dữ liệu của giảm giá: ${discount.runtimeType}");
+
+      if (discount == null) {
+        print("Giảm giá không hợp lệ");
+        return; // Trả về nếu không có giá trị giảm giá hợp lệ
+      }
+
+      // Chuyển đổi discount thành kiểu số nếu cần thiết
+      if (discount is String) {
+        discount = double.tryParse(discount) ?? 0; // Chuyển đổi chuỗi thành số
+      }
+
+      // Kiểm tra nếu discount là kiểu số hợp lệ
+      if (discount is num) {
+        print("Giảm giá: $discount");
+
+        double discountValue =
+            discount / 100 * total; // Áp dụng giảm giá vào tổng tiền
+
+        setState(() {
+          selectedVoucher = selectedVoucherData['name']; // Cập nhật tên voucher
+          total = total - discountValue; // Cập nhật tổng tiền
+        });
+
+        print("Giá trị giảm giá: $discountValue");
+        print("Tổng tiền sau khi giảm: $total");
+      } else {
+        print("Giảm giá không phải là số hợp lệ");
+      }
+    } else {
+      print("Dữ liệu voucher không hợp lệ");
+    }
   }
 
   Future<double> _geBalance() async {
@@ -98,16 +150,33 @@ class _PaymentScreenState extends State<PaymentScreen> {
       totalAmount = widget.products.fold(0, (sum, item) {
         return sum + (int.parse(item.price.toString()) * widget.quantity);
       });
+      double giam = double.tryParse(giamgia.toString()) ?? 0.0;
       if (_selectedPaymentMethod == 2) {
         // Kiểm tra nếu ví đủ tiền (số dư ví + phí giao hàng)
-        if (walletBalance >= totalAmount + shippingFee) {
+        if (walletBalance >= total) {
           total = 0.0; // Nếu ví đủ tiền, tổng cộng là 0
         } else {
           loginController.ThongBao(context, "Số dư ví của bạn không đủ");
+          if (giam == 0) {
+            // Nếu thanh toán bằng tiền mặt
+            total = totalAmount + shippingFee;
+          } else {
+            double tong = totalAmount + shippingFee;
+            double giamgia = (totalAmount + shippingFee) * giam / 100;
+            total = tong - giamgia;
+          }
         }
       } else {
-        // Nếu thanh toán bằng tiền mặt
-        total = totalAmount + shippingFee;
+        if (giam == 0) {
+          total = totalAmount + shippingFee;
+          print("Gia chua giam: $total");
+        } else {
+          double tong = totalAmount + shippingFee;
+          double giamgia = (totalAmount + shippingFee) * giam / 100;
+          total = tong - giamgia;
+          // print(
+          //     "Gia da giam: $total, Gia tong san pham: ${totalAmount + shippingFee}, Giam: $giamgia");
+        }
       }
     });
   }
@@ -474,10 +543,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
               setState(() {
                 _selectedPaymentMethod = value!;
               });
-              if (_selectedPaymentMethod == 1) {
-                // Nếu số dư ví đủ, không cần thanh toán thêm
-                total = totalAmount + shippingFee;
-              }
             },
           ),
         ),
@@ -546,18 +611,31 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   Widget _buildDiscountSection() {
     return GestureDetector(
-      onTap: () {},
-      child: const Row(
+      onTap: () {
+        _selectVoucher(); // Chọn voucher khi nhấn vào
+      },
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              Icon(Icons.local_offer, color: Colors.grey),
-              SizedBox(width: 8.0),
-              Text('Áp dụng mã ưu đãi'),
+              const Icon(Icons.local_offer, color: Colors.grey),
+              const SizedBox(width: 8.0),
+              Text(
+                nameVoucher?.isEmpty ?? true
+                    ? 'Áp dụng mã ưu đãi'
+                    : 'Áp dụng mã: $nameVoucher', // Nếu nameVoucher không rỗng, hiển thị tên voucher
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  letterSpacing: 1.0,
+                  height: 1.5,
+                ),
+              )
             ],
           ),
-          Icon(Icons.arrow_forward_ios, size: 16),
+          const Icon(Icons.arrow_forward_ios, size: 16),
         ],
       ),
     );

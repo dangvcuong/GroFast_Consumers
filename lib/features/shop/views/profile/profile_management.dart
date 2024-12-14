@@ -191,11 +191,18 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                               ),
                               Text(
                                 isBalanceVisible
-                                    ? formatter.format(currentUser!.balance)
-                                    : '***', // Hiển thị số dư hoặc ***
+                                    ? (currentUser?.balance != null &&
+                                            currentUser!.balance.isFinite
+                                        ? formatter.format(currentUser!
+                                            .balance) // Sử dụng số dư nếu hợp lệ
+                                        : '0₫') // Hiển thị 0₫ nếu balance là null hoặc không hợp lệ
+                                    : '***', // Hiển thị *** khi balance không hiển thị
                                 style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 15),
-                              ),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              )
+
                               // Khoảng cách giữa text và icon
                             ],
                           ),

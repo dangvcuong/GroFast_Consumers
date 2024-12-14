@@ -1,66 +1,99 @@
 import 'package:flutter/material.dart';
-import 'package:grofast_consumers/features/shop/views/voucher/widgets/voucher.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class VoucherListScreen extends StatefulWidget {
-  final List<Voucher> vouchers;
-
-  const VoucherListScreen({super.key, required this.vouchers});
+  const VoucherListScreen({super.key});
 
   @override
   _VoucherListScreenState createState() => _VoucherListScreenState();
 }
 
 class _VoucherListScreenState extends State<VoucherListScreen> {
-  late String usedQuantity = "0"; // Biến lưu số lượng đã trừ
+  List<Map<String, dynamic>> vouchers = []; // Danh sách voucher từ Firebase
 
   @override
   void initState() {
     super.initState();
-    _loadUsedQuantity(); // Tải số lượng đã trừ từ SharedPreferences khi vào màn hình
+    _fetchVouchers(); // Gọi hàm lấy danh sách voucher
   }
 
-  // Hàm để tải số lượng đã trừ từ SharedPreferences
-  Future<void> _loadUsedQuantity() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? savedUsedQuantity = prefs.getString('usedQuantity');
-    if (savedUsedQuantity != null) {
-      setState(() {
-        usedQuantity = savedUsedQuantity;
+  // Hàm lấy danh sách voucher từ Firebase
+  Future<void> _fetchVouchers() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      String uid = user.uid; // Lấy uid của user hiện tại
+
+      DatabaseReference ref =
+          FirebaseDatabase.instance.ref('voucherUser/$uid/');
+      ref.onValue.listen((event) {
+        final data = event.snapshot.value;
+
+        if (data != null && data is Map<dynamic, dynamic>) {
+          setState(() {
+            vouchers = data.entries.map((e) {
+              return {
+                'key': e.key, // Key duy nhất của voucher
+                ...Map<String, dynamic>.from(e.value)
+              };
+            }).toList();
+          });
+        }
       });
+    } else {
+      print("User chưa đăng nhập.");
     }
-    print('Số lượng đã trừ: $usedQuantity');
   }
 
   // Hàm sử dụng voucher
-  void _useVoucher(Voucher voucher) async {
-    // Hiển thị SnackBar thông báo voucher đã được sử dụng
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Voucher '${voucher.name}' đã được sử dụng thành công!"),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+  Future<void> _useVoucher(String voucherKey) async {
+    final user = FirebaseAuth.instance.currentUser;
 
-    // Cập nhật lại số lượng đã trừ (ví dụ: tăng giảm số lượng hoặc lưu lại số lượng đã trừ)
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    int currentUsedQuantity = int.parse(usedQuantity);
-    currentUsedQuantity++; // Tăng số lượng đã trừ
-    await prefs.setString('usedQuantity', currentUsedQuantity.toString());
+    if (user != null) {
+      String uid = user.uid;
 
-    // Cập nhật lại số lượng đã trừ
-    setState(() {
-      usedQuantity = currentUsedQuantity.toString();
-    });
+      // Tham chiếu đến voucher của người dùng
+      DatabaseReference ref =
+          FirebaseDatabase.instance.ref('voucherUser/$uid/$voucherKey');
+      DataSnapshot snapshot = await ref.get();
 
-    // Xóa voucher khỏi danh sách và cập nhật giao diện
-    setState(() {
-      widget.vouchers.remove(voucher);
-    });
+      if (snapshot.exists) {
+        // Voucher tồn tại, lấy dữ liệu
+        Map voucherData = snapshot.value as Map;
 
-    // Cập nhật dữ liệu vào Firebase (nếu cần)
-    // DatabaseReference ref = FirebaseDatabase.instance.ref().child('vouchers');
-    // await ref.child(voucher.id).update({'soluong': voucher.soluong});
+        // Kiểm tra ngày hết hạn
+        String expiryDateStr = voucherData['ngayHetHan'] ?? ''; // yyyy-MM-dd
+        if (expiryDateStr.isNotEmpty) {
+          DateTime expiryDate = DateTime.parse(expiryDateStr);
+          DateTime currentDate = DateTime.now();
+
+          // So sánh ngày hết hạn
+          if (currentDate.isBefore(expiryDate)) {
+            // Voucher còn hiệu lực, tiếp tục sử dụng
+            Navigator.pop(context, voucherData); // Trả lại voucher đã chọn
+          } else {
+            // Voucher đã hết hạn
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Voucher đã hết hạn!')),
+            );
+          }
+        } else {
+          print('Dữ liệu voucher không hợp lệ!');
+        }
+      } else {
+        // Voucher không tồn tại
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Voucher không tồn tại hoặc đã hết hạn!')),
+        );
+      }
+    } else {
+      // Người dùng chưa đăng nhập
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng đăng nhập để sử dụng voucher!')),
+      );
+    }
   }
 
   @override
@@ -77,45 +110,73 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: widget.vouchers.isEmpty
-          ? const Center(child: Text('Không có voucher nào trúng thưởng!'))
+      body: vouchers.isEmpty
+          ? const Center(child: Text('Không có voucher nào!'))
           : ListView.builder(
-        itemCount: widget.vouchers.length,
-        itemBuilder: (context, index) {
-          final voucher = widget.vouchers[index];
-          return Card(
-            margin: const EdgeInsets.all(8),
-            child: ListTile(
-              contentPadding: const EdgeInsets.all(12),
-              title: Text(voucher.name),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Giảm ship: ${voucher.discount}%'),
-                  Text('Hạn sử dụng: ${voucher.ngayHetHan}'),
-                  Text('Ngày tạo: ${voucher.ngayTao}'),
-                  Text('Số lượng: ${voucher.soluong}'),
-                  Text('Trạng thái: ${voucher.status}'),
-                  // Hiển thị số lượng đã trừ
-                  Text('Số lượng đã trừ: $usedQuantity'),
-                ],
-              ),
-              isThreeLine: true,
-              trailing: ElevatedButton(
-                onPressed: () => _useVoucher(voucher),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+              itemCount: vouchers.length,
+              itemBuilder: (context, index) {
+                final voucher = vouchers[index];
+
+                return Dismissible(
+                  key: Key(voucher['key']), // Key duy nhất để định danh item
+                  direction:
+                      DismissDirection.endToStart, // Vuốt từ phải sang trái
+                  background: Container(
+                    color: Colors.red,
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: const Icon(Icons.delete, color: Colors.white),
                   ),
-                ),
-                child: const Text("Sử dụng"),
-              ),
+                  onDismissed: (direction) async {
+                    // Thực hiện xóa voucher khỏi Firebase
+                    final user = FirebaseAuth.instance.currentUser;
+
+                    if (user != null) {
+                      String uid = user.uid;
+
+                      DatabaseReference ref = FirebaseDatabase.instance
+                          .ref('voucherUser/$uid/${voucher['key']}');
+                      await ref.remove();
+
+                      setState(() {
+                        vouchers.removeAt(index); // Xóa khỏi danh sách hiện tại
+                      });
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text('${voucher['name']} đã được xóa')),
+                      );
+                    }
+                  },
+                  child: Card(
+                    margin: const EdgeInsets.all(8),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(12),
+                      title: Text(voucher['name']),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Giảm ship: ${voucher['discount']}%'),
+                          Text('Hạn sử dụng: ${voucher['ngayHetHan']}'),
+                          Text('Trạng thái: ${voucher['status']}'),
+                        ],
+                      ),
+                      trailing: ElevatedButton(
+                        onPressed: () => _useVoucher(voucher['key']),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text("Sử dụng"),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

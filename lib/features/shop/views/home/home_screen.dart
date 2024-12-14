@@ -23,7 +23,8 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderStateMixin{
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   bool _isImageTapped = false;
   bool _isImageVisible = true;
   double _imageTop = 100;
@@ -35,11 +36,10 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
   late AnimationController _controller;
   late Animation<double> _animation;
 
-
-  String _currentLocation = "Đang lấy vị trí... ";
+  final String _currentLocation = "Đang lấy vị trí... ";
 
   final DatabaseReference _databaseRef =
-  FirebaseDatabase.instance.ref('products');
+      FirebaseDatabase.instance.ref('products');
 
   final TextEditingController _searchController = TextEditingController();
   final searchProductController = Get.put(SearchProductController());
@@ -57,10 +57,9 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
   int _currentPage = 0;
 
   final List<String> _banners = [
-    'https://img.pikbest.com/templates/20240902/food-sale-promotion-banner-for-supermarket-restaurants_10785489.jpg!w700wp',
-    'https://www.bigc.vn/files/banners/2021/may-21/resize-template-black-red-banner-web-go-2.jpg',
-    'https://img.freepik.com/free-vector/hand-drawn-fast-food-sale-banner_23-2150970571.jpg',
-    'https://channel.mediacdn.vn/2021/4/27/photo-1-1619536488295922378403.jpg',
+    'assets/images/benners/benner1.png',
+    'assets/images/benners/benner2.png',
+    'assets/images/benners/benner3.png',
   ];
 
   Timer? _timer;
@@ -69,9 +68,8 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
   void initState() {
     super.initState();
 
-
-    _controller =AnimationController(vsync: this,duration: Duration(milliseconds: 300));
-
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 300));
 
     _scheduleImageReappear();
 
@@ -103,15 +101,16 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
   }
 
   void _animateToEdge(bool moveToLeft) {
-    final screenWidth=MediaQuery.of(context).size.width;
-    final targetLeft = moveToLeft ? 0.0 : screenWidth - 100.0; // Lề trái hoặc phải
+    final screenWidth = MediaQuery.of(context).size.width;
+    final targetLeft =
+        moveToLeft ? 0.0 : screenWidth - 100.0; // Lề trái hoặc phải
     _animation = Tween<double>(begin: _imageLeft, end: targetLeft).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     )..addListener(() {
-      setState(() {
-        _imageLeft = _animation.value;
+        setState(() {
+          _imageLeft = _animation.value;
+        });
       });
-    });
 
     _controller.forward(from: 0.0);
   }
@@ -163,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
       _filteredProducts = _products.where((product) {
         final productName = removeDiacritics(product.name.toLowerCase());
         final productDescription =
-        removeDiacritics(product.description.toLowerCase());
+            removeDiacritics(product.description.toLowerCase());
         final productBrandId = product.idHang.toLowerCase();
 
         final matchesBrand = _selectedBrandId == null ||
@@ -184,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
   Future<void> _fetchAddresses() async {
     final userId = currentUser!.uid;
     final databaseRef =
-    FirebaseDatabase.instance.ref('users/$userId/addresses');
+        FirebaseDatabase.instance.ref('users/$userId/addresses');
     final DatabaseEvent event = await databaseRef.once();
     final DataSnapshot snapshot = event.snapshot;
 
@@ -202,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
         }).toList();
 
         defaultAddress = addresses.firstWhere(
-              (address) => address.status == 'on',
+          (address) => address.status == 'on',
           orElse: () => AddressModel(
               nameAddresUser: '',
               phoneAddresUser: '',
@@ -274,7 +273,7 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
                         style: TextStyle(color: Colors.grey, fontSize: 10)),
                     Text(
                       defaultAddress?.nameAddresUser != null &&
-                          defaultAddress?.addressUser != null
+                              defaultAddress?.addressUser != null
                           ? '${defaultAddress!.nameAddresUser} - ${defaultAddress!.addressUser}'
                           : 'Chưa có địa chỉ',
                       style: const TextStyle(color: Colors.black, fontSize: 14),
@@ -336,7 +335,7 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
                         children: [
                           const SizedBox(height: 16),
                           SizedBox(
-                            height: 130,
+                            height: 180,
                             child: PageView.builder(
                               controller: _pageController,
                               itemCount: _banners.length,
@@ -348,7 +347,8 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(8),
                                     image: DecorationImage(
-                                      image: NetworkImage(_banners[index]),
+                                      image: AssetImage(_banners[
+                                          index]), // Đổi từ NetworkImage sang AssetImage
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -376,7 +376,7 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
                                 },
                                 child: Container(
                                   margin:
-                                  const EdgeInsets.symmetric(horizontal: 3),
+                                      const EdgeInsets.symmetric(horizontal: 3),
                                   height: 8,
                                   width: 8,
                                   decoration: BoxDecoration(
@@ -384,7 +384,7 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
                                     color: _currentPage == index
                                         ? Colors.blue
                                         : Colors
-                                        .grey, // Màu của chấm thay đổi khi chọn
+                                            .grey, // Màu của chấm thay đổi khi chọn
                                   ),
                                 ),
                               );
@@ -402,29 +402,29 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
                           const SizedBox(height: 8),
                           _filteredProducts.isNotEmpty
                               ? SizedBox(
-                            height: 265,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _filteredProducts.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 4.0),
-                                  child: SizedBox(
-                                    width: 200,
-                                    child: ProductCard(
-                                      product: _filteredProducts[index],
-                                      userId: FirebaseAuth
-                                          .instance.currentUser!.uid,
-                                    ),
+                                  height: 265,
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: _filteredProducts.length,
+                                    itemBuilder: (context, index) {
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 4.0),
+                                        child: SizedBox(
+                                          width: 200,
+                                          child: ProductCard(
+                                            product: _filteredProducts[index],
+                                            userId: FirebaseAuth
+                                                .instance.currentUser!.uid,
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
-                                );
-                              },
-                            ),
-                          )
+                                )
                               : const Center(
-                            child: Text("Không tìm thấy sản phẩm nào"),
-                          ),
+                                  child: Text("Không tìm thấy sản phẩm nào"),
+                                ),
                           gapH20,
                           const Padding(
                             padding: EdgeInsets.only(left: 16.0),
@@ -437,35 +437,42 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
                           const SizedBox(height: 8),
                           _filteredProducts.isNotEmpty
                               ? SizedBox(
-                            height: 265,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _filteredProducts
-                                  .where((product) => (int.tryParse(product.evaluate) ?? 0) >= 4)
-                                  .length,
-                              itemBuilder: (context, index) {
-                                final highRatedProducts =
-                                _filteredProducts
-                                    .where((product) => (int.tryParse(product.evaluate) ?? 0) >= 4)
-                                    .toList();
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 4.0),
-                                  child: SizedBox(
-                                    width: 200,
-                                    child: ProductCard(
-                                      product: highRatedProducts[index],
-                                      userId: FirebaseAuth
-                                          .instance.currentUser!.uid,
-                                    ),
+                                  height: 265,
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: _filteredProducts
+                                        .where((product) =>
+                                            (int.tryParse(product.evaluate) ??
+                                                0) >=
+                                            4)
+                                        .length,
+                                    itemBuilder: (context, index) {
+                                      final highRatedProducts =
+                                          _filteredProducts
+                                              .where((product) =>
+                                                  (int.tryParse(
+                                                          product.evaluate) ??
+                                                      0) >=
+                                                  4)
+                                              .toList();
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 4.0),
+                                        child: SizedBox(
+                                          width: 200,
+                                          child: ProductCard(
+                                            product: highRatedProducts[index],
+                                            userId: FirebaseAuth
+                                                .instance.currentUser!.uid,
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
-                                );
-                              },
-                            ),
-                          )
+                                )
                               : const Center(
-                            child: Text("Không tìm thấy sản phẩm nào"),
-                          ),
+                                  child: Text("Không tìm thấy sản phẩm nào"),
+                                ),
                         ],
                       ),
                     ),
@@ -491,8 +498,7 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
                     });
                   },
                   onPanEnd: (details) {
-
-                    final isLeftSide=_imageLeft <screenWidth/2;
+                    final isLeftSide = _imageLeft < screenWidth / 2;
                     _animateToEdge(isLeftSide);
 
                     Future.delayed(const Duration(seconds: 3), () {
@@ -505,7 +511,7 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
                     setState(() {
                       _isImageTapped = true;
                     });
-                    Future.delayed(Duration(milliseconds: 200), () {
+                    Future.delayed(const Duration(milliseconds: 200), () {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -537,7 +543,7 @@ class _HomeScreenState extends State<HomeScreen>  with SingleTickerProviderState
                             _scheduleImageReappear(); // Hẹn giờ bật lại sau 1 phút
                           },
                           child: Container(
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               color: Colors.red,
                               shape: BoxShape.circle,
                             ),
