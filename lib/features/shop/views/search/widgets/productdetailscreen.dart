@@ -3,6 +3,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
+import 'package:grofast_consumers/features/authentication/login/loggin.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:grofast_consumers/features/shop/models/shopping_cart_model.dart';
@@ -31,7 +32,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   List<Product> otherProducts = [];
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
   final Login_Controller loginController = Login_Controller();
-  String userId = FirebaseAuth.instance.currentUser!.uid;
+  String? userId; // Cho phép userId là null
   String errorMessage = "";
   List<Map> reviews = []; // Danh sách lưu trữ đánh giá sản phẩm
   bool showAllReviews =
@@ -39,11 +40,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   bool isDescriptionExpanded = false;
   final ShowDialogs showdialog = ShowDialogs();
+
   @override
   void initState() {
     super.initState();
     _fetchOtherProducts();
     _getReviews();
+    _checkUserStatus(); // Kiểm tra trạng thái đăng nhập
+  }
+
+  void _checkUserStatus() {
+    setState(() {
+      userId =
+          FirebaseAuth.instance.currentUser?.uid; // Lấy userId nếu đăng nhập
+    });
   }
 
   void _fetchOtherProducts() async {
@@ -78,7 +88,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     DatabaseReference reviewRef =
         FirebaseDatabase.instance.ref('reviews/${widget.product.id}');
 
-    // Lấy dữ liệu đánh giá từ Firebase
     DataSnapshot snapshot = await reviewRef.get();
 
     if (snapshot.exists) {
@@ -87,7 +96,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           snapshot.value as Map<dynamic, dynamic>;
 
       reviewsData.forEach((key, value) {
-        // Kiểm tra trạng thái 'status' là "đã xác nhận"
         if (value['status'] == 'đã xác nhận') {
           fetchedReviews.add({
             'rating': value['rating'],
@@ -106,13 +114,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
-  // Biến để lưu số lượng sản phẩm
-
   @override
   Widget build(BuildContext context) {
-    final Login_Controller loginController = Login_Controller();
     final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
-
     final favoritesProvider = Provider.of<FavoritesProvider>(context);
 
     return Scaffold(
@@ -314,12 +318,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 physics:
                     const NeverScrollableScrollPhysics(), // Không cuộn được
                 children: otherProducts.map((product) {
-                  return ProductCard(
-                    product: product,
-                    userId: FirebaseAuth.instance.currentUser!.uid,
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ProductDetailScreen(product: product),
+                        ),
+                      );
+                    },
+                    child: ProductCard(
+                      product: product,
+                      userId: FirebaseAuth.instance.currentUser?.uid ?? '',
+                    ),
                   );
                 }).toList(),
               ),
+
               const SizedBox(height: 10),
             ],
           ),
@@ -331,103 +347,71 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Nút Thêm vào yêu thích
             Expanded(
               flex: 2,
               child: GestureDetector(
                 onTap: () async {
+                  if (userId == null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const Login()),
+                    );
+                    return;
+                  }
                   await favoritesProvider.addProductToUserHeart(
-                      userId, widget.product, context);
-                  setState(
-                      () {}); // Cập nhật lại trạng thái khi thêm/xóa yêu thích
+                      userId!, widget.product, context);
+                  setState(() {});
                 },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.favorite,
-                      color: favoritesProvider.isFavorite(widget.product)
-                          ? Colors
-                              .red // Nếu đã có trong danh sách yêu thích, đặt màu đỏ
-                          : Colors.black, // Nếu chưa có, đặt màu đen
-                    ),
-                  ],
+                child: Icon(
+                  Icons.favorite,
+                  color: userId != null &&
+                          favoritesProvider.isFavorite(widget.product)
+                      ? Colors.red
+                      : Colors.black,
                 ),
               ),
             ),
-            Container(
-              width: 1,
-              height: 40,
-              color: Colors.grey,
-            ),
-            // Nút Thêm vào giỏ hàng
             Expanded(
               flex: 2,
               child: GestureDetector(
                 onTap: () {
-                  if (int.tryParse(widget.product.quantity.toString()) == 0) {
-                    // Hiển thị thông báo nếu số lượng là 0
-                    loginController.ThongBao(context, 'Sản phẩm đã hết hàng');
-                  } else {
-                    showdialog.showAddCartDialog(
-                        context, widget.product, userId);
+                  if (userId == null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const Login()),
+                    );
+                    return;
                   }
+                  showdialog.showAddCartDialog(
+                      context, widget.product, userId!);
                 },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.shopping_cart,
-                      color:
-                          int.tryParse(widget.product.quantity.toString()) == 0
-                              ? Colors.black // Nếu hết hàng, đặt màu xám
-                              : Colors.blue,
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
+                child: const Icon(Icons.shopping_cart),
               ),
             ),
-            // Nút Thanh Toán
             Expanded(
               flex: 4,
               child: GestureDetector(
                 onTap: () {
-                  // Ngăn thao tác nếu số lượng <= 0
                   if (widget.product.quantity <= 0) {
                     loginController.ThongBao(context, 'Sản phẩm đã hết hàng');
+                  } else if (userId == null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const Login()),
+                    );
+                    return;
                   } else {
-                    showdialog.buyProductNow(userId, widget.product, context);
+                    showdialog.buyProductNow(userId!, widget.product, context);
                   }
                 },
                 child: Container(
-                  color: widget.product.quantity <= 0
-                      ? Colors.grey // Màu xám nếu số lượng <= 0
-                      : Colors.blue, // Màu xanh nếu số lượng > 0
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        widget.product.quantity > 0
-                            ? "Mua ngay"
-                            : "Hết hàng", // Hiển thị "Hết hàng" nếu số lượng <= 0
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      if (widget.product.quantity > 0)
-                        Text(
-                          formatter.format(widget
-                              .product.price), // Hiển thị giá nếu còn hàng
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                    ],
+                  color:
+                      widget.product.quantity <= 0 ? Colors.grey : Colors.blue,
+                  child: Center(
+                    child: Text(
+                      widget.product.quantity > 0 ? "Mua ngay" : "Hết hàng",
+                      style: const TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
               ),

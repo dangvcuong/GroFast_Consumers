@@ -1,4 +1,4 @@
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, unused_field
 
 import 'dart:convert';
 
@@ -16,13 +16,13 @@ class NotifiApi {
     NotificationSettings settings =
         await _firebaseMessaging.requestPermission();
 
-    // Kiểm tra quyền của người dùng
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       print('Quyền thông báo đã được cấp.');
 
       // Lấy FCM Token
       final fCMToken = await _firebaseMessaging.getToken();
       print("FCM Token: $fCMToken");
+
       if (fCMToken != null) {
         // Lưu token vào Firebase Realtime Database
         DatabaseReference ref = FirebaseDatabase.instance.ref('users/$userId');
@@ -30,10 +30,13 @@ class NotifiApi {
           'userDeviceToken': fCMToken,
         });
         print("FCM Token saved for user $userId: $fCMToken");
+
+        // Đăng ký vào topic 'allUsers'
+        await _firebaseMessaging.subscribeToTopic('allUsers');
+        print('Đã đăng ký vào topic allUsers');
+      } else {
+        print('FCM Token là null');
       }
-      // Đăng ký vào topic 'allUsers'
-      await _firebaseMessaging.subscribeToTopic('allUsers');
-      print('Đã đăng ký vào topic allUsers');
     } else {
       print('Người dùng từ chối quyền thông báo.');
     }

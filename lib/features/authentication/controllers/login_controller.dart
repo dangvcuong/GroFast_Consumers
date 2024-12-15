@@ -30,7 +30,7 @@ class Login_Controller {
   final TextEditingController email_Resst_Controller = TextEditingController();
   final TextEditingController passController = TextEditingController();
   final validete validateLogin = validete();
-
+  final notifi = NotifiApi();
   String errorMessage = "";
   bool checkDN() {
     var check = true;
@@ -70,6 +70,7 @@ class Login_Controller {
     bool? emailError = validateLogin.validateEmail(emailController.value.text);
     bool? passwordError =
         validateLogin.validatePassword(passController.value.text);
+
     if (checkDN()) {
       try {
         // Đăng nhập bằng email và mật khẩu
@@ -81,14 +82,13 @@ class Login_Controller {
 
         User? user = userCredential.user;
 
-        // Kiểm tra xem người dùng có tồn tại hay không
+        // Kiểm tra xem người dùng có tồn tại không
         if (user != null) {
           // Lấy thông tin người dùng từ Firebase Realtime Database
           final databaseRef =
               FirebaseDatabase.instance.ref("users/${user.uid}");
           DatabaseEvent event = await databaseRef.once();
 
-          // Kiểm tra nếu dữ liệu tồn tại
           if (event.snapshot.value != null) {
             final userData = event.snapshot.value;
 
@@ -100,20 +100,19 @@ class Login_Controller {
 
               UserModel currentUser = UserModel.fromJson(userMap);
 
-              // Kiểm tra trạng thái người dùng
               if (currentUser.status == "Ngừng hoạt động") {
                 errorMessage =
                     'Tài khoản của bạn đã bị ngừng hoạt động. Vui lòng liên hệ hỗ trợ.';
-
-                // Đăng xuất người dùng ngay lập tức
-                await FirebaseAuth.instance.signOut();
+                await FirebaseAuth.instance.signOut(); // Đăng xuất người dùng
               } else if (user.emailVerified) {
                 // Người dùng đã xác thực email và trạng thái hoạt động bình thường
                 errorMessage = 'Đăng nhập thành công.';
-                final notifi = NotifiApi();
-                User? user = FirebaseAuth.instance.currentUser;
-                notifi.initNotifications(user!.uid);
-                Navigator.push(
+
+                // Gọi hàm thông báo khi đăng nhập thành công
+                await notifi.initNotifications(user.uid);
+
+                // Điều hướng đến màn hình chính
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
                       builder: (context) => const Btn_Navigatin()),
@@ -121,24 +120,25 @@ class Login_Controller {
               } else {
                 errorMessage =
                     'Vui lòng xác thực email của bạn trước khi đăng nhập.';
-                // Đăng xuất người dùng nếu email chưa được xác thực
-                await FirebaseAuth.instance.signOut();
+                await FirebaseAuth.instance.signOut(); // Đăng xuất người dùng
               }
             } else {
               print('Dữ liệu người dùng không đúng định dạng Map.');
+              errorMessage = 'Dữ liệu người dùng không hợp lệ.';
             }
           } else {
             print('Không tìm thấy dữ liệu người dùng trong Realtime Database.');
+            errorMessage = 'Không tìm thấy dữ liệu người dùng.';
           }
+        } else {
+          errorMessage = 'Không tìm thấy người dùng.';
         }
       } catch (e) {
-        // Bắt lỗi và hiển thị thông báo nếu có lỗi xảy ra
         errorMessage = "Tài khoản hoặc mật khẩu không đúng!";
         print('Lỗi khi đăng nhập: $e');
       }
 
-      // Hiển thị thông báo lỗi (nếu có)
-      ThongBao(context, errorMessage);
+      ThongBao(context, errorMessage); // Hiển thị thông báo lỗi nếu có
     }
   }
 

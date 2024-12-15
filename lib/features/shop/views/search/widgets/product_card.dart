@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:grofast_consumers/constants/app_sizes.dart';
 import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
+import 'package:grofast_consumers/features/authentication/login/loggin.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/views/favorites/providers/favorites_provider.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/productdetailscreen.dart';
@@ -16,12 +17,12 @@ import '../../../models/category_model.dart';
 
 class ProductCard extends StatefulWidget {
   final Product product;
-  final String userId;
+  final String? userId; // userId is nullable
 
   const ProductCard({
     super.key,
     required this.product,
-    required this.userId,
+    this.userId, // userId is now nullable
   });
 
   @override
@@ -32,13 +33,26 @@ class _ProductCardState extends State<ProductCard> {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
   final Login_Controller loginController = Login_Controller();
   final ShowDialogs showDialogs = ShowDialogs();
-  String userId = FirebaseAuth.instance.currentUser!.uid;
+  String? userId; // Make sure to handle nullable userId
+
   String companyName = "Đang tải...";
   Map<String, String> companyNames = {};
+
   @override
   void initState() {
     super.initState();
+    userId = widget.userId ??
+        FirebaseAuth.instance.currentUser?.uid ??
+        ''; // Ensure userId is not null
     _loadCompanyNames();
+    _checkUserStatus();
+  }
+
+  void _checkUserStatus() {
+    setState(() {
+      userId =
+          FirebaseAuth.instance.currentUser?.uid; // Lấy userId nếu đăng nhập
+    });
   }
 
   void _loadCompanyNames() async {
@@ -130,12 +144,22 @@ class _ProductCardState extends State<ProductCard> {
                               : Colors.grey.shade300,
                         ),
                         onPressed: () async {
+                          if (userId == null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const Login()),
+                            );
+                            return;
+                          }
                           if (favoritesProvider.isFavorite(widget.product)) {
+                            // Hiển thị hộp thoại xóa sản phẩm khỏi yêu thích
                             showDialogs.showDeleteFavoriteDialog(
                                 context, widget.product);
                           } else {
+                            // Thêm sản phẩm vào danh sách yêu thích
                             await favoritesProvider.addProductToUserHeart(
-                                userId, widget.product, context);
+                                userId ?? '', widget.product, context);
                           }
                         },
                       ),
@@ -200,8 +224,16 @@ class _ProductCardState extends State<ProductCard> {
                               size: 30,
                             ),
                             onPressed: () {
+                              if (userId == null) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const Login()),
+                                );
+                                return;
+                              }
                               showDialogs.showAddCartDialog(
-                                  context, widget.product, userId);
+                                  context, widget.product, userId ?? '');
                             },
                           ),
                         )

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/features/authentication/login/loggin.dart';
+import 'package:grofast_consumers/features/navigation/btn_navigation.dart';
 
 class ManChao extends StatefulWidget {
   const ManChao({super.key});
@@ -16,7 +17,7 @@ class _ManChaoState extends State<ManChao> {
     Future.delayed(const Duration(seconds: 3), () async {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const Login()),
+        MaterialPageRoute(builder: (context) => const Btn_Navigatin()),
       );
     });
     return Container(

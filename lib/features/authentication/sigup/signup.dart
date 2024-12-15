@@ -19,6 +19,7 @@ class _SignupState extends State<Signup> {
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         leading: GestureDetector(
             onTap: () => {
                   Navigator.pop(context),

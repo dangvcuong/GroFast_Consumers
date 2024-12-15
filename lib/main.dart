@@ -8,7 +8,6 @@ import 'features/authentication/login/widgets/man_chao.dart';
 import 'features/shop/views/cart/providers/cart_provider.dart';
 import 'features/shop/views/favorites/providers/favorites_provider.dart';
 import 'features/shop/views/home/home_screen.dart'; // Thêm HomeScreen vào import
-import 'features/shop/views/cart/providers/cart_provider.dart';
 import 'features/shop/views/notification/Api/notifi_api.dart'; // Đảm bảo chỉ có một đường dẫn đúng cho CartProvider
 
 void main() async {
@@ -35,15 +34,23 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late final NotifiApi _notifiApi;
+  String? userId;
   @override
   void initState() {
     super.initState();
-
+    final NotifiApi notifiApi;
     _requestLocationPermission();
-    _notifiApi = NotifiApi();
-    _notifiApi.listenToOrderChanges();
-    _notifiApi.listenToChatBoxChanges();
+    notifiApi = NotifiApi();
+    notifiApi.listenToOrderChanges();
+    notifiApi.listenToChatBoxChanges();
+    // notifiApi.initNotifications(userId ?? '');
+  }
+
+  void _checkUserStatus() {
+    setState(() {
+      userId =
+          FirebaseAuth.instance.currentUser?.uid; // Lấy userId nếu đăng nhập
+    });
   }
 
   Future<void> _requestLocationPermission() async {
@@ -68,13 +75,17 @@ class _MyAppState extends State<MyApp> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.active) {
             if (snapshot.hasData) {
+              // Người dùng đã đăng nhập
               return const Btn_Navigatin();
             } else {
+              // Người dùng chưa đăng nhập
               return const ManChao();
             }
           } else if (snapshot.hasError) {
+            // Xử lý lỗi nếu có
             return Center(child: Text("Lỗi: ${snapshot.error}"));
           } else {
+            // Trạng thái đang tải
             return const Center(child: CircularProgressIndicator());
           }
         },

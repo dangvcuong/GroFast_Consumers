@@ -4,6 +4,8 @@ import 'package:diacritic/diacritic.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
+import 'package:grofast_consumers/features/authentication/login/loggin.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
 
@@ -24,7 +26,9 @@ class _SearchScreenState extends State<SearchScreen> {
   List<Product> _products = [];
   List<Product> _filteredProducts = [];
   bool _isLoading = true;
+  String? userId;
   String? _selectedBrandId;
+  final Login_Controller loginController = Login_Controller();
   List<Map<String, dynamic>> chipData = [
     {"name": "Tất cả", "id": null},
     {"name": "Đánh giá cao", "id": "highRating"},
@@ -38,6 +42,14 @@ class _SearchScreenState extends State<SearchScreen> {
     _searchController.addListener(_filterProducts);
     _fetchCompanyData();
     _filterProducts();
+    _checkUserStatus();
+  }
+
+  void _checkUserStatus() {
+    setState(() {
+      userId =
+          FirebaseAuth.instance.currentUser?.uid; // Lấy userId nếu đăng nhập
+    });
   }
 
   void _fetchCompanyData() async {
@@ -133,6 +145,13 @@ class _SearchScreenState extends State<SearchScreen> {
             // Nút giỏ hàng
             icon: const Icon(Icons.shopping_cart, color: Colors.white),
             onPressed: () {
+              if (userId == null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Login()),
+                );
+                return;
+              }
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const CartScreen()),
@@ -184,9 +203,12 @@ class _SearchScreenState extends State<SearchScreen> {
                                 0.7, // Điều chỉnh tỷ lệ theo ý muốn
                           ),
                           itemBuilder: (context, index) {
+                            final userId = FirebaseAuth.instance.currentUser
+                                ?.uid; // Kiểm tra nếu người dùng đã đăng nhập
                             return ProductCard(
                               product: _filteredProducts[index],
-                              userId: FirebaseAuth.instance.currentUser!.uid,
+                              userId: userId ??
+                                  '', // Truyền userId, nếu null thì người dùng chưa đăng nhập
                             );
                           },
                         )

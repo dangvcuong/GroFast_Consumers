@@ -11,32 +11,40 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
-      body: SingleChildScrollView(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_outlined,
+            color: Colors.black, // Màu mũi tên
+            size: 30, // Kích thước mũi tên
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        toolbarHeight: screenHeight * 0.3,
+        elevation: 0, // Tắt bóng dưới AppBar
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30)),
+            image: DecorationImage(
+              image: AssetImage(
+                  "assets/images/on_boarding_screen/on_boarding.jpg"),
+              fit: BoxFit.cover, // Đảm bảo ảnh phủ toàn bộ AppBar
+            ),
+          ),
+        ),
+      ),
+      body: const SingleChildScrollView(
           child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipPath(
-              // clipper: ,
-              child: Container(
-            width: double.infinity, // Chiếm toàn bộ chiều rộng
-            height: MediaQuery.of(context).size.height *
-                0.3, // Chiếm 40% chiều cao màn hình
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30)),
-              image: DecorationImage(
-                image: AssetImage(
-                    "assets/images/on_boarding_screen/on_boarding.jpg"),
-                fit: BoxFit.cover, // Đảm bảo ảnh đầy đủ và không bị méo
-              ),
-            ),
-          )),
-          const FormLoginWidget()
-        ],
+        children: [FormLoginWidget()],
       )),
     );
   }

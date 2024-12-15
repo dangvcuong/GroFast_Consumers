@@ -6,6 +6,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:grofast_consumers/constants/app_sizes.dart';
+import 'package:grofast_consumers/features/authentication/login/loggin.dart';
 import 'package:grofast_consumers/features/authentication/models/addressModel.dart';
 import 'package:grofast_consumers/features/shop/controllers/search_controller.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
@@ -63,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen>
   ];
 
   Timer? _timer;
-
+  String? userId;
   @override
   void initState() {
     super.initState();
@@ -72,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen>
         vsync: this, duration: const Duration(milliseconds: 300));
 
     _scheduleImageReappear();
-
+    _checkUserStatus();
     _fetchProducts();
 
     _searchController.addListener(_filterProducts);
@@ -97,6 +98,13 @@ class _HomeScreenState extends State<HomeScreen>
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
       );
+    });
+  }
+
+  void _checkUserStatus() {
+    setState(() {
+      userId =
+          FirebaseAuth.instance.currentUser?.uid; // Lấy userId nếu đăng nhập
     });
   }
 
@@ -140,6 +148,10 @@ class _HomeScreenState extends State<HomeScreen>
           return Product.fromMap(
               Map<String, dynamic>.from(entry.value), entry.key);
         }).toList();
+
+        // Sắp xếp theo thuộc tính khác, ví dụ `id`
+        loadedProducts.sort((a, b) => b.id.compareTo(a.id));
+
         setState(() {
           _products = loadedProducts;
           _filteredProducts = loadedProducts;
@@ -287,6 +299,13 @@ class _HomeScreenState extends State<HomeScreen>
                   icon: const Icon(Icons.shopping_cart_outlined,
                       color: Colors.black),
                   onPressed: () {
+                    if (userId == null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const Login()),
+                      );
+                      return;
+                    }
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -297,6 +316,13 @@ class _HomeScreenState extends State<HomeScreen>
                 IconButton(
                   icon: const Icon(Icons.chat_outlined, color: Colors.black),
                   onPressed: () {
+                    if (userId == null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const Login()),
+                      );
+                      return;
+                    }
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -402,20 +428,23 @@ class _HomeScreenState extends State<HomeScreen>
                           const SizedBox(height: 8),
                           _filteredProducts.isNotEmpty
                               ? SizedBox(
-                                  height: 265,
+                                  height: 266, // Chiều cao của danh sách
                                   child: ListView.builder(
-                                    scrollDirection: Axis.horizontal,
+                                    scrollDirection: Axis
+                                        .horizontal, // Cuộn theo chiều ngang
+                                    padding: const EdgeInsets.all(8.0),
                                     itemCount: _filteredProducts.length,
                                     itemBuilder: (context, index) {
                                       return Padding(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 4.0),
+                                            horizontal:
+                                                4.0), // Khoảng cách giữa các sản phẩm
                                         child: SizedBox(
-                                          width: 200,
+                                          width:
+                                              200, // Độ rộng của mỗi sản phẩm
                                           child: ProductCard(
                                             product: _filteredProducts[index],
-                                            userId: FirebaseAuth
-                                                .instance.currentUser!.uid,
+                                            userId: userId ?? '',
                                           ),
                                         ),
                                       );
@@ -455,15 +484,26 @@ class _HomeScreenState extends State<HomeScreen>
                                                       0) >=
                                                   4)
                                               .toList();
+
+                                      // Sắp xếp sản phẩm từ cao đến thấp theo đánh giá
+                                      highRatedProducts.sort((a, b) {
+                                        final ratingA =
+                                            int.tryParse(a.evaluate) ?? 0;
+                                        final ratingB =
+                                            int.tryParse(b.evaluate) ?? 0;
+                                        return ratingB.compareTo(
+                                            ratingA); // So sánh từ cao đến thấp
+                                      });
+
                                       return Padding(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 4.0),
                                         child: SizedBox(
                                           width: 200,
                                           child: ProductCard(
-                                            product: highRatedProducts[index],
-                                            userId: FirebaseAuth
-                                                .instance.currentUser!.uid,
+                                            product: highRatedProducts[
+                                                index], // Dùng highRatedProducts đã sắp xếp
+                                            userId: userId ?? '',
                                           ),
                                         ),
                                       );
