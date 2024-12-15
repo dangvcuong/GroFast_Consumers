@@ -7,6 +7,7 @@ import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
 import 'package:grofast_consumers/features/navigation/btn_navigation.dart';
 import 'package:grofast_consumers/features/shop/views/voucher/widgets/voucher.dart';
 import 'package:grofast_consumers/features/shop/views/voucher/widgets/voucher_list_screen.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class VoucherScreen extends StatefulWidget {
@@ -91,7 +92,56 @@ class _VoucherScreenState extends State<VoucherScreen> {
     if (isSpinning) return;
 
     bool autoCloseDialog = true; // Biến để kiểm tra tự động đóng popup
+    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? lastSpindate = prefs.getString('lastSpinDate');
+
+    // Kiểm tra nếu đã quay trong ngày hôm nay
+    if (lastSpindate != null && lastSpindate == today) {
+      // Hiển thị popup thông báo
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        // Không cho phép đóng bằng cách nhấn ngoài popup
+        builder: (BuildContext context) {
+          // Khởi tạo một Timer để tự động đóng popup sau 3 giây
+          Timer? autoCloseTimer;
+
+          autoCloseTimer = Timer(Duration(seconds: 3), () {
+            if (autoCloseDialog) {
+              Navigator.of(context)
+                  .pop(); // Đóng popup sau 3 giây nếu không có hành động từ người dùng
+            }
+          });
+
+          return AlertDialog(
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Thông báo!",style: TextStyle(color: Colors.red,fontSize: 20,fontWeight: FontWeight.bold),),
+                Positioned(
+                  top: -10,
+                  right: -17,
+                  child: IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      autoCloseDialog = false; // Hủy tự động đóng khi nhấn icon
+                      Navigator.of(context)
+                          .pop(); // Đóng popup khi nhấn vào icon
+                      autoCloseTimer?.cancel();
+                    },
+                  ),
+                ),
+              ],
+            ),
+            content: Text("Bạn đã hết lượt quay. Hãy đợi đến ngày mai!",style: TextStyle(fontSize: 15),),
+          );
+        },
+      );
+      return;
+    }
+    await prefs.setString('lastSpinDate', today);
     setState(() {
       isSpinning = true;
     });
