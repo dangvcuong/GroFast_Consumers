@@ -116,8 +116,10 @@ class _OrderDetailState extends State<OrderDetail> {
                 const SizedBox(height: 16),
                 Expanded(
                   child: ProductListOrder(
-                      products:
-                          List<Map<dynamic, dynamic>>.from(data['products'])),
+                    products:
+                        List<Map<dynamic, dynamic>>.from(data['products']),
+                    orderStatus: orderStatus,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 ButtonRow(

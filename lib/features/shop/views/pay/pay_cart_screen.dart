@@ -410,7 +410,6 @@ class _PaymentCartScreenState extends State<PaymentCartScreen> {
       orderDate: DateTime.now(),
       shippingAddress: defaultAddress!,
       tong: (totalAmount + shippingFee).toString(),
-      review: "",
     );
 
     DatabaseReference ordersRef = FirebaseDatabase.instance.ref('orders');

@@ -12,7 +12,6 @@ class Order {
   final String orderStatus; // Trạng thái đơn hàng
   final DateTime orderDate; // Ngày đặt hàng
   final AddressModel shippingAddress; // Địa chỉ giao hàng
-  final String review;
 
   Order({
     required this.id,
@@ -23,7 +22,6 @@ class Order {
     required this.orderStatus,
     required this.orderDate,
     required this.shippingAddress,
-    required this.review,
   });
 
   // Tạo Order từ Map
@@ -40,7 +38,6 @@ class Order {
       orderStatus: map['orderStatus'] ?? 'pending',
       orderDate: DateTime.parse(map['orderDate']),
       shippingAddress: AddressModel.fromMap(map['shippingAddress']),
-      review: map['review'] ?? '',
     );
   }
 
@@ -54,7 +51,6 @@ class Order {
       'orderStatus': orderStatus,
       'orderDate': orderDate.toIso8601String(),
       'shippingAddress': shippingAddress.toMap(),
-      'review': review,
     };
   }
 }

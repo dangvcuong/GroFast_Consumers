@@ -121,7 +121,8 @@ class _EvaluateScreenState extends State<EvaluateScreen> {
                             MaterialPageRoute(
                               builder: (context) => ReviewPage(
                                 productId: product["id"],
-                                idorder: orderId, // Truyền id sản phẩm
+                                ten: '',
+                                gia: '',
                               ),
                             ),
                           ).then((_) {

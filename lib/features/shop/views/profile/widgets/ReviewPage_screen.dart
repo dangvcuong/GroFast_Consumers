@@ -3,11 +3,17 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
+import 'package:intl/intl.dart';
 
 class ReviewPage extends StatefulWidget {
   final String productId; // Biến để nhận id sản phẩm
-  final String idorder;
-  const ReviewPage({super.key, required this.productId, required this.idorder});
+  final String ten;
+  final String gia;
+  const ReviewPage(
+      {super.key,
+      required this.productId,
+      required this.ten,
+      required this.gia});
 
   @override
   _ReviewPageState createState() => _ReviewPageState();
@@ -20,6 +26,7 @@ class _ReviewPageState extends State<ReviewPage> {
   final Login_Controller login_contriller = Login_Controller();
   String userName = '';
   String userPhotoURL = '';
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +62,9 @@ class _ReviewPageState extends State<ReviewPage> {
 
   @override
   Widget build(BuildContext context) {
+    final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
+    double priceValue = double.tryParse(widget.gia) ?? 0.0;
+    String formattedPrice = formatter.format(priceValue);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -74,10 +84,49 @@ class _ReviewPageState extends State<ReviewPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Hiển thị sản phẩm (giả sử bạn có thông tin sản phẩm từ Firebase hoặc API)
-            Text(
-              'ID Sản phẩm: ${widget.productId}', // Hiển thị ID sản phẩm
-              style: const TextStyle(fontSize: 18),
+            Row(
+              children: [
+                const Text(
+                  'Tên sản phẩm: ', // Nhãn
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                Text(
+                  widget.ten, // Giá trị tên sản phẩm
+                  textAlign: TextAlign.right, // Căn phải
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                  ),
+                  overflow: TextOverflow.ellipsis, // Tránh tràn text
+                ),
+              ],
             ),
+            const SizedBox(height: 4), // Khoảng cách giữa 2 dòng
+            Row(
+              children: [
+                const Text(
+                  'Giá: ', // Nhãn
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                Text(
+                  formattedPrice, // Giá trị giá
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.blueAccent,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+
             const SizedBox(height: 20),
 
             // Hiển thị sao đánh giá
@@ -175,12 +224,6 @@ class _ReviewPageState extends State<ReviewPage> {
         FirebaseDatabase.instance.ref('reviews/${widget.productId}');
     reviewRef.push().set(reviewData).then((_) async {
       // Cập nhật trạng thái "đã đánh giá" cho đơn hàng
-      DatabaseReference orderRef =
-          FirebaseDatabase.instance.ref('orders/${widget.idorder}');
-      await orderRef.update({
-        'review': 'Đã đánh giá', // Cập nhật trạng thái đánh giá
-      });
-
       login_contriller.ThongBao(context, "Đánh giá của bạn đã được gửi");
 
       // Quay lại trang trước sau khi gửi đánh giá

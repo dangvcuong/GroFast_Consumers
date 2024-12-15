@@ -299,35 +299,6 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const EvaluateScreen()),
-                          );
-                        },
-                        child: const ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: Icon(
-                            Icons.star,
-                            color: Colors.orange, // Màu cho icon
-                          ),
-                          title: Text(
-                            'Đánh giá',
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w400),
-                          ),
-                          trailing: Icon(
-                            Icons.arrow_forward_ios,
-                            size: 15,
-                            // Màu cho icon
-                          ),
-                        ),
-                      ),
-                      const Divider(thickness: 1, color: Colors.grey),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
                                 builder: (context) => const AddressUser()),
                           );
                         },

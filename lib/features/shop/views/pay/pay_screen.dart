@@ -369,15 +369,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     // Tạo đơn hàng
     Order order = Order(
-        id: '${DateTime.now().millisecondsSinceEpoch}',
-        userId: currentUser!.uid,
-        products: products,
-        totalAmount: total.toString(),
-        orderStatus: 'Đang chờ xác nhận',
-        orderDate: DateTime.now(),
-        shippingAddress: defaultAddress!,
-        tong: (totalAmount + shippingFee).toString(),
-        review: '');
+      id: '${DateTime.now().millisecondsSinceEpoch}',
+      userId: currentUser!.uid,
+      products: products,
+      totalAmount: total.toString(),
+      orderStatus: 'Đang chờ xác nhận',
+      orderDate: DateTime.now(),
+      shippingAddress: defaultAddress!,
+      tong: (totalAmount + shippingFee).toString(),
+    );
     DatabaseReference ordersRef = FirebaseDatabase.instance.ref('orders');
 
     try {
