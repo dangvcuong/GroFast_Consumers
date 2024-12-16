@@ -291,6 +291,13 @@ class _ButtonRowState extends State<ButtonRow> {
             child: const Text('Hủy đơn hàng',
                 style: TextStyle(color: Colors.white)),
           ),
+        ] else if (orderStatus == 'Đã xác nhận' || orderStatus == "Đang giao hàng") ...[
+         ElevatedButton(
+           onPressed: () => {},
+           style: ElevatedButton.styleFrom(backgroundColor: Colors.white30),
+           child: const Text('Hủy đơn hàng',
+           style: TextStyle(color: Colors.white)),
+           ),
         ] else if (orderStatus == 'Đã hủy' || orderStatus == "Thành công") ...[
           ElevatedButton(
             onPressed: () => _handleReorder(products),
@@ -298,6 +305,7 @@ class _ButtonRowState extends State<ButtonRow> {
             child: const Text('Mua lại', style: TextStyle(color: Colors.white)),
           ),
         ],
+
       ],
     );
   }
