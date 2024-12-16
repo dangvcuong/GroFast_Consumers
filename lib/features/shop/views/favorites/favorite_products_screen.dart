@@ -15,8 +15,37 @@ class FavoriteProductsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final User? currentUser = FirebaseAuth.instance.currentUser;
     final favoritesProvider = Provider.of<FavoritesProvider>(context);
-
+    if (currentUser == null) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          automaticallyImplyLeading: false, // Ẩn nút quay lại
+          backgroundColor: Colors.blue, // Màu nền của AppBar
+          title: const Text(
+            "Sản phẩm yêu thích", // Tiêu đề
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          centerTitle: true, // Căn giữa tiêu đề
+          elevation: 4, // Độ đổ bóng của AppBar
+        ),
+        body: Center(
+          child: Text(
+            'Bạn cần đăng nhập để xem sản phẩm yêu thích.',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[700],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -32,7 +61,6 @@ class FavoriteProductsScreen extends StatelessWidget {
         ),
         centerTitle: true, // Căn giữa tiêu đề
         elevation: 4, // Độ đổ bóng của AppBar
-
       ),
       body: favoritesProvider.isLoading
           ? const Center(child: CircularProgressIndicator())

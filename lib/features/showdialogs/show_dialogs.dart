@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:grofast_consumers/features/authentication/controllers/addres_Controller.dart';
 import 'package:grofast_consumers/features/authentication/controllers/login_controller.dart';
 import 'package:grofast_consumers/features/authentication/controllers/user_controller.dart';
+import 'package:grofast_consumers/features/authentication/login/loggin.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/views/pay/pay_screen.dart';
 import 'package:provider/provider.dart';
@@ -657,6 +658,34 @@ class ShowDialogs {
           },
         );
       },
+    );
+  }
+
+  Future<void> thongbaoDangNhap(BuildContext context) async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Thông báo'),
+        content: const Text('Bạn cần đăng nhập để sử dụng chức năng này.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Đóng dialog
+            },
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Đóng dialog trước khi chuyển màn hình
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Login()),
+              );
+            },
+            child: const Text('Đăng nhập'),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -48,10 +48,20 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
   bool isBalanceVisible = false; // Trạng thái hiển thị số dư
   final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
   // Tạo đối tượng user mẫu
+  String? userId;
+
   @override
   void initState() {
     super.initState();
     _getUserInfo();
+    _checkUserStatus();
+  }
+
+  void _checkUserStatus() {
+    setState(() {
+      userId =
+          FirebaseAuth.instance.currentUser?.uid; // Lấy userId nếu đăng nhập
+    });
   }
 
   Future<void> _getUserInfo() async {
@@ -86,6 +96,10 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
           children: [
             GestureDetector(
               onTap: () async {
+                if (userId == null) {
+                  showDialog.thongbaoDangNhap(context);
+                  return;
+                }
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -208,6 +222,10 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                           ),
                           GestureDetector(
                             onTap: () {
+                              if (userId == null) {
+                                showDialog.thongbaoDangNhap(context);
+                                return;
+                              }
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -235,6 +253,10 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                       const Divider(thickness: 1, color: Colors.grey),
                       GestureDetector(
                         onTap: () {
+                          if (userId == null) {
+                            showDialog.thongbaoDangNhap(context);
+                            return;
+                          }
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -267,6 +289,10 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                       const Divider(thickness: 1, color: Colors.grey),
                       GestureDetector(
                         onTap: () {
+                          if (userId == null) {
+                            showDialog.thongbaoDangNhap(context);
+                            return;
+                          }
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -296,6 +322,10 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                       const Divider(thickness: 1, color: Colors.grey),
                       GestureDetector(
                         onTap: () {
+                          if (userId == null) {
+                            showDialog.thongbaoDangNhap(context);
+                            return;
+                          }
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -325,6 +355,10 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                       const Divider(thickness: 1, color: Colors.grey),
                       GestureDetector(
                         onTap: () {
+                          if (userId == null) {
+                            showDialog.thongbaoDangNhap(context);
+                            return;
+                          }
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -354,6 +388,11 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                       const Divider(thickness: 1, color: Colors.grey),
                       GestureDetector(
                         onTap: () {
+                          if (userId == null) {
+                            // Hiển thị dialog yêu cầu đăng nhập
+                            showDialog.thongbaoDangNhap(context);
+                            return;
+                          }
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -384,6 +423,10 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
                       const Divider(thickness: 1, color: Colors.grey),
                       InkWell(
                         onTap: () async {
+                          if (userId == null) {
+                            showDialog.thongbaoDangNhap(context);
+                            return;
+                          }
                           await showDialog.Log_out(context);
                         },
                         child: const ListTile(

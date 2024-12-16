@@ -358,7 +358,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       builder: (BuildContext context) {
                         return AlertDialog(
                           title: const Text('Thông báo'),
-                          content: const Text('Bạn cần đăng nhập để thực hiện thao tác này.'),
+                          content: const Text(
+                              'Bạn cần đăng nhập để thực hiện thao tác này.'),
                           actions: [
                             TextButton(
                               onPressed: () {
@@ -371,7 +372,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 Navigator.pop(context); // Đóng dialog
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const Login()),
+                                  MaterialPageRoute(
+                                      builder: (context) => const Login()),
                                 ); // Chuyển sang màn hình đăng nhập
                               },
                               child: const Text('Đăng nhập'),
@@ -389,7 +391,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 child: Icon(
                   Icons.favorite,
                   color: userId != null &&
-                      favoritesProvider.isFavorite(widget.product)
+                          favoritesProvider.isFavorite(widget.product)
                       ? Colors.red
                       : Colors.black,
                 ),
@@ -401,41 +403,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 onTap: () {
                   if (userId == null) {
                     // Hiển thị dialog yêu cầu đăng nhập
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Thông báo'),
-                          content: const Text('Bạn cần đăng nhập để thực hiện thao tác này.'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context); // Đóng dialog
-                              },
-                              child: const Text('Hủy'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context); // Đóng dialog
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const Login()),
-                                ); // Chuyển sang màn hình đăng nhập
-                              },
-                              child: const Text('Đăng nhập'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
+                    showdialog.thongbaoDangNhap(context);
                     return;
                   }
-                  showdialog.showAddCartDialog(context, widget.product, userId!);
+                  showdialog.showAddCartDialog(
+                      context, widget.product, userId!);
                 },
                 child: const Icon(Icons.shopping_cart),
               ),
             ),
-
             Expanded(
               flex: 4,
               child: GestureDetector(
@@ -445,38 +421,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     loginController.ThongBao(context, 'Sản phẩm đã hết hàng');
                   } else if (userId == null) {
                     // Hiển thị dialog yêu cầu đăng nhập
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Thông báo'),
-                        content: const Text('Bạn cần đăng nhập để thực hiện hành động này.'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context); // Đóng dialog
-                            },
-                            child: const Text('Hủy'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context); // Đóng dialog trước khi chuyển màn hình
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const Login()),
-                              );
-                            },
-                            child: const Text('Đăng nhập'),
-                          ),
-                        ],
-                      ),
-                    );
+                    showdialog.thongbaoDangNhap(context);
+                    return;
                   } else {
                     // Mua ngay
                     showdialog.buyProductNow(userId!, widget.product, context);
                   }
                 },
                 child: Container(
-                  color: widget.product.quantity <= 0 ? Colors.grey : Colors.blue,
+                  color:
+                      widget.product.quantity <= 0 ? Colors.grey : Colors.blue,
                   child: Center(
                     child: Text(
                       widget.product.quantity > 0 ? "Mua ngay" : "Hết hàng",
@@ -486,7 +440,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
               ),
             ),
-
           ],
         ),
       ),

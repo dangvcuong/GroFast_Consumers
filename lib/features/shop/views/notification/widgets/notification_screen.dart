@@ -175,6 +175,35 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (currentUser == null) {
+      return Scaffold(
+        backgroundColor: Colors.grey[100],
+        appBar: AppBar(
+          automaticallyImplyLeading: false, // Ẩn nút quay lại
+          backgroundColor: Colors.blueAccent,
+          title: const Text(
+            'Thông báo',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          centerTitle: true, // Căn giữa tiêu đề
+          iconTheme: const IconThemeData(color: Colors.white),
+        ),
+        body: Center(
+          child: Text(
+            'Bạn cần đăng nhập để xem thông báo.',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[700],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -197,7 +226,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
               ? const Center(
                   child: Text(
                     'Không có thông báo nào.',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 )
               : ListView.builder(

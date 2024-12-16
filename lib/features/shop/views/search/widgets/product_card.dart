@@ -34,7 +34,7 @@ class _ProductCardState extends State<ProductCard> {
   final Login_Controller loginController = Login_Controller();
   final ShowDialogs showDialogs = ShowDialogs();
   String? userId; // Make sure to handle nullable userId
-
+  final ShowDialogs showDialog = ShowDialogs();
   String companyName = "Đang tải...";
   Map<String, String> companyNames = {};
 
@@ -145,11 +145,8 @@ class _ProductCardState extends State<ProductCard> {
                         ),
                         onPressed: () async {
                           if (userId == null) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const Login()),
-                            );
+                            // Hiển thị dialog yêu cầu đăng nhập
+                            showDialog.thongbaoDangNhap(context);
                             return;
                           }
                           if (favoritesProvider.isFavorite(widget.product)) {
@@ -225,11 +222,8 @@ class _ProductCardState extends State<ProductCard> {
                             ),
                             onPressed: () {
                               if (userId == null) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => const Login()),
-                                );
+                                // Hiển thị dialog yêu cầu đăng nhập
+                                showDialog.thongbaoDangNhap(context);
                                 return;
                               }
                               showDialogs.showAddCartDialog(

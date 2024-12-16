@@ -1,8 +1,10 @@
 // ignore_for_file: camel_case_types, unused_element, unused_field, unused_import
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:grofast_consumers/features/shop/views/favorites/favorite_products_screen.dart';
 import 'package:grofast_consumers/features/shop/views/home/home_screen.dart';
+import 'package:grofast_consumers/features/shop/views/notification/Api/notifi_api.dart';
 import 'package:grofast_consumers/features/shop/views/notification/widgets/notification_screen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/profile_management.dart';
 import 'package:grofast_consumers/features/shop/views/search/search_screen.dart';
@@ -25,10 +27,30 @@ class _Btn_NavigatinState extends State<Btn_Navigatin> {
     const Center(child: NotificationScreen()),
     const Center(child: ProFile_Management()),
   ];
+  String? userId;
 
   @override
   void initState() {
     super.initState();
+    _checkUserStatus();
+    final NotifiApi notifiApi;
+    notifiApi = NotifiApi();
+    if (userId != null) {
+      print('Cuong user1: $userId');
+      notifiApi.listenToOrderChanges(userId ?? '');
+      notifiApi.listenToChatBoxChanges(userId ?? '');
+    } else {
+      notifiApi.stopListening();
+      print("Khong có user");
+    }
+  }
+
+  void _checkUserStatus() {
+    setState(() {
+      userId =
+          FirebaseAuth.instance.currentUser?.uid; // Lấy userId nếu đăng nhập
+    });
+    print("User hiện tại: $userId");
   }
 
   @override

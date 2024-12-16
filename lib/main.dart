@@ -35,35 +35,26 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String? userId;
   @override
   void initState() {
     super.initState();
-
     _requestLocationPermission();
-    _checkUserStatus();
   }
 
-  void _checkNotifile(String userid) async {
-    if (userId == null) {
-      final firebaseMessaging = FirebaseMessaging.instance;
-      await firebaseMessaging.unsubscribeFromTopic('allUsers');
-      print('Đã hủy đăng ký khỏi topic allUsers');
-    }
-  }
+  // void _checkNotifile(String userid) async {
+  //   if (userId == null) {
+  //     final firebaseMessaging = FirebaseMessaging.instance;
+  //     await firebaseMessaging.unsubscribeFromTopic('allUsers');
+  //     print('Đã hủy đăng ký khỏi topic allUsers');
+  //   }
+  // }
 
-  void _checkUserStatus() {
-    setState(() {
-      userId =
-          FirebaseAuth.instance.currentUser?.uid; // Lấy userId nếu đăng nhập
-    });
-    final NotifiApi notifiApi;
-    notifiApi = NotifiApi();
-    if (userId != null) {
-      notifiApi.listenToOrderChanges(userId ?? '');
-      notifiApi.listenToChatBoxChanges(userId ?? '');
-    }
-  }
+  // void _checkUserStatus() {
+  //   setState(() {
+  //     userId = FirebaseAuth.instance.currentUser; // Lấy userId nếu đăng nhập
+  //   });
+  //   print("Cuong user: $userId");
+  // }
 
   Future<void> _requestLocationPermission() async {
     LocationPermission permission = await Geolocator.checkPermission();
