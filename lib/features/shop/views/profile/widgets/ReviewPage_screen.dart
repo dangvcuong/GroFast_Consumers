@@ -84,27 +84,33 @@ class _ReviewPageState extends State<ReviewPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Hiển thị sản phẩm (giả sử bạn có thông tin sản phẩm từ Firebase hoặc API)
-            Row(
-              children: [
-                const Text(
-                  'Tên sản phẩm: ', // Nhãn
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Tên sản phẩm: ', // Nhãn
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
-                ),
-                Text(
-                  widget.ten, // Giá trị tên sản phẩm
-                  textAlign: TextAlign.right, // Căn phải
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black54,
+                  Expanded(
+                    child: Text(
+                      widget.ten, // Giá trị tên sản phẩm
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.black54,
+                      ),
+                      softWrap: true, // Cho phép tự xuống dòng
+                      maxLines: null, // Không giới hạn số dòng
+                    ),
                   ),
-                  overflow: TextOverflow.ellipsis, // Tránh tràn text
-                ),
-              ],
+                ],
+              ),
             ),
+
             const SizedBox(height: 4), // Khoảng cách giữa 2 dòng
             Row(
               children: [

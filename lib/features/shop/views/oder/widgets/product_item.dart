@@ -39,13 +39,13 @@ class ProductItem extends StatelessWidget {
           children: [
             Image.network(
               imageUrl,
-              width: 100,
-              height: 70,
+              width: 70,
+              height: 120,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
-                  width: 70,
-                  height: 70,
+                  width: double.infinity,
+                  height: double.infinity,
                   color: Colors.grey,
                   child: const Icon(Icons.image, color: Colors.white),
                 );
