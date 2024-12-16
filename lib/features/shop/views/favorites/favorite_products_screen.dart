@@ -32,18 +32,7 @@ class FavoriteProductsScreen extends StatelessWidget {
         ),
         centerTitle: true, // Căn giữa tiêu đề
         elevation: 4, // Độ đổ bóng của AppBar
-        actions: [
-          IconButton(
-            // Nút giỏ hàng
-            icon: const Icon(Icons.shopping_cart, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const CartScreen()),
-              );
-            },
-          ),
-        ],
+
       ),
       body: favoritesProvider.isLoading
           ? const Center(child: CircularProgressIndicator())

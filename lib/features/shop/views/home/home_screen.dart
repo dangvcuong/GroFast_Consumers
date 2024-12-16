@@ -296,20 +296,41 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.shopping_cart_outlined,
-                      color: Colors.black),
+                  icon: const Icon(Icons.shopping_cart_outlined, color: Colors.black),
                   onPressed: () {
                     if (userId == null) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const Login()),
+                      // Hiển thị dialog yêu cầu đăng nhập
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Thông báo'),
+                          content: const Text('Bạn cần đăng nhập để truy cập giỏ hàng.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context); // Đóng dialog
+                              },
+                              child: const Text('Hủy'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context); // Đóng dialog trước khi chuyển màn hình
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const Login()),
+                                );
+                              },
+                              child: const Text('Đăng nhập'),
+                            ),
+                          ],
+                        ),
                       );
                       return;
                     }
+                    // Chuyển đến màn hình giỏ hàng
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const CartScreen()),
+                      MaterialPageRoute(builder: (context) => const CartScreen()),
                     );
                   },
                 ),
@@ -317,20 +338,43 @@ class _HomeScreenState extends State<HomeScreen>
                   icon: const Icon(Icons.chat_outlined, color: Colors.black),
                   onPressed: () {
                     if (userId == null) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const Login()),
+                      // Hiển thị dialog yêu cầu đăng nhập
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Thông báo'),
+                          content: const Text('Bạn cần đăng nhập để sử dụng tính năng chat.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context); // Đóng dialog
+                              },
+                              child: const Text('Hủy'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context); // Đóng dialog trước khi chuyển màn hình
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const Login()),
+                                );
+                              },
+                              child: const Text('Đăng nhập'),
+                            ),
+                          ],
+                        ),
                       );
                       return;
                     }
+                    // Chuyển đến màn hình chat
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const ChatScreen()),
+                      MaterialPageRoute(builder: (context) => const ChatScreen()),
                     );
                   },
                 ),
               ],
+
             ),
           ),
         ),
