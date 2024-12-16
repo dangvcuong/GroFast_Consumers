@@ -2,6 +2,7 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:grofast_consumers/features/authentication/controllers/addres_Controller.dart';
@@ -217,9 +218,7 @@ class ShowDialogs {
                       onPressed: () async {
                         try {
                           await FirebaseAuth.instance.signOut();
-                          Navigator.of(context)
-                              .pop(); // Đóng dialog sau khi đăng xuất thành công
-
+                          Navigator.of(context).pop(); // Đóng dialog sau khi đăng xuất thành công
                           loginController.ThongBao(
                               context, 'Đăng xuất thành công!');
                         } catch (e) {

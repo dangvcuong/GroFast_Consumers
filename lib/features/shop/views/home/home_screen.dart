@@ -522,18 +522,16 @@ class _HomeScreenState extends State<HomeScreen>
             ),
             if (_isImageVisible)
               Positioned(
-                top: _imageTop,
-                left: _imageLeft,
+                bottom: 0,
+                right: 0,
+
                 child: GestureDetector(
                   onPanUpdate: (details) {
                     setState(() {
-                      // _imageTop += details.delta.dy;
-                      // _imageLeft += details.delta.dx;
-
                       _imageTop = (_imageTop + details.delta.dy)
-                          .clamp(0.0, screenHeight - imageSize);
+                          .clamp(0.0, screenHeight - imageSize); // Giới hạn không cho vượt khỏi màn hình
                       _imageLeft = (_imageLeft + details.delta.dx)
-                          .clamp(0.0, screenWidth - imageSize);
+                          .clamp(0.0, screenWidth - imageSize); // Giới hạn không cho vượt khỏi màn hình
                       _isImageTapped = true; // Làm đậm khi kéo
                     });
                   },
@@ -600,6 +598,7 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ),
               ),
+
           ],
         ),
       ),
