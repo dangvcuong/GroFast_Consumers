@@ -3,6 +3,7 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +32,7 @@ class Login_Controller {
   final TextEditingController passController = TextEditingController();
   final validete validateLogin = validete();
   final notifi = NotifiApi();
+  final _firebaseMessaging = FirebaseMessaging.instance;
   String errorMessage = "";
   bool checkDN() {
     var check = true;
@@ -276,14 +278,39 @@ class Login_Controller {
 
 //Đăng xuất
   Future<void> signOut(BuildContext context) async {
+    User? user = FirebaseAuth.instance.currentUser;
     try {
-      await _auth.signOut();
-      errorMessage = "Đăng xuất thành công!";
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const Login()));
+      if (user != null) {
+        // Hủy đăng ký khỏi topic 'allUsers'
+        print("Đang hủy đăng ký khỏi topic allUsers...");
+        await _firebaseMessaging.unsubscribeFromTopic('allUsers');
+        print('Đã hủy đăng ký khỏi topic allUsers');
+
+        // Xóa token FCM trong Firebase Realtime Database
+        DatabaseReference ref =
+            FirebaseDatabase.instance.ref('users/${user.uid}');
+        await ref.update({
+          'userDeviceToken': null, // Xóa token FCM
+        });
+        print('Token FCM đã được xóa khỏi Firebase Realtime Database');
+
+        // Đăng xuất khỏi Firebase Auth
+        await _auth.signOut();
+        errorMessage = "Đăng xuất thành công!";
+
+        // Cập nhật trạng thái đăng xuất (nếu cần thiết)
+
+        // Chuyển hướng về màn hình đăng nhập
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Login()),
+        );
+      }
     } catch (e) {
       errorMessage = "Lỗi đăng xuất: $e";
+      print('Lỗi đăng xuất: $e');
     }
+
     ThongBao(context, errorMessage);
   }
 }

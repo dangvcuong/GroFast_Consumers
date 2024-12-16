@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:geolocator/geolocator.dart';
@@ -38,12 +39,17 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    final NotifiApi notifiApi;
+
     _requestLocationPermission();
-    notifiApi = NotifiApi();
-    notifiApi.listenToOrderChanges();
-    notifiApi.listenToChatBoxChanges();
-    // notifiApi.initNotifications(userId ?? '');
+    _checkUserStatus();
+  }
+
+  void _checkNotifile(String userid) async {
+    if (userId == null) {
+      final firebaseMessaging = FirebaseMessaging.instance;
+      await firebaseMessaging.unsubscribeFromTopic('allUsers');
+      print('Đã hủy đăng ký khỏi topic allUsers');
+    }
   }
 
   void _checkUserStatus() {
@@ -51,6 +57,12 @@ class _MyAppState extends State<MyApp> {
       userId =
           FirebaseAuth.instance.currentUser?.uid; // Lấy userId nếu đăng nhập
     });
+    final NotifiApi notifiApi;
+    notifiApi = NotifiApi();
+    if (userId != null) {
+      notifiApi.listenToOrderChanges(userId ?? '');
+      notifiApi.listenToChatBoxChanges(userId ?? '');
+    }
   }
 
   Future<void> _requestLocationPermission() async {

@@ -216,7 +216,8 @@ class ShowDialogs {
                       ),
                       onPressed: () async {
                         try {
-                          await FirebaseAuth.instance.signOut();
+                          loginController.signOut(context);
+                          // await FirebaseAuth.instance.signOut();
                           Navigator.of(context)
                               .pop(); // Đóng dialog sau khi đăng xuất thành công
 

@@ -11,7 +11,15 @@ import 'package:http/http.dart' as http;
 class NotifiApi {
   final _firebaseMessaging = FirebaseMessaging.instance;
 
-  Future<void> initNotifications(String userId) async {
+  // Biến lưu trữ trạng thái đăng nhập
+  bool isUserLoggedIn = false;
+
+  Future<void> initNotifications(String? userId) async {
+    if (userId == null) {
+      print('Người dùng chưa đăng nhập.');
+      return; // Không làm gì nếu chưa có userId
+    }
+
     // Yêu cầu quyền gửi thông báo
     NotificationSettings settings =
         await _firebaseMessaging.requestPermission();
@@ -31,9 +39,10 @@ class NotifiApi {
         });
         print("FCM Token saved for user $userId: $fCMToken");
 
-        // Đăng ký vào topic 'allUsers'
+        // Đăng ký lại vào topic 'allUsers' sau khi đăng nhập
         await _firebaseMessaging.subscribeToTopic('allUsers');
         print('Đã đăng ký vào topic allUsers');
+        isUserLoggedIn = true; // Đánh dấu là đã đăng nhập
       } else {
         print('FCM Token là null');
       }
@@ -64,153 +73,137 @@ class NotifiApi {
   }
 
   // Lắng nghe thay đổi đơn hàng
-  void listenToOrderChanges() {
+  void listenToOrderChanges(String userId) {
     // Lấy userId của người dùng hiện tại
-    User? currentUser = FirebaseAuth.instance.currentUser;
 
-    if (currentUser != null) {
-      // Lắng nghe sự thay đổi của các đơn hàng có userId khớp với userId của người dùng
-      _ordersRef
-          .orderByChild('userId') // Sắp xếp theo userId
-          .equalTo(currentUser
-              .uid) // Lọc ra các đơn hàng của người dùng này (uid là chuỗi)
-          .onChildChanged
-          .listen((event) {
-        print('Firebase event triggered: ${event.snapshot.key}');
-        print('New data: ${event.snapshot.value}');
+    // Lắng nghe sự thay đổi của các đơn hàng có userId khớp với userId của người dùng
+    _ordersRef
+        .orderByChild('userId') // Sắp xếp theo userId
+        .equalTo(
+            userId) // Lọc ra các đơn hàng của người dùng này (uid là chuỗi)
+        .onChildChanged
+        .listen((event) {
+      print('Firebase event triggered: ${event.snapshot.key}');
+      print('New data: ${event.snapshot.value}');
 
-        if (event.snapshot.exists && event.snapshot.value != null) {
-          try {
-            // Trích xuất dữ liệu từ snapshot
-            final orderData =
-                Map<String, dynamic>.from(event.snapshot.value as Map);
-            final orderId = event.snapshot.key;
+      if (event.snapshot.exists && event.snapshot.value != null) {
+        try {
+          // Trích xuất dữ liệu từ snapshot
+          final orderData =
+              Map<String, dynamic>.from(event.snapshot.value as Map);
+          final orderId = event.snapshot.key;
 
-            print(
-                'Processing order for userId: ${currentUser.uid} - Order: $orderId - Data: $orderData');
-            print('Order data: $orderData');
-            print('Order Status: ${orderData['orderStatus']}');
+          print(
+              'Processing order for userId: $userId - Order: $orderId - Data: $orderData');
+          print('Order data: $orderData');
+          print('Order Status: ${orderData['orderStatus']}');
 
-            // Kiểm tra trạng thái của đơn hàng
-            String status = orderData['orderStatus'] ??
-                'Unknown'; // Lấy giá trị trạng thái đơn hàng (mặc định là 'Unknown')
-            print("STATUS: $status");
+          // Kiểm tra trạng thái của đơn hàng
+          String status = orderData['orderStatus'] ??
+              'Unknown'; // Lấy giá trị trạng thái đơn hàng (mặc định là 'Unknown')
+          print("STATUS: $status");
 
-            // Tạo thông báo dựa trên trạng thái đơn hàng
-            String notificationTitle;
-            String notificationBody;
+          // Tạo thông báo dựa trên trạng thái đơn hàng
+          String notificationTitle;
+          String notificationBody;
 
-            if (status == 'Đã hủy') {
-              notificationTitle = 'Đơn hàng $orderId';
-              notificationBody = 'Đơn hàng của bạn đã bị hủy!';
-            } else if (status == 'Đang giao hàng') {
-              notificationTitle = 'Đơn hàng $orderId';
-              notificationBody = 'Đơn hàng của bạn đang trên đường giao!';
-            } else if (status == 'Thành công') {
-              notificationTitle = 'Đơn hàng $orderId';
-              notificationBody = 'Đơn hàng của bạn đã giao hàng thành công!';
-            } else {
-              notificationTitle = 'Cập nhật đơn hàng';
-              notificationBody = 'Trạng thái đơn hàng của bạn đã thay đổi!';
-            }
-
-            // Hiển thị thông báo cho người dùng khi trạng thái đơn hàng thay đổi
-            _showNotification(
-              title: notificationTitle,
-              body: notificationBody,
-            );
-
-            // Lưu thông báo vào Firebase Realtime Database
-            _saveNotificationToDatabase(
-              userId: currentUser.uid,
-              title: notificationTitle,
-              body: notificationBody,
-            );
-          } catch (e) {
-            print('Error processing order data: $e');
+          if (status == 'Đã hủy') {
+            notificationTitle = 'Đơn hàng $orderId';
+            notificationBody = 'Đơn hàng của bạn đã bị hủy!';
+          } else if (status == 'Đang giao hàng') {
+            notificationTitle = 'Đơn hàng $orderId';
+            notificationBody = 'Đơn hàng của bạn đang trên đường giao!';
+          } else if (status == 'Thành công') {
+            notificationTitle = 'Đơn hàng $orderId';
+            notificationBody = 'Đơn hàng của bạn đã giao hàng thành công!';
+          } else {
+            notificationTitle = 'Cập nhật đơn hàng';
+            notificationBody = 'Trạng thái đơn hàng của bạn đã thay đổi!';
           }
-        } else {
-          print('No valid data in event.');
+
+          // Hiển thị thông báo cho người dùng khi trạng thái đơn hàng thay đổi
+          _showNotification(
+            title: notificationTitle,
+            body: notificationBody,
+          );
+
+          // Lưu thông báo vào Firebase Realtime Database
+          _saveNotificationToDatabase(
+            userId: userId,
+            title: notificationTitle,
+            body: notificationBody,
+          );
+        } catch (e) {
+          print('Error processing order data: $e');
         }
-      });
-    } else {
-      print('User is not logged in');
-    }
+      } else {
+        print('No valid data in event.');
+      }
+    });
   }
 
-  void listenToChatBoxChanges() {
+  void listenToChatBoxChanges(String userId) {
     final Set<String> notifiedMessages = {}; // Lưu messageId đã thông báo
     int lastProcessedTimestamp = 0; // Lưu thời gian xử lý cuối cùng
 
-    User? currentUser = FirebaseAuth.instance.currentUser;
+    _chatBoxRef.child(userId).child('messages').onChildAdded.listen((event) {
+      print('Firebase event triggered: ${event.snapshot.key}');
+      print('New data: ${event.snapshot.value}');
 
-    if (currentUser != null) {
-      _chatBoxRef
-          .child(currentUser.uid)
-          .child('messages')
-          .onChildAdded
-          .listen((event) {
-        print('Firebase event triggered: ${event.snapshot.key}');
-        print('New data: ${event.snapshot.value}');
+      if (event.snapshot.exists && event.snapshot.value != null) {
+        try {
+          final messageData =
+              Map<String, dynamic>.from(event.snapshot.value as Map);
+          String? messageId = event.snapshot.key;
+          int? timestamp = messageData['createdAt'] as int?;
 
-        if (event.snapshot.exists && event.snapshot.value != null) {
-          try {
-            final messageData =
-                Map<String, dynamic>.from(event.snapshot.value as Map);
-            String? messageId = event.snapshot.key;
-            int? timestamp = messageData['createdAt'] as int?;
+          // Kiểm tra điều kiện tin nhắn mới thực sự
+          if (messageId != null &&
+              timestamp != null &&
+              timestamp > lastProcessedTimestamp &&
+              !notifiedMessages.contains(messageId)) {
+            if (messageData['status'] == 2 &&
+                messageData['trangThai'] == "Chưa xem") {
+              // Lấy nội dung tin nhắn
+              String messageContent =
+                  messageData['text'] ?? 'No content'; // Nội dung
+              String authorId = messageData['authorId'] ?? 'Unknown';
 
-            // Kiểm tra điều kiện tin nhắn mới thực sự
-            if (messageId != null &&
-                timestamp != null &&
-                timestamp > lastProcessedTimestamp &&
-                !notifiedMessages.contains(messageId)) {
-              if (messageData['status'] == 2 &&
-                  messageData['trangThai'] == "Chưa xem") {
-                // Lấy nội dung tin nhắn
-                String messageContent =
-                    messageData['text'] ?? 'No content'; // Nội dung
-                String authorId = messageData['authorId'] ?? 'Unknown';
+              // Tạo thông báo
+              String notificationTitle = 'Tin nhắn mới từ cửa hàng';
+              String notificationBody = messageContent;
 
-                // Tạo thông báo
-                String notificationTitle = 'Tin nhắn mới từ cửa hàng';
-                String notificationBody = messageContent;
+              // Hiển thị thông báo
+              _showNotification(
+                title: notificationTitle,
+                body: notificationBody,
+              );
 
-                // Hiển thị thông báo
-                _showNotification(
-                  title: notificationTitle,
-                  body: notificationBody,
-                );
+              // Lưu thông báo vào Firebase nếu cần
+              // _saveNotificationToDatabase(
+              //   userId: currentUser.uid,
+              //   title: notificationTitle,
+              //   body: notificationBody,
+              // );
 
-                // Lưu thông báo vào Firebase nếu cần
-                // _saveNotificationToDatabase(
-                //   userId: currentUser.uid,
-                //   title: notificationTitle,
-                //   body: notificationBody,
-                // );
+              print('Notification sent for message with status = 2');
 
-                print('Notification sent for message with status = 2');
-
-                // Cập nhật trạng thái
-                notifiedMessages.add(messageId);
-                lastProcessedTimestamp = timestamp;
-              } else {
-                print('Message status is not 2');
-              }
+              // Cập nhật trạng thái
+              notifiedMessages.add(messageId);
+              lastProcessedTimestamp = timestamp;
             } else {
-              print(
-                  'Message already notified, not the latest, or no timestamp.');
+              print('Message status is not 2');
             }
-          } catch (e) {
-            print('Error processing message data: $e');
+          } else {
+            print('Message already notified, not the latest, or no timestamp.');
           }
-        } else {
-          print('No valid data in event.');
+        } catch (e) {
+          print('Error processing message data: $e');
         }
-      });
-    } else {
-      print('User is not logged in');
-    }
+      } else {
+        print('No valid data in event.');
+      }
+    });
   }
 
 // Hàm lưu thông báo vào Firebase Realtime Database
