@@ -146,12 +146,35 @@ class _SearchScreenState extends State<SearchScreen> {
             icon: const Icon(Icons.shopping_cart, color: Colors.white),
             onPressed: () {
               if (userId == null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Login()),
+                // Hiển thị dialog yêu cầu đăng nhập
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Thông báo'),
+                    content: const Text('Bạn cần đăng nhập để truy cập giỏ hàng.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context); // Đóng dialog
+                        },
+                        child: const Text('Hủy'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context); // Đóng dialog trước khi chuyển màn hình
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const Login()),
+                          );
+                        },
+                        child: const Text('Đăng nhập'),
+                      ),
+                    ],
+                  ),
                 );
                 return;
               }
+              // Chuyển đến màn hình giỏ hàng
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const CartScreen()),
@@ -159,6 +182,7 @@ class _SearchScreenState extends State<SearchScreen> {
             },
           ),
         ],
+
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
