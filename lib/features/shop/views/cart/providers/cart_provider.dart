@@ -40,7 +40,7 @@ class CartProvider with ChangeNotifier {
           final itemMap = Map<String, dynamic>.from(entry.value as Map);
           return CartItem.fromMap(itemMap, entry.key);
         }).toList();
-        print("DánhachCart: $_cartItems");
+        print("DanhsachCart: $_cartItems");
       } else {
         _cartItems = []; // Initialize as empty list if no data exists
       }

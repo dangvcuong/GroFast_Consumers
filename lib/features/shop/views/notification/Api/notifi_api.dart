@@ -48,7 +48,6 @@ class NotifiApi {
       } else {
         print('FCM Token là null');
       }
-    } else {
       print('Người dùng từ chối quyền thông báo.');
     }
   }

@@ -663,29 +663,46 @@ class ShowDialogs {
 
   Future<void> thongbaoDangNhap(BuildContext context) async {
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Thông báo'),
-        content: const Text('Bạn cần đăng nhập để sử dụng chức năng này.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Đóng dialog
-            },
-            child: const Text('Hủy'),
+        barrierDismissible: false,
+        context: context,
+        builder: (context) => AlertDialog(
+      title: Stack(
+        children: [
+          Text(
+            'Thông báo',
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.red),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Đóng dialog trước khi chuyển màn hình
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Login()),
-              );
-            },
-            child: const Text('Đăng nhập'),
-          ),
+          Positioned(
+              top: -10,
+              right: -17,
+              child: IconButton(
+                icon: Icon(Icons.close),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              )),
         ],
       ),
+      content: const Text(
+          'Bạn cần đăng nhập để truy cập giỏ hàng.',style: TextStyle(fontSize: 16),),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(
+                context); // Đóng dialog trước khi chuyển màn hình
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const Login()),
+            );
+          },
+          child: const Text('Đăng nhập',style: TextStyle(fontSize: 16,color: Colors.black),),
+        ),
+      ],
+    ),
     );
   }
 }

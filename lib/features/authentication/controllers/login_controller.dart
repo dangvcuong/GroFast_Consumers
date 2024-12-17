@@ -281,17 +281,17 @@ class Login_Controller {
     User? user = FirebaseAuth.instance.currentUser;
     try {
       if (user != null) {
-        // Kiểm tra nếu có userId, thực hiện hủy đăng ký khỏi topic
-        if (user.uid.isNotEmpty) {
-          print("Đang hủy đăng ký khỏi topic allUsers...");
-          await _firebaseMessaging.unsubscribeFromTopic('allUsers');
-          print('Đã hủy đăng ký khỏi topic allUsers');
-        }
+        // Hủy đăng ký khỏi topic 'allUsers'
+        print("Đang hủy đăng ký khỏi topic allUsers...");
+        await _firebaseMessaging.unsubscribeFromTopic('allUsers');
+        print('Đã hủy đăng ký khỏi topic allUsers');
 
         // Xóa token FCM trong Firebase Realtime Database
         DatabaseReference ref =
             FirebaseDatabase.instance.ref('users/${user.uid}');
-        await ref.update({'userDeviceToken': null}); // Xóa token FCM
+        await ref.update({
+          'userDeviceToken': null, // Xóa token FCM
+        });
         print('Token FCM đã được xóa khỏi Firebase Realtime Database');
 
         // Đăng xuất khỏi Firebase Auth
@@ -305,8 +305,6 @@ class Login_Controller {
           context,
           MaterialPageRoute(builder: (context) => const Login()),
         );
-      } else {
-        errorMessage = "Không có người dùng để đăng xuất!";
       }
     } catch (e) {
       errorMessage = "Lỗi đăng xuất: $e";

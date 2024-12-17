@@ -14,7 +14,6 @@ import 'package:grofast_consumers/features/shop/views/chatbot/chat_screen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
 import 'package:grofast_consumers/features/shop/views/voucher/voucher_screen.dart';
-import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
 
 import '../cart/Product_cart_item.dart';
 
@@ -29,8 +28,9 @@ class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   bool _isImageTapped = false;
   bool _isImageVisible = true;
-  double _imageTop = 100;
-  double _imageLeft = 100;
+
+  double _imageTop = 550;
+  double _imageLeft = 280;
   Timer? _imageTimer;
 
   late double screenWidth;
@@ -66,7 +66,6 @@ class _HomeScreenState extends State<HomeScreen>
 
   Timer? _timer;
   String? userId;
-  final ShowDialogs showdialog = ShowDialogs();
   @override
   void initState() {
     super.initState();
@@ -262,11 +261,6 @@ class _HomeScreenState extends State<HomeScreen>
               leading: IconButton(
                 icon: const Icon(Icons.location_on, color: Colors.blue),
                 onPressed: () async {
-                  if (userId == null) {
-                    // Hiển thị dialog yêu cầu đăng nhập
-                    showdialog.thongbaoDangNhap(context);
-                    return;
-                  }
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -277,6 +271,15 @@ class _HomeScreenState extends State<HomeScreen>
                 },
               ),
               title: InkWell(
+                onTap: () async {
+
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const AddressUser()),
+                  );
+                  _fetchAddresses();
+                },
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -300,7 +303,49 @@ class _HomeScreenState extends State<HomeScreen>
                   onPressed: () {
                     if (userId == null) {
                       // Hiển thị dialog yêu cầu đăng nhập
-                      showdialog.thongbaoDangNhap(context);
+                      showDialog(
+                        barrierDismissible: false,
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Stack(
+                            children: [
+                              Text(
+                                'Thông báo',
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red),
+                              ),
+                              Positioned(
+                                  top: -10,
+                                  right: -17,
+                                  child: IconButton(
+                                    icon: Icon(Icons.close),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                  )),
+                            ],
+                          ),
+                          content: const Text(
+                              'Bạn cần đăng nhập để truy cập giỏ hàng.',style: TextStyle(fontSize: 16),),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(
+                                    context); // Đóng dialog trước khi chuyển màn hình
+
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const Login()),
+                                );
+                              },
+                              child: const Text('Đăng nhập',style: TextStyle(fontSize: 16),),
+                            ),
+                          ],
+                        ),
+                      );
                       return;
                     }
                     // Chuyển đến màn hình giỏ hàng
@@ -316,7 +361,34 @@ class _HomeScreenState extends State<HomeScreen>
                   onPressed: () {
                     if (userId == null) {
                       // Hiển thị dialog yêu cầu đăng nhập
-                      showdialog.thongbaoDangNhap(context);
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Thông báo'),
+                          content: const Text(
+                              'Bạn cần đăng nhập để sử dụng tính năng chat.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context); // Đóng dialog
+                              },
+                              child: const Text('Hủy'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(
+                                    context); // Đóng dialog trước khi chuyển màn hình
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const Login()),
+                                );
+                              },
+                              child: const Text('Đăng nhập'),
+                            ),
+                          ],
+                        ),
+                      );
                       return;
                     }
                     // Chuyển đến màn hình chat
@@ -517,10 +589,11 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ],
             ),
+            gapH20,
             if (_isImageVisible)
               Positioned(
-                bottom: 0,
-                right: 0,
+                top: _imageTop,
+                left: _imageLeft,
                 child: GestureDetector(
                   onPanUpdate: (details) {
                     setState(() {
