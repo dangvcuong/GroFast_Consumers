@@ -688,7 +688,7 @@ class ShowDialogs {
               // Icon thông báo
               const Icon(
                 Icons.info_outline_rounded,
-                color: Colors.blueAccent,
+                color: Colors.red,
                 size: 60,
               ),
               const SizedBox(height: 10),
