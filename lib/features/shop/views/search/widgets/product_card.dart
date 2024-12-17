@@ -40,12 +40,17 @@ class _ProductCardState extends State<ProductCard> {
 
   @override
   void initState() {
-    super.initState();
-    userId = widget.userId ??
-        FirebaseAuth.instance.currentUser?.uid ??
-        ''; // Ensure userId is not null
+    super.initState(); // Ensure userId is not null
     _loadCompanyNames();
     _checkUserStatus();
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      setState(() {
+        userId = user?.uid; // Cập nhật lại userId
+      });
+
+      // Nếu có userId, tải lại dữ liệu
+      if (user != null) {}
+    });
   }
 
   void _checkUserStatus() {

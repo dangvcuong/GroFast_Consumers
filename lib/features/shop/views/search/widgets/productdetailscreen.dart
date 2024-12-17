@@ -44,9 +44,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _checkUserStatus(); // Kiểm tra trạng thái đăng nhập
     _fetchOtherProducts();
     _getReviews();
-    _checkUserStatus(); // Kiểm tra trạng thái đăng nhập
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      setState(() {
+        userId = user?.uid; // Cập nhật lại userId
+      });
+
+      // Nếu có userId, tải lại dữ liệu
+      if (user != null) {}
+    });
   }
 
   void _checkUserStatus() {
@@ -54,6 +62,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       userId =
           FirebaseAuth.instance.currentUser?.uid; // Lấy userId nếu đăng nhập
     });
+    print('USER da dang nhap: $userId');
   }
 
   void _fetchOtherProducts() async {

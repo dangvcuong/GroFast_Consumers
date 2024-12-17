@@ -8,6 +8,7 @@ import 'package:grofast_consumers/features/authentication/controllers/login_cont
 import 'package:grofast_consumers/features/authentication/login/loggin.dart';
 import 'package:grofast_consumers/features/shop/models/product_model.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
+import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
 
 import '../cart/Product_cart_item.dart';
 
@@ -21,7 +22,7 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final DatabaseReference _databaseRef =
       FirebaseDatabase.instance.ref('products');
-
+  final ShowDialogs showDialog = ShowDialogs();
   final TextEditingController _searchController = TextEditingController();
   List<Product> _products = [];
   List<Product> _filteredProducts = [];
@@ -35,6 +36,7 @@ class _SearchScreenState extends State<SearchScreen> {
   ];
   final DatabaseReference _companyRef =
       FirebaseDatabase.instance.ref('companys');
+
   @override
   void initState() {
     super.initState();
@@ -43,6 +45,14 @@ class _SearchScreenState extends State<SearchScreen> {
     _fetchCompanyData();
     _filterProducts();
     _checkUserStatus();
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      setState(() {
+        userId = user?.uid; // Cập nhật lại userId
+      });
+
+      // Nếu có userId, tải lại dữ liệu
+      if (user != null) {}
+    });
   }
 
   void _checkUserStatus() {
@@ -147,31 +157,7 @@ class _SearchScreenState extends State<SearchScreen> {
             onPressed: () {
               if (userId == null) {
                 // Hiển thị dialog yêu cầu đăng nhập
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Thông báo'),
-                    content: const Text('Bạn cần đăng nhập để truy cập giỏ hàng.'),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context); // Đóng dialog
-                        },
-                        child: const Text('Hủy'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context); // Đóng dialog trước khi chuyển màn hình
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const Login()),
-                          );
-                        },
-                        child: const Text('Đăng nhập'),
-                      ),
-                    ],
-                  ),
-                );
+                showDialog.thongbaoDangNhap(context);
                 return;
               }
               // Chuyển đến màn hình giỏ hàng
@@ -182,7 +168,6 @@ class _SearchScreenState extends State<SearchScreen> {
             },
           ),
         ],
-
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

@@ -663,46 +663,116 @@ class ShowDialogs {
 
   Future<void> thongbaoDangNhap(BuildContext context) async {
     showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (context) => AlertDialog(
-      title: Stack(
-        children: [
-          Text(
-            'Thông báo',
-            style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.red),
-          ),
-          Positioned(
-              top: -10,
-              right: -17,
-              child: IconButton(
-                icon: Icon(Icons.close),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              )),
-        ],
-      ),
-      content: const Text(
-          'Bạn cần đăng nhập để truy cập giỏ hàng.',style: TextStyle(fontSize: 16),),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(
-                context); // Đóng dialog trước khi chuyển màn hình
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const Login()),
-            );
-          },
-          child: const Text('Đăng nhập',style: TextStyle(fontSize: 16,color: Colors.black),),
+      context: context,
+      barrierDismissible: false, // Ngăn dialog bị tắt khi nhấn ngoài
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
         ),
-      ],
-    ),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon thông báo
+              const Icon(
+                Icons.info_outline_rounded,
+                color: Colors.blueAccent,
+                size: 60,
+              ),
+              const SizedBox(height: 10),
+
+              // Tiêu đề
+              const Text(
+                'Thông báo',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // Nội dung
+              const Text(
+                'Bạn cần đăng nhập để sử dụng chức năng này.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black54,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Nút hành động
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text(
+                      'Hủy',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Đóng dialog
+
+                      // Đăng nhập và chuyển hướng
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          transitionDuration: const Duration(milliseconds: 300),
+                          pageBuilder: (_, __, ___) => const Login(),
+                          transitionsBuilder: (_, animation, __, child) {
+                            return SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(1, 0),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            );
+                          },
+                        ),
+                      ).then((result) {
+                        if (result == true) {
+                          // Quay lại trang trước và load lại dữ liệu sau khi đăng nhập thành công
+                          Navigator.pop(context, true); // Trả về giá trị true
+                        }
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      'Đăng nhập',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

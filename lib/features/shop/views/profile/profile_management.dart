@@ -58,6 +58,16 @@ class _ProFile_ManagementState extends State<ProFile_Management> {
   }
 
   void _checkUserStatus() {
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      setState(() {
+        userId = user?.uid; // Cập nhật lại userId
+      });
+
+      // Nếu có userId, tải lại dữ liệu
+      if (user != null) {
+        _getUserInfo();
+      }
+    });
     setState(() {
       userId =
           FirebaseAuth.instance.currentUser?.uid; // Lấy userId nếu đăng nhập

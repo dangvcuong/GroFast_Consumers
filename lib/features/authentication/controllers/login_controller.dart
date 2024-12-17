@@ -109,16 +109,15 @@ class Login_Controller {
               } else if (user.emailVerified) {
                 // Người dùng đã xác thực email và trạng thái hoạt động bình thường
                 errorMessage = 'Đăng nhập thành công.';
-
                 // Gọi hàm thông báo khi đăng nhập thành công
                 await notifi.initNotifications(user.uid);
-
+                Navigator.pop(context, true);
                 // Điều hướng đến màn hình chính
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const Btn_Navigatin()),
-                );
+                // Navigator.pushReplacement(
+                //   context,
+                //   MaterialPageRoute(
+                //       builder: (context) => const Btn_Navigatin()),
+                // );
               } else {
                 errorMessage =
                     'Vui lòng xác thực email của bạn trước khi đăng nhập.';

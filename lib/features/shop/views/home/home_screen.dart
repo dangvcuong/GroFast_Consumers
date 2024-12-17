@@ -14,6 +14,7 @@ import 'package:grofast_consumers/features/shop/views/chatbot/chat_screen.dart';
 import 'package:grofast_consumers/features/shop/views/profile/widgets/User_Address.dart';
 import 'package:grofast_consumers/features/shop/views/search/widgets/product_card.dart';
 import 'package:grofast_consumers/features/shop/views/voucher/voucher_screen.dart';
+import 'package:grofast_consumers/features/showdialogs/show_dialogs.dart';
 
 import '../cart/Product_cart_item.dart';
 
@@ -66,10 +67,20 @@ class _HomeScreenState extends State<HomeScreen>
 
   Timer? _timer;
   String? userId;
+  final ShowDialogs showdialog = ShowDialogs();
   @override
   void initState() {
     super.initState();
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      setState(() {
+        userId = user?.uid; // Cập nhật lại userId
+      });
 
+      // Nếu có userId, tải lại dữ liệu
+      if (user != null) {
+        _fetchAddresses();
+      }
+    });
     _controller = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 300));
 
@@ -261,6 +272,10 @@ class _HomeScreenState extends State<HomeScreen>
               leading: IconButton(
                 icon: const Icon(Icons.location_on, color: Colors.blue),
                 onPressed: () async {
+                  if (userId == null) {
+                    showdialog.thongbaoDangNhap(context);
+                    return;
+                  }
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -272,12 +287,11 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               title: InkWell(
                 onTap: () async {
-
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const AddressUser()),
-                  );
+                  // await Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //       builder: (context) => const AddressUser()),
+                  // );
                   _fetchAddresses();
                 },
                 child: Column(
@@ -302,50 +316,7 @@ class _HomeScreenState extends State<HomeScreen>
                       color: Colors.black),
                   onPressed: () {
                     if (userId == null) {
-                      // Hiển thị dialog yêu cầu đăng nhập
-                      showDialog(
-                        barrierDismissible: false,
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Stack(
-                            children: [
-                              Text(
-                                'Thông báo',
-                                style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.red),
-                              ),
-                              Positioned(
-                                  top: -10,
-                                  right: -17,
-                                  child: IconButton(
-                                    icon: Icon(Icons.close),
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                  )),
-                            ],
-                          ),
-                          content: const Text(
-                              'Bạn cần đăng nhập để truy cập giỏ hàng.',style: TextStyle(fontSize: 16),),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(
-                                    context); // Đóng dialog trước khi chuyển màn hình
-
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => const Login()),
-                                );
-                              },
-                              child: const Text('Đăng nhập',style: TextStyle(fontSize: 16),),
-                            ),
-                          ],
-                        ),
-                      );
+                      showdialog.thongbaoDangNhap(context);
                       return;
                     }
                     // Chuyển đến màn hình giỏ hàng
@@ -360,35 +331,7 @@ class _HomeScreenState extends State<HomeScreen>
                   icon: const Icon(Icons.chat_outlined, color: Colors.black),
                   onPressed: () {
                     if (userId == null) {
-                      // Hiển thị dialog yêu cầu đăng nhập
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Thông báo'),
-                          content: const Text(
-                              'Bạn cần đăng nhập để sử dụng tính năng chat.'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context); // Đóng dialog
-                              },
-                              child: const Text('Hủy'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(
-                                    context); // Đóng dialog trước khi chuyển màn hình
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => const Login()),
-                                );
-                              },
-                              child: const Text('Đăng nhập'),
-                            ),
-                          ],
-                        ),
-                      );
+                      showdialog.thongbaoDangNhap(context);
                       return;
                     }
                     // Chuyển đến màn hình chat
