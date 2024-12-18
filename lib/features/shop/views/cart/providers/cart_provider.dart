@@ -9,6 +9,7 @@ class CartProvider with ChangeNotifier {
 
   List<CartItem> get cartItems => _cartItems;
 
+  // Chọn tất cả sản phẩm
   void selectAllItems() {
     for (var item in cartItems) {
       item.isChecked = true;
@@ -16,11 +17,22 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Hàm bỏ chọn tất cả sản phẩm
+  // Bỏ chọn tất cả sản phẩm
   void deselectAllItems() {
     for (var item in cartItems) {
       item.isChecked = false;
     }
+    notifyListeners();
+  }
+
+  // Kiểm tra tất cả sản phẩm đã được chọn hay chưa
+  bool areAllItemsSelected() {
+    return cartItems.every((item) => item.isChecked);
+  }
+
+  // Cập nhật trạng thái sản phẩm và kiểm tra
+  void toggleItemSelection(CartItem item) {
+    item.isChecked = !item.isChecked;
     notifyListeners();
   }
 

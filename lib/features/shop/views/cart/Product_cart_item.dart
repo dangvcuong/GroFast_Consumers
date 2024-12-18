@@ -247,13 +247,14 @@ class _CartScreenState extends State<CartScreen> {
         Row(
           children: [
             Checkbox(
-              value: isSelectAll,
+              value: cartProvider.areAllItemsSelected(),
               onChanged: (bool? value) {
                 setState(() {
-                  isSelectAll = value ?? false;
-                  isSelectAll
-                      ? cartProvider.selectAllItems()
-                      : cartProvider.deselectAllItems();
+                  if (value == true) {
+                    cartProvider.selectAllItems();
+                  } else {
+                    cartProvider.deselectAllItems();
+                  }
                 });
               },
             ),
@@ -290,7 +291,9 @@ class _CartScreenState extends State<CartScreen> {
                     child: const Text('Hủy'),
                   ),
                   TextButton(
-                    onPressed: () => Navigator.pop(context, true),
+                    onPressed: () => {
+                      Navigator.pop(context, true),
+                    },
                     child: const Text('Đồng ý'),
                   ),
                 ],
@@ -300,7 +303,9 @@ class _CartScreenState extends State<CartScreen> {
             if (confirm == true) {
               for (var item in selectedItems) {
                 cartProvider.removeItem(
-                    FirebaseAuth.instance.currentUser!.uid, item.productId);
+                  FirebaseAuth.instance.currentUser!.uid,
+                  item.productId,
+                );
               }
             }
           },
@@ -315,10 +320,52 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildSummary(double totalPrice, CartProvider cartProvider) {
-    // Tính tổng số lượng sản phẩm đã chọn (mỗi sản phẩm chỉ tính 1 lần)
-    int totalQuantity = cartProvider.cartItems
-        .where((item) => item.isChecked) // Lọc ra các sản phẩm đã chọn
-        .length; // Đếm số lượng sản phẩm đã chọn
+    // Tính tổng số lượng sản phẩm đã chọn
+    int totalQuantity =
+        cartProvider.cartItems.where((item) => item.isChecked).length;
+
+    // Hiển thị Dialog cảnh báo
+    void showEmptySelectionDialog() {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: Colors.transparent,
+        builder: (context) => Dialog(
+          backgroundColor: Colors.black.withOpacity(0.6),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Padding(
+            padding: EdgeInsets.all(10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.warning_amber_rounded,
+                  color: Colors.amber,
+                  size: 40,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Bạn vẫn chưa chọn sản phẩm nào để mua.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      Future.delayed(const Duration(seconds: 2), () {
+        Navigator.of(context, rootNavigator: true).pop();
+      });
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -331,7 +378,7 @@ class _CartScreenState extends State<CartScreen> {
               const Text(
                 'Tổng thanh toán:',
                 style: TextStyle(
-                  fontSize: 18, // Giảm kích thước chữ
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
@@ -340,93 +387,54 @@ class _CartScreenState extends State<CartScreen> {
               Text(
                 formatter.format(totalPrice),
                 style: const TextStyle(
-                    fontSize: 20,
-                    color: Colors.red,
-                    fontWeight: FontWeight.bold),
+                  fontSize: 20,
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
-          const SizedBox(
-              height:
-                  8), // Khoảng cách giữa "Tổng thanh toán" và nút "Mua hàng"
+          const SizedBox(height: 8),
 
-          // Nút "Mua hàng" và tổng số sản phẩm đã chọn
+          // Checkbox "Chọn tất cả" và nút "Mua hàng"
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Hiển thị nút chọn tất cả
+              // Checkbox "Chọn tất cả"
               Row(
                 children: [
                   Checkbox(
-                    value: isSelectAll,
+                    value: cartProvider.areAllItemsSelected(),
                     onChanged: (bool? value) {
                       setState(() {
-                        isSelectAll = value ?? false;
-                        isSelectAll
-                            ? cartProvider.selectAllItems()
-                            : cartProvider.deselectAllItems();
+                        if (value == true) {
+                          cartProvider.selectAllItems();
+                        } else {
+                          cartProvider.deselectAllItems();
+                        }
                       });
                     },
                   ),
                   const Text(
-                    'tất cả',
+                    'Tất cả',
                     style: TextStyle(fontSize: 14),
                   ),
                 ],
               ),
-              // Hiển thị nút "Mua hàng" với tổng số sản phẩm đã chọn
+
+              // Nút "Mua hàng"
               ElevatedButton(
                 onPressed: () {
                   final selectedProducts = cartProvider.cartItems
                       .where((item) => item.isChecked)
                       .toList();
-                  if (selectedProducts.isEmpty) {
-                    showDialog(
-                      context: context,
-                      barrierDismissible:
-                          false, // Không cho phép đóng bằng cách nhấn ra ngoài
-                      barrierColor: Colors
-                          .transparent, // Màu nền mờ của background (nền đen trong)
-                      builder: (context) => Dialog(
-                        backgroundColor: Colors.black
-                            .withOpacity(0.6), // Nền của dialog trong suốt
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Padding(
-                          padding: EdgeInsets.all(10),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.warning_amber_rounded,
-                                color: Colors.amber,
-                                size: 40, // Kích thước icon
-                              ),
-                              SizedBox(height: 16),
-                              Text(
-                                'Bạn vẫn chưa có sản phẩm nào để mua.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white, // Màu chữ trắng
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
 
-                    // Tự động đóng popup sau 2 giây
-                    Future.delayed(const Duration(seconds: 2), () {
-                      Navigator.of(context, rootNavigator: true).pop();
-                    });
+                  if (selectedProducts.isEmpty) {
+                    showEmptySelectionDialog();
                     return;
                   }
-                  // Tiếp tục với việc xử lý nếu có sản phẩm được chọn
+
+                  // Chuyển đến màn hình thanh toán
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -447,7 +455,7 @@ class _CartScreenState extends State<CartScreen> {
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
                 child: Text(
-                  'Mua hàng ($totalQuantity)', // Hiển thị tổng số sản phẩm đã chọn
+                  'Mua hàng ($totalQuantity)',
                   style: const TextStyle(color: Colors.white, fontSize: 14),
                 ),
               ),
