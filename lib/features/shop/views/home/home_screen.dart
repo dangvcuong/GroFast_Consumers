@@ -71,16 +71,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      setState(() {
-        userId = user?.uid; // Cập nhật lại userId
-      });
 
-      // Nếu có userId, tải lại dữ liệu
-      if (user != null) {
-        _fetchAddresses();
-      }
-    });
     _controller = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 300));
 
@@ -114,6 +105,16 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _checkUserStatus() {
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      setState(() {
+        userId = user?.uid; // Cập nhật lại userId
+      });
+
+      // Nếu có userId, tải lại dữ liệu
+      if (user != null) {
+        _fetchAddresses();
+      }
+    });
     setState(() {
       userId =
           FirebaseAuth.instance.currentUser?.uid; // Lấy userId nếu đăng nhập
@@ -562,6 +563,10 @@ class _HomeScreenState extends State<HomeScreen>
                     });
                   },
                   onTap: () {
+                    if (userId == null) {
+                      showdialog.thongbaoDangNhap(context);
+                      return;
+                    }
                     setState(() {
                       _isImageTapped = true;
                     });

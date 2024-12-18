@@ -108,7 +108,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
           // Khởi tạo một Timer để tự động đóng popup sau 3 giây
           Timer? autoCloseTimer;
 
-          autoCloseTimer = Timer(Duration(seconds: 3), () {
+          autoCloseTimer = Timer(const Duration(seconds: 3), () {
             if (autoCloseDialog) {
               Navigator.of(context)
                   .pop(); // Đóng popup sau 3 giây nếu không có hành động từ người dùng
@@ -119,7 +119,13 @@ class _VoucherScreenState extends State<VoucherScreen> {
             title: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Thông báo!",style: TextStyle(color: Colors.red,fontSize: 20,fontWeight: FontWeight.bold),),
+                const Text(
+                  "Thông báo!",
+                  style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold),
+                ),
                 Positioned(
                   top: -10,
                   right: -17,
@@ -135,7 +141,10 @@ class _VoucherScreenState extends State<VoucherScreen> {
                 ),
               ],
             ),
-            content: Text("Bạn đã hết lượt quay. Hãy đợi đến ngày mai!",style: TextStyle(fontSize: 15),),
+            content: const Text(
+              "Bạn đã hết lượt quay. Hãy đợi đến ngày mai!",
+              style: TextStyle(fontSize: 15),
+            ),
           );
         },
       );
