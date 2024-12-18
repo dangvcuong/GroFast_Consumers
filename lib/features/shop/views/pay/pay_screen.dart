@@ -157,6 +157,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           total = 0.0; // Nếu ví đủ tiền, tổng cộng là 0
         } else {
           loginController.ThongBao(context, "Số dư ví của bạn không đủ");
+          _selectedPaymentMethod = 1;
           if (giam == 0) {
             // Nếu thanh toán bằng tiền mặt
             total = totalAmount + shippingFee;
@@ -196,7 +197,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: SingleChildScrollView(
-              // Sử dụng SingleChildScrollView để cuộn
               child: Column(
                 mainAxisSize: MainAxisSize.min, // Giới hạn chiều cao của Column
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -210,30 +210,34 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  TextField(
-                    keyboardType: TextInputType.visiblePassword,
-                    controller: passwordController,
-                    obscureText:
-                        !isPasswordVisible, // Điều khiển hiển thị mật khẩu
-                    decoration: InputDecoration(
-                      labelText: "Nhập mật khẩu của bạn",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      floatingLabelBehavior: FloatingLabelBehavior.auto,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          isPasswordVisible
-                              ? Icons.visibility
-                              : Icons.visibility_off,
+                  StatefulBuilder(
+                    builder: (BuildContext context, setState) {
+                      return TextField(
+                        keyboardType: TextInputType.visiblePassword,
+                        controller: passwordController,
+                        obscureText:
+                            !isPasswordVisible, // Điều khiển hiển thị mật khẩu
+                        decoration: InputDecoration(
+                          labelText: "Nhập mật khẩu của bạn",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          floatingLabelBehavior: FloatingLabelBehavior.auto,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              isPasswordVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                isPasswordVisible = !isPasswordVisible;
+                              });
+                            },
+                          ),
                         ),
-                        onPressed: () {
-                          setState(() {
-                            isPasswordVisible = !isPasswordVisible;
-                          });
-                        },
-                      ),
-                    ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 30),
                   Row(

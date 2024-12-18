@@ -87,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen>
     });
 
     currentUser = FirebaseAuth.instance.currentUser;
-    _fetchAddresses();
+    _fetchAddresses(userId ?? '');
     _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
       if (_currentPage < _banners.length - 1) {
         _currentPage++;
@@ -112,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen>
 
       // Nếu có userId, tải lại dữ liệu
       if (user != null) {
-        _fetchAddresses();
+        _fetchAddresses(userId ?? '');
       }
     });
     setState(() {
@@ -205,8 +205,7 @@ class _HomeScreenState extends State<HomeScreen>
     });
   }
 
-  Future<void> _fetchAddresses() async {
-    final userId = currentUser!.uid;
+  Future<void> _fetchAddresses(String userIdId) async {
     final databaseRef =
         FirebaseDatabase.instance.ref('users/$userId/addresses');
     final DatabaseEvent event = await databaseRef.once();
@@ -282,29 +281,31 @@ class _HomeScreenState extends State<HomeScreen>
                     MaterialPageRoute(
                         builder: (context) => const AddressUser()),
                   ).then((_) {
-                    _fetchAddresses();
+                    _fetchAddresses(userId ?? '');
                   });
                 },
               ),
               title: InkWell(
-                onTap: () async {
-                  // await Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //       builder: (context) => const AddressUser()),
-                  // );
-                  _fetchAddresses();
-                },
+                // onTap: () async {
+                //   await Navigator.push(
+                //     context,
+                //     MaterialPageRoute(
+                //         builder: (context) => const AddressUser()),
+                //   );
+                //   _fetchAddresses(userId ?? '');
+                // },
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text("Giao tới",
                         style: TextStyle(color: Colors.grey, fontSize: 10)),
                     Text(
-                      defaultAddress?.nameAddresUser != null &&
-                              defaultAddress?.addressUser != null
-                          ? '${defaultAddress!.nameAddresUser} - ${defaultAddress!.addressUser}'
-                          : 'Chưa có địa chỉ',
+                      userId == null
+                          ? 'GroFast' // Hiển thị "GroFast" nếu chưa đăng nhập
+                          : (defaultAddress?.nameAddresUser != null &&
+                                  defaultAddress?.addressUser != null
+                              ? '${defaultAddress!.nameAddresUser} - ${defaultAddress!.addressUser}'
+                              : 'Chưa có địa chỉ'),
                       style: const TextStyle(color: Colors.black, fontSize: 14),
                       maxLines: 2,
                     ),

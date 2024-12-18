@@ -720,7 +720,7 @@ class ShowDialogs {
 
                   // Nút hành động
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       ElevatedButton(
                         onPressed: () {
@@ -728,7 +728,8 @@ class ShowDialogs {
                           Navigator.push(
                             context,
                             PageRouteBuilder(
-                              transitionDuration: const Duration(milliseconds: 300),
+                              transitionDuration:
+                                  const Duration(milliseconds: 300),
                               pageBuilder: (_, __, ___) => const Login(),
                               transitionsBuilder: (_, animation, __, child) {
                                 return SlideTransition(
@@ -779,6 +780,5 @@ class ShowDialogs {
         ),
       ),
     );
-
   }
 }

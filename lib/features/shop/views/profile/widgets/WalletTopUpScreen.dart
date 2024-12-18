@@ -96,7 +96,7 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "Nhập số tiền (đ)",
+              "Nhập số tiền cần nạp (đ)",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
@@ -227,7 +227,7 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
                 ),
               ),
               child: const Text(
-                "Thanh toán ngay với Stripe Payment",
+                "Nạp tiền với Stripe Payment",
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
@@ -235,7 +235,7 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
             const SizedBox(height: 10),
             const Center(
               child: Text(
-                "Nhấn “Nạp tiền ngay”, bạn đã đồng ý tuân theo Điều khoản sử dụng và Chính sách bảo mật của GroFast",
+                "Nhấn “Nạp tiền ”, bạn đã đồng ý tuân theo Điều khoản sử dụng và Chính sách bảo mật của GroFast",
                 style: TextStyle(color: Colors.grey, fontSize: 12),
                 textAlign: TextAlign.center,
               ),

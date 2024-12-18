@@ -362,35 +362,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 onTap: () async {
                   if (userId == null) {
                     // Hiển thị dialog yêu cầu đăng nhập
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Thông báo'),
-                          content: const Text(
-                              'Bạn cần đăng nhập để thực hiện thao tác này.'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context); // Đóng dialog
-                              },
-                              child: const Text('Hủy'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context); // Đóng dialog
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => const Login()),
-                                ); // Chuyển sang màn hình đăng nhập
-                              },
-                              child: const Text('Đăng nhập'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
+                    showdialog.thongbaoDangNhap(context);
                     return;
                   }
                   await favoritesProvider.addProductToUserHeart(
