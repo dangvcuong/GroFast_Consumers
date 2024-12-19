@@ -78,7 +78,6 @@ class _HomeScreenState extends State<HomeScreen>
     _scheduleImageReappear();
     _checkUserStatus();
     _fetchProducts();
-
     _searchController.addListener(_filterProducts);
     _pageController.addListener(() {
       setState(() {

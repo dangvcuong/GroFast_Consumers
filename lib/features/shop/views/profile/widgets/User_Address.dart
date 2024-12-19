@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:grofast_consumers/constants/app_sizes.dart';
 import 'package:grofast_consumers/features/authentication/controllers/addres_Controller.dart';
@@ -182,9 +183,14 @@ class _AddressUserState extends State<AddressUser> {
                       ),
                       filled: true,
                       fillColor: Colors.grey[200],
+                      counterText: '',
                     ),
                     keyboardType: TextInputType.phone,
                     controller: phoneController,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(10),
+                    ],
                   ),
                   gapH20,
                   // Địa chỉ và Icon lấy vị trí
@@ -197,6 +203,7 @@ class _AddressUserState extends State<AddressUser> {
                       ),
                       filled: true,
                       fillColor: Colors.grey[200],
+                      counterText: '',
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.location_on, color: Colors.blue),
                         onPressed: () async {
@@ -252,6 +259,12 @@ class _AddressUserState extends State<AddressUser> {
                       ),
                     ),
                     controller: addressController,
+                    keyboardType: TextInputType.multiline,
+                    maxLines: 4,
+                    minLines: 1,
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(300),
+                    ],
                   ),
                 ],
               ),
