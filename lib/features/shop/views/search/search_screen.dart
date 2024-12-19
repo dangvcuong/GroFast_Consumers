@@ -115,15 +115,26 @@ class _SearchScreenState extends State<SearchScreen> {
         final productDescription =
             removeDiacritics(product.description.toLowerCase());
 
+        // Kiểm tra đánh giá cao hơn hoặc bằng 4.0
+        final rating = double.tryParse(product.evaluate) ?? 0.0;
+        final matchesHighRating = rating >= 4.0;
+
         final matchesBrand = _selectedBrandId == null ||
             (_selectedBrandId == "highRating"
-                ? (int.tryParse(product.evaluate) ?? 0) >= 4
+                ? matchesHighRating
                 : product.idHang == _selectedBrandId);
         final matchesQuery =
             productName.contains(query) || productDescription.contains(query);
 
         return matchesBrand && matchesQuery;
       }).toList();
+
+      // Sắp xếp theo đánh giá từ cao xuống thấp
+      _filteredProducts.sort((a, b) {
+        final ratingA = double.tryParse(a.evaluate) ?? 0.0;
+        final ratingB = double.tryParse(b.evaluate) ?? 0.0;
+        return ratingB.compareTo(ratingA); // Sắp xếp từ cao xuống thấp
+      });
     });
   }
 
