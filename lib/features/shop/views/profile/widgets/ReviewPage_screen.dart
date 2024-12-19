@@ -216,6 +216,7 @@ class _ReviewPageState extends State<ReviewPage> {
 
     // Dữ liệu đánh giá bao gồm thông tin người dùng và đánh giá
     final reviewData = {
+      'nameProduct': widget.ten,
       'rating': rating,
       'review': reviewText,
       'userId': userId,
