@@ -98,20 +98,23 @@ class NotifiApi {
           print('Order Status: ${orderData['orderStatus']}');
 
           String status = orderData['orderStatus'] ?? 'Unknown';
-          String idOrder = orderData['id'];
+          String idOrder = orderData['id']?.toString() ?? 'Unknown';
           print("STATUS: $status");
 
           String notificationTitle;
           String notificationBody;
 
           if (status == 'Đã hủy') {
-            notificationTitle = 'Đơn hàng $orderId';
+            notificationTitle = 'Đơn hàng #$orderId';
             notificationBody = 'Đơn hàng của bạn đã bị hủy!';
+          }else if (status == 'Đã xác nhận') {
+            notificationTitle = 'Đơn hàng #$orderId';
+            notificationBody = 'Đơn hàng của bạn đã được xác nhận!';
           } else if (status == 'Đang giao hàng') {
-            notificationTitle = 'Đơn hàng $orderId';
+            notificationTitle = 'Đơn hàng #$orderId';
             notificationBody = 'Đơn hàng của bạn đang trên đường giao!';
           } else if (status == 'Thành công') {
-            notificationTitle = 'Đơn hàng $orderId';
+            notificationTitle = 'Đơn hàng #$orderId';
             notificationBody = 'Đơn hàng của bạn đã giao hàng thành công!';
           } else {
             notificationTitle = 'Cập nhật đơn hàng';
