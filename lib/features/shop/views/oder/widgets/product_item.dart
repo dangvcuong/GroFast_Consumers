@@ -37,19 +37,15 @@ class ProductItem extends StatelessWidget {
         padding: const EdgeInsets.all(8.0), // Padding inside the container
         child: Row(
           children: [
-            Image.network(
-              imageUrl,
-              width: 70,
-              height: 120,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  color: Colors.grey,
-                  child: const Icon(Icons.image, color: Colors.white),
-                );
-              },
+            Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12.0),
+                child: Image.network(
+                  imageUrl,
+                  height: 110,
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
