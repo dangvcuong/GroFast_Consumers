@@ -98,6 +98,7 @@ class NotifiApi {
           print('Order Status: ${orderData['orderStatus']}');
 
           String status = orderData['orderStatus'] ?? 'Unknown';
+          String idOrder = orderData['id'];
           print("STATUS: $status");
 
           String notificationTitle;
@@ -119,7 +120,10 @@ class NotifiApi {
 
           _showNotification(title: notificationTitle, body: notificationBody);
           _saveNotificationToDatabase(
-              userId: userId, title: notificationTitle, body: notificationBody);
+              userId: userId,
+              title: notificationTitle,
+              body: notificationBody,
+              idOrder: orderId ?? '');
         } catch (e) {
           print('Error processing order data: $e');
         }
@@ -180,6 +184,7 @@ class NotifiApi {
     required String userId,
     required String title,
     required String body,
+    required String idOrder,
   }) async {
     try {
       final notificationsRef =
@@ -188,6 +193,7 @@ class NotifiApi {
         'title': title,
         'body': body,
         'timestamp': ServerValue.timestamp,
+        'idOrder': idOrder,
       };
 
       await notificationsRef.push().set(newNotification);

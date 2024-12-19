@@ -40,7 +40,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   bool isDescriptionExpanded = false;
   final ShowDialogs showdialog = ShowDialogs();
-
+  final ShowDialogs showDialogs = ShowDialogs();
   @override
   void initState() {
     super.initState();
@@ -365,9 +365,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     showdialog.thongbaoDangNhap(context);
                     return;
                   }
-                  await favoritesProvider.addProductToUserHeart(
-                      userId!, widget.product, context);
-                  setState(() {});
+                  if (favoritesProvider.isFavorite(widget.product)) {
+                    // Hiển thị hộp thoại xóa sản phẩm khỏi yêu thích
+                    showDialogs.showDeleteFavoriteDialog(
+                        context, widget.product);
+                  } else {
+                    // Thêm sản phẩm vào danh sách yêu thích
+                    await favoritesProvider.addProductToUserHeart(
+                        userId ?? '', widget.product, context);
+                  }
                 },
                 child: Icon(
                   Icons.favorite,

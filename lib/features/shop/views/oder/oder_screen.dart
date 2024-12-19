@@ -107,29 +107,42 @@ class _OrderScreenState extends State<OrderScreen> {
                 }
 
                 final Map<dynamic, dynamic> ordersMap =
-                snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                    snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
 
                 // Lọc đơn hàng theo trạng thái
                 final List<Map<String, dynamic>> orders = ordersMap.entries
                     .map((entry) => {
-                  'id': entry.key.toString(),
-                  ...(entry.value as Map<dynamic, dynamic>).map(
-                        (key, value) => MapEntry(key.toString(), value),
-                  ),
-                })
+                          'id': entry.key.toString(),
+                          ...(entry.value as Map<dynamic, dynamic>).map(
+                            (key, value) => MapEntry(key.toString(), value),
+                          ),
+                        })
                     .where((order) {
+                  // Kiểm tra trạng thái đơn hàng
                   if (_currentStatus == 'Lịch sử') {
                     return order['orderStatus'] == 'Thành công' ||
                         order['orderStatus'] == 'Đã hủy';
                   }
                   return order['orderStatus'] ==
                       _currentStatus; // Hiển thị theo trạng thái đã chọn
-                }).toList();
+                }).toList()
+                  ..sort((a, b) {
+                    // Chuyển đổi chuỗi ngày giờ thành DateTime
+                    final orderDateA = a['orderDate'] is String
+                        ? DateTime.parse(a['orderDate'])
+                        : DateTime.now();
+                    final orderDateB = b['orderDate'] is String
+                        ? DateTime.parse(b['orderDate'])
+                        : DateTime.now();
+
+                    // Sắp xếp theo thứ tự giảm dần (mới nhất lên đầu)
+                    return orderDateB.compareTo(orderDateA);
+                  });
 
                 if (orders.isEmpty) {
                   return Center(
                     child:
-                    Text('Không có đơn hàng trạng thái "$_currentStatus".'),
+                        Text('Không có đơn hàng trạng thái "$_currentStatus".'),
                   );
                 }
                 return ListView.builder(
@@ -150,7 +163,7 @@ class _OrderScreenState extends State<OrderScreen> {
                         color: Colors.white, // Màu nền trắng cho card
                         shape: RoundedRectangleBorder(
                           side:
-                          const BorderSide(color: Colors.white54, width: 2),
+                              const BorderSide(color: Colors.white54, width: 2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: InkWell(
@@ -167,7 +180,7 @@ class _OrderScreenState extends State<OrderScreen> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content:
-                                      Text('Lỗi: Không có ID đơn hàng')));
+                                          Text('Lỗi: Không có ID đơn hàng')));
                             }
                           },
                           child: ListTile(
@@ -191,7 +204,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                 Text(
                                     "Số lượng: ${order['products']?.length ?? 0} sản phẩm",
                                     style:
-                                    const TextStyle(color: Colors.black)),
+                                        const TextStyle(color: Colors.black)),
                                 const SizedBox(height: 5),
                                 Text(
                                   formatter.format(totalAmount),
@@ -235,11 +248,11 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   Widget buildStatusIcon(
-      BuildContext context, {
-        required IconData icon,
-        required String label,
-        required String status,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String status,
+  }) {
     // Kiểm tra nếu biểu tượng này được chọn
     bool isSelected = _selectedStatus == status;
     return GestureDetector(

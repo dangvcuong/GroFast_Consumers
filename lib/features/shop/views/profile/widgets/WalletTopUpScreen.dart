@@ -62,12 +62,12 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
   }
 
   String _formatInput(String value) {
-    // Hàm định dạng số tiền
-    String newValue = value.replaceAll('.', '').replaceAll(',', '');
-    if (newValue.isNotEmpty) {
-      return formatter.format(int.parse(newValue));
-    }
-    return '';
+    // Xóa các ký tự không phải số
+    String numericValue = value.replaceAll(RegExp(r'\D'), '');
+    // Chuyển sang dạng số và thêm dấu phân cách
+    if (numericValue.isEmpty) return '';
+    final number = int.tryParse(numericValue) ?? 0;
+    return NumberFormat("#,###", "vi_VN").format(number);
   }
 
   @override
@@ -105,23 +105,20 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
-                hintText: "0đ",
+                hintText: "Nhập số tiền",
               ),
               onChanged: (value) {
-                // Lúc người dùng đang nhập, chúng ta chỉ cập nhật giá trị không định dạng
+                // Lấy giá trị không định dạng từ input
                 String rawValue = value.replaceAll('.', '').replaceAll(',', '');
                 setState(() {
-                  totalAmount = int.tryParse(rawValue) ?? 0;
+                  // Cập nhật giá trị định dạng
+                  String formattedValue = _formatInput(rawValue);
+                  _amountController.value = TextEditingValue(
+                    text: formattedValue,
+                    selection:
+                        TextSelection.collapsed(offset: formattedValue.length),
+                  );
                 });
-              },
-              onEditingComplete: () {
-                // Khi người dùng rời khỏi TextField, áp dụng định dạng
-                String formattedValue = _formatInput(_amountController.text);
-                _amountController.value = TextEditingValue(
-                  text: formattedValue,
-                  selection:
-                      TextSelection.collapsed(offset: formattedValue.length),
-                );
               },
             ),
 

@@ -370,46 +370,90 @@ class _PaymentScreenState extends State<PaymentScreen> {
         quantitysold: 0,
       );
     }).toList();
-
+    double giam = double.tryParse(giamgia.toString()) ?? 0.0;
     // Tạo đơn hàng
-    Order order = Order(
-      id: '${DateTime.now().millisecondsSinceEpoch}',
-      userId: currentUser!.uid,
-      products: products,
-      totalAmount: total.toString(),
-      orderStatus: 'Đang chờ xác nhận',
-      orderDate: DateTime.now(),
-      shippingAddress: defaultAddress!,
-      tong: (totalAmount + shippingFee).toString(),
-    );
-    DatabaseReference ordersRef = FirebaseDatabase.instance.ref('orders');
-
-    try {
-      // Lưu đơn hàng vào Firebase
-      if (_selectedPaymentMethod == 2) {
-        double newBalance = walletBalance - (totalAmount + shippingFee);
-        DatabaseReference balanceRef =
-            FirebaseDatabase.instance.ref('users/${currentUser!.uid}/balance');
-        await balanceRef.set(newBalance); // Cập nhật số dư ví mới
-      }
-      await ordersRef.child(order.id).set(order.toMap());
-      loginController.ThongBao(context, 'Vui lòng chờ xác nhận!');
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => OrderSuccessScreen(
-              orderId: order
-                  .id), // Truyền ID đơn hàng vào màn hình OrderSuccessScreen
-        ),
+    if (giam == 0) {
+      Order order = Order(
+        id: '${DateTime.now().millisecondsSinceEpoch}',
+        userId: currentUser!.uid,
+        products: products,
+        totalAmount: total.toString(),
+        orderStatus: 'Đang chờ xác nhận',
+        orderDate: DateTime.now(),
+        shippingAddress: defaultAddress!,
+        tong: (totalAmount + shippingFee).toString(),
       );
+      DatabaseReference ordersRef = FirebaseDatabase.instance.ref('orders');
 
-      // Xóa từng sản phẩm trong giỏ hàng
-    } catch (error) {
-      String errorMessage = 'Lỗi không xác định';
-      if (error is FirebaseException) {
-        errorMessage = error.message ?? 'Lỗi không xác định';
+      try {
+        // Lưu đơn hàng vào Firebase
+        if (_selectedPaymentMethod == 2) {
+          double newBalance = walletBalance - (totalAmount + shippingFee);
+          DatabaseReference balanceRef = FirebaseDatabase.instance
+              .ref('users/${currentUser!.uid}/balance');
+          await balanceRef.set(newBalance); // Cập nhật số dư ví mới
+        }
+        await ordersRef.child(order.id).set(order.toMap());
+        loginController.ThongBao(context, 'Vui lòng chờ xác nhận!');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OrderSuccessScreen(
+                orderId: order
+                    .id), // Truyền ID đơn hàng vào màn hình OrderSuccessScreen
+          ),
+        );
+
+        // Xóa từng sản phẩm trong giỏ hàng
+      } catch (error) {
+        String errorMessage = 'Lỗi không xác định';
+        if (error is FirebaseException) {
+          errorMessage = error.message ?? 'Lỗi không xác định';
+        }
+        print('Error occurred: $errorMessage');
       }
-      print('Error occurred: $errorMessage');
+    } else {
+      double tong = totalAmount + shippingFee;
+      double giamgia = (totalAmount + shippingFee) * giam / 100;
+      Order order = Order(
+        id: '${DateTime.now().millisecondsSinceEpoch}',
+        userId: currentUser!.uid,
+        products: products,
+        totalAmount: total.toString(),
+        orderStatus: 'Đang chờ xác nhận',
+        orderDate: DateTime.now(),
+        shippingAddress: defaultAddress!,
+        tong: (tong - giamgia).toString(),
+      );
+      DatabaseReference ordersRef = FirebaseDatabase.instance.ref('orders');
+
+      try {
+        // Lưu đơn hàng vào Firebase
+        if (_selectedPaymentMethod == 2) {
+          double newBalance = walletBalance - (tong - giamgia);
+          DatabaseReference balanceRef = FirebaseDatabase.instance
+              .ref('users/${currentUser!.uid}/balance');
+          await balanceRef.set(newBalance); // Cập nhật số dư ví mới
+        }
+        await ordersRef.child(order.id).set(order.toMap());
+        loginController.ThongBao(context, 'Vui lòng chờ xác nhận!');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OrderSuccessScreen(
+                orderId: order
+                    .id), // Truyền ID đơn hàng vào màn hình OrderSuccessScreen
+          ),
+        );
+
+        // Xóa từng sản phẩm trong giỏ hàng
+      } catch (error) {
+        String errorMessage = 'Lỗi không xác định';
+        if (error is FirebaseException) {
+          errorMessage = error.message ?? 'Lỗi không xác định';
+        }
+        print('Error occurred: $errorMessage');
+      }
     }
   }
 

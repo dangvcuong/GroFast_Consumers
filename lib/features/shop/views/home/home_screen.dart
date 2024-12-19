@@ -485,26 +485,27 @@ class _HomeScreenState extends State<HomeScreen>
                                     scrollDirection: Axis.horizontal,
                                     itemCount: _filteredProducts
                                         .where((product) =>
-                                            (int.tryParse(product.evaluate) ??
+                                            (double.tryParse(
+                                                    product.evaluate) ??
                                                 0) >=
-                                            4)
+                                            4.0)
                                         .length,
                                     itemBuilder: (context, index) {
                                       final highRatedProducts =
                                           _filteredProducts
                                               .where((product) =>
-                                                  (int.tryParse(
+                                                  (double.tryParse(
                                                           product.evaluate) ??
                                                       0) >=
-                                                  4)
+                                                  4.0)
                                               .toList();
 
                                       // Sắp xếp sản phẩm từ cao đến thấp theo đánh giá
                                       highRatedProducts.sort((a, b) {
                                         final ratingA =
-                                            int.tryParse(a.evaluate) ?? 0;
+                                            double.tryParse(a.evaluate) ?? 0;
                                         final ratingB =
-                                            int.tryParse(b.evaluate) ?? 0;
+                                            double.tryParse(b.evaluate) ?? 0;
                                         return ratingB.compareTo(
                                             ratingA); // So sánh từ cao đến thấp
                                       });
