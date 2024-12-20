@@ -103,9 +103,11 @@ class Login_Controller {
               UserModel currentUser = UserModel.fromJson(userMap);
 
               if (currentUser.status == "Ngừng hoạt động") {
-                errorMessage =
-                    'Tài khoản của bạn đã bị ngừng hoạt động. Vui lòng liên hệ hỗ trợ.';
-                await FirebaseAuth.instance.signOut(); // Đăng xuất người dùng
+                errorMessage = 'Tài khoản của bạn đã bị ngừng hoạt động.';
+                // await FirebaseAuth.instance.signOut(); // Đăng xuất người dùng
+              } else if (currentUser.status == "Tài khoản đã bị xóa") {
+                errorMessage = 'Không thể đăng nhập tài khoản của bạn đã xóa.';
+                // await FirebaseAuth.instance.signOut(); // Đăng xuất người dùng
               } else if (user.emailVerified) {
                 // Người dùng đã xác thực email và trạng thái hoạt động bình thường
                 errorMessage = 'Đăng nhập thành công.';
