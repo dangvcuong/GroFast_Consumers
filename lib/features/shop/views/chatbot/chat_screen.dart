@@ -288,9 +288,9 @@ class _ChatScreenState extends State<ChatScreen> {
               children: <Widget>[
                 _buildIconButton(
                     Icons.photo_library, Colors.blue, _handleImageSelection),
-                const Divider(color: Colors.white),
-                _buildIconButton(Icons.insert_drive_file, Colors.green,
-                    _handleFileSelection),
+                // const Divider(color: Colors.white),
+                // _buildIconButton(Icons.insert_drive_file, Colors.green,
+                //     _handleFileSelection),
               ],
             ),
           ),

@@ -75,6 +75,7 @@ class UserController {
             .ref('users/$userId') // Đường dẫn đến user trong Realtime Database
             .update({'name': newName}); // Cập nhật chỉ field 'name'
         errorMessage = "Đổi tên thành công";
+        Navigator.pop(context);
       } catch (e) {
         print("Error updating user name: $e");
       }
@@ -92,6 +93,7 @@ class UserController {
           .ref('users/$userId') // Đường dẫn đến user trong Realtime Database
           .update({'phoneNumber': newPhoneNumber}); // Cập nhật chỉ field 'name'
       errorMessage = "Cập nhật số điện thoại thành công";
+      Navigator.pop(context);
     } catch (e) {
       print("Error updating user name: $e");
     }
