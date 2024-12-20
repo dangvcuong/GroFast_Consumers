@@ -149,12 +149,14 @@ class UserController {
             password: password, // Mật khẩu người dùng nhập vào
           ),
         );
-
+        await FirebaseDatabase.instance.ref('users/${user.uid}').update({
+          "status": "Tài khoản đã bị xóa",
+        });
         // Xóa thông tin người dùng từ Firebase Realtime Database
-        await FirebaseDatabase.instance.ref('users/${user.uid}').remove();
-
+        // await FirebaseDatabase.instance.ref('users/${user.uid}').remove();
+        await FirebaseAuth.instance.signOut();
         // Xóa tài khoản người dùng
-        await user.delete();
+        // await user.delete();
         errorMessage = "Tài khoản đã được xóa thành công!";
       } on FirebaseAuthException catch (e) {
         if (e.code == 'wrong-password') {
@@ -187,11 +189,14 @@ class UserController {
           ),
         );
 
+        await FirebaseDatabase.instance.ref('users/$user.uid').update({
+          "status": "Tài khoản đã bị xóa",
+        });
         // Xóa thông tin người dùng từ Firestore
-        await FirebaseDatabase.instance.ref('users/${user.uid}').remove();
+        // await FirebaseDatabase.instance.ref('users/${user.uid}').remove();
 
-        // Xóa tài khoản người dùng
-        await user.delete();
+        // // Xóa tài khoản người dùng
+        // await user.delete();
         print("Tài khoản đã được hủy thành công!");
       } on FirebaseAuthException catch (e) {
         if (e.code == 'wrong-password') {
