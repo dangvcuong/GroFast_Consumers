@@ -156,13 +156,14 @@ class _ReviewPageState extends State<ReviewPage> {
                 });
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
 
             // Ô nhập nội dung đánh giá
             const Text("Nội dung đánh giá:"),
             TextField(
               controller: _reviewController,
               maxLines: 5,
+              minLines: 1,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 hintText: 'Nhập nội dung đánh giá...',

@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen>
   bool _isImageVisible = true;
 
   double _imageTop = 550;
-  double _imageLeft = 280;
+  double _imageLeft = 250;
   Timer? _imageTimer;
 
   late double screenWidth;

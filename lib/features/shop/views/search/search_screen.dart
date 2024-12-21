@@ -217,10 +217,10 @@ class _SearchScreenState extends State<SearchScreen> {
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2, // Số cột (2 cột)
-                            crossAxisSpacing: 8.0,
-                            mainAxisSpacing: 8.0,
+                            crossAxisSpacing: 5.0,
+                            mainAxisSpacing: 5.0,
                             childAspectRatio:
-                                0.7, // Điều chỉnh tỷ lệ theo ý muốn
+                                0.65, // Điều chỉnh tỷ lệ theo ý muốn
                           ),
                           itemBuilder: (context, index) {
                             final userId = FirebaseAuth.instance.currentUser

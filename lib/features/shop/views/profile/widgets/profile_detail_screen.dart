@@ -258,7 +258,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                           Row(
                             children: [
                               SizedBox(
-                                width: 200, // Giới hạn chiều rộng
+                                width: 179, // Giới hạn chiều rộng
                                 child: Text(
                                   currentUser != null
                                       ? currentUser!.phoneNumber

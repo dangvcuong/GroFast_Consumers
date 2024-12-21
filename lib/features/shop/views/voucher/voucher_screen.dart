@@ -92,68 +92,68 @@ class _VoucherScreenState extends State<VoucherScreen> {
     if (isSpinning) return;
 
     bool autoCloseDialog = true; // Biến để kiểm tra tự động đóng popup
-    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? lastSpindate = prefs.getString('lastSpinDate');
-
-    // Kiểm tra nếu đã quay trong ngày hôm nay
-    if (lastSpindate != null && lastSpindate == today) {
-      // Hiển thị popup thông báo
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        // Không cho phép đóng bằng cách nhấn ngoài popup
-        builder: (BuildContext context) {
-          // Khởi tạo một Timer để tự động đóng popup sau 3 giây
-          Timer? autoCloseTimer;
-
-          autoCloseTimer = Timer(const Duration(seconds: 3), () {
-            if (autoCloseDialog) {
-              Navigator.of(context)
-                  .pop(); // Đóng popup sau 3 giây nếu không có hành động từ người dùng
-            }
-          });
-
-          return AlertDialog(
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Thông báo!",
-                  style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold),
-                ),
-                Positioned(
-                  top: -10,
-                  right: -17,
-                  child: IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () {
-                      autoCloseDialog = false; // Hủy tự động đóng khi nhấn icon
-                      Navigator.of(context)
-                          .pop(); // Đóng popup khi nhấn vào icon
-                      autoCloseTimer?.cancel();
-                    },
-                  ),
-                ),
-              ],
-            ),
-            content: const Text(
-              "Bạn đã hết lượt quay. Hãy đợi đến ngày mai!",
-              style: TextStyle(fontSize: 15),
-            ),
-          );
-        },
-      );
-      return;
-    }
-    await prefs.setString('lastSpinDate', today);
-    setState(() {
-      isSpinning = true;
-    });
+    // String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    //
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    // String? lastSpindate = prefs.getString('lastSpinDate');
+    //
+    // // Kiểm tra nếu đã quay trong ngày hôm nay
+    // if (lastSpindate != null && lastSpindate == today) {
+    //   // Hiển thị popup thông báo
+    //   showDialog(
+    //     context: context,
+    //     barrierDismissible: false,
+    //     // Không cho phép đóng bằng cách nhấn ngoài popup
+    //     builder: (BuildContext context) {
+    //       // Khởi tạo một Timer để tự động đóng popup sau 3 giây
+    //       Timer? autoCloseTimer;
+    //
+    //       autoCloseTimer = Timer(const Duration(seconds: 3), () {
+    //         if (autoCloseDialog) {
+    //           Navigator.of(context)
+    //               .pop(); // Đóng popup sau 3 giây nếu không có hành động từ người dùng
+    //         }
+    //       });
+    //
+    //       return AlertDialog(
+    //         title: Row(
+    //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //           children: [
+    //             const Text(
+    //               "Thông báo!",
+    //               style: TextStyle(
+    //                   color: Colors.red,
+    //                   fontSize: 20,
+    //                   fontWeight: FontWeight.bold),
+    //             ),
+    //             Positioned(
+    //               top: -10,
+    //               right: -17,
+    //               child: IconButton(
+    //                 icon: const Icon(Icons.close),
+    //                 onPressed: () {
+    //                   autoCloseDialog = false; // Hủy tự động đóng khi nhấn icon
+    //                   Navigator.of(context)
+    //                       .pop(); // Đóng popup khi nhấn vào icon
+    //                   autoCloseTimer?.cancel();
+    //                 },
+    //               ),
+    //             ),
+    //           ],
+    //         ),
+    //         content: const Text(
+    //           "Bạn đã hết lượt quay. Hãy đợi đến ngày mai!",
+    //           style: TextStyle(fontSize: 15),
+    //         ),
+    //       );
+    //     },
+    //   );
+    //   return;
+    // }
+    // await prefs.setString('lastSpinDate', today);
+    // setState(() {
+    //   isSpinning = true;
+    // });
 
     int randomIndex = Fortune.randomInt(0, rewards.length);
     selected.add(randomIndex);

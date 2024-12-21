@@ -20,19 +20,20 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
   int totalAmount = 0;
   final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
   final formatterInput = NumberFormat.currency(locale: 'vi_VN', symbol: "  ");
+
   @override
   void initState() {
     super.initState();
     _getUserInfo();
     Stripe.publishableKey =
-        'pk_test_51QNuhqLA1LG9yr6DuAAqmLRrrAKQeuVTOt5LHuohApK6EU9DYTL1szIzlhD9PHXHNRyOpZYi68SoZatRT1F04BSd00R9QElBHq';
+    'pk_test_51QNuhqLA1LG9yr6DuAAqmLRrrAKQeuVTOt5LHuohApK6EU9DYTL1szIzlhD9PHXHNRyOpZYi68SoZatRT1F04BSd00R9QElBHq';
 
     // Lắng nghe thay đổi từ TextField
     _amountController.addListener(() {
       setState(() {
         totalAmount = int.tryParse(_amountController.text
-                .replaceAll('.', '')
-                .replaceAll(',', '')) ??
+            .replaceAll('.', '')
+            .replaceAll(',', '')) ??
             0;
       });
     });
@@ -116,7 +117,7 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
                   _amountController.value = TextEditingValue(
                     text: formattedValue,
                     selection:
-                        TextSelection.collapsed(offset: formattedValue.length),
+                    TextSelection.collapsed(offset: formattedValue.length),
                   );
                 });
               },
@@ -127,7 +128,8 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Số dư Ví hiện tại: ${formatter.format(currentUser?.balance ?? 0)}",
+                  "Số dư Ví hiện tại: ${formatter.format(
+                      currentUser?.balance ?? 0)}",
                   style: const TextStyle(color: Colors.grey),
                 ),
                 IconButton(
@@ -140,9 +142,10 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => PaymenthistoryScreen(
-                            userId: currentUser!
-                                .id), // Thay thế YourCurrentPage bằng widget hiện tại của bạn
+                        builder: (context) =>
+                            PaymenthistoryScreen(
+                                userId: currentUser!
+                                    .id), // Thay thế YourCurrentPage bằng widget hiện tại của bạn
                       ),
                     );
                   },
@@ -150,7 +153,7 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
               ],
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -159,7 +162,7 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
                 _buildAmountButton(context, "500000"),
               ],
             ),
-            const SizedBox(height: 50),
+            const SizedBox(height: 38),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -218,7 +221,7 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
                 backgroundColor:
-                    totalAmount >= 10000 ? Colors.blue : Colors.grey.shade300,
+                totalAmount >= 10000 ? Colors.blue : Colors.grey.shade300,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8), // Bo tròn nhẹ
                 ),
@@ -226,7 +229,7 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
               child: const Text(
                 "Nạp tiền với Stripe Payment",
                 style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 10),
@@ -252,9 +255,12 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
         backgroundColor: Colors.white,
         side: const BorderSide(color: Colors.grey),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-              8), // Bo tròn nhẹ (hoặc 0 để hoàn toàn vuông)
+          borderRadius: BorderRadius.circular(8),
         ),
+        minimumSize: const Size(100, 40),
+        // Điều chỉnh kích thước tối thiểu (chiều rộng, chiều cao)
+        padding: const EdgeInsets.symmetric(
+            horizontal: 8, vertical: 4), // Thêm padding bên trong
       ),
       child: Text(
         formatter.format(int.parse(amount)),

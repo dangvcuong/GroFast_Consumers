@@ -321,7 +321,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   crossAxisCount: 2,
                   crossAxisSpacing: 8.0,
                   mainAxisSpacing: 8.0,
-                  childAspectRatio: 0.7,
+                  childAspectRatio: 0.65,
                 ),
                 shrinkWrap: true, // Thu nhỏ GridView vừa với nội dung
                 physics:
